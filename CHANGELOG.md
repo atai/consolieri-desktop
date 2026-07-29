@@ -5,6 +5,14 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-07-29
+
+### Other
+
+- Enhance macOS notarization and improve main window management
+
+- Update pnpm version to 10.34.5 in package.json, pnpm-lock.yaml, CI, and release workflows; reflect changes in AGENT documentation.
+
 ## [0.5.0] - 2026-07-29
 
 ### Other
