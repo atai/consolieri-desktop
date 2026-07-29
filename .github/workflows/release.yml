@@ -38,10 +38,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Linux app deps (electron-builder)
-        if: matrix.target == 'linux'
-        run: pnpm exec electron-builder install-app-deps
-
       - name: Build (Windows)
         if: matrix.target == 'win'
         env:

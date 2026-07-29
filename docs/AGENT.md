@@ -25,7 +25,7 @@ pnpm is bundled in root `devDependencies` (`pnpm@10.12.1`). A global install is 
 | `npm run package` | builds Windows distributable |
 | `npm run lint` / `typecheck` | linting and TypeScript checks |
 | `npm run test` | Vitest for **both** `@consoleri/core` and `@consoleri/desktop` |
-| `npm run rebuild-native` | recompile `node-pty` with `@electron/rebuild` |
+| `npm run rebuild-native` | re-run `electron-builder install-app-deps` (native modules ↔ Electron ABI) |
 | `npm run install:electron` | manual fallback if postinstall was skipped |
 | `npm run release -- patch` | bump version, update `CHANGELOG.md`, commit and tag |
 
@@ -179,7 +179,7 @@ scripts/{dev,pnpm,postinstall,rebuild-native}.mjs
 
 4. **pnpm not on PATH** — always use `npm run *` or `node scripts/pnpm.mjs` rather than calling `pnpm` directly.
 
-5. **Electron binary** — `postinstall.mjs` downloads the Electron binary if absent. If install scripts were skipped with `--ignore-scripts`, run `npm run install:electron` manually.
+5. **Electron binary + native deps** — `postinstall.mjs` downloads the Electron binary if absent, then runs `electron-builder install-app-deps` so `node-pty` / `ssh2` / etc. match the Electron ABI. If install scripts were skipped with `--ignore-scripts`, run `npm run install:electron` and `npm run rebuild-native` manually.
 
 6. **Native rollup externals** — `node-pty`, `ssh2`, `cpu-features`, and `node:sqlite` are declared external in the main build's rollup config and must not be bundled.
 

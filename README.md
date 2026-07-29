@@ -22,10 +22,11 @@ npx pnpm install
 
 # Afterwards, or if node_modules already exists:
 npm run install:deps
-npm run rebuild-native     # optional: node-pty for local terminals
+# postinstall downloads Electron (if needed) and runs electron-builder install-app-deps
+npm run rebuild-native     # optional re-run if native modules break after Electron upgrades
 ```
 
-> If install scripts were skipped, run `npm run install:electron` to download the Electron binary.
+> If install scripts were skipped, run `npm run install:electron` then `npm run rebuild-native`.
 
 ## Development
 

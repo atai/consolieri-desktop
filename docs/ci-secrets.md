@@ -57,6 +57,8 @@ base64 -i Consoleri-macos.p12 | tr -d '\n' > mac-csc-link.txt
 
 The workflow maps these secrets to `CSC_LINK` / `CSC_KEY_PASSWORD` for `electron-builder` on the macOS runner.
 
+In a successful Release log, the signing line should look like `identityName=Developer ID Application: …`. If you see `Apple Development: …` instead, the `MAC_CSC_*` secrets are missing or not the Developer ID `.p12`.
+
 Notarization is currently **disabled** (`mac.notarize: false` in `apps/desktop/electron-builder.yml`). Signed builds still install, but Gatekeeper may warn until notarization is enabled and Apple credentials are added.
 
 ---
