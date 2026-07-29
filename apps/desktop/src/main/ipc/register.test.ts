@@ -102,7 +102,9 @@ const {
     getMapView: vi.fn(),
     setMapView: vi.fn(),
     getAppSettings: vi.fn().mockReturnValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace' }),
-    setAppSettings: vi.fn().mockReturnValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace' })
+    setAppSettings: vi.fn().mockReturnValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace' }),
+    getScpRecent: vi.fn(),
+    setScpRecent: vi.fn()
   },
   mockReportRepo: {
     list: vi.fn(),
@@ -124,7 +126,10 @@ vi.mock('electron', () => ({
     readText: vi.fn(() => 'clipboard-text'),
     writeText: vi.fn()
   },
-  app: { getPath: () => '/tmp/test' }
+  app: { getPath: () => '/tmp/test' },
+  BrowserWindow: {
+    fromWebContents: vi.fn(() => null)
+  }
 }))
 
 vi.mock('../hosts/HostRepository', () => ({ hostRepository: mockHostRepo }))
@@ -147,12 +152,26 @@ vi.mock('../vault/VaultOidcLogin', () => ({
 }))
 vi.mock('../sessions/SessionManager', () => ({ sessionManager: mockSessionManager }))
 vi.mock('../sessions/shellUtils', () => ({ listWslDistros: vi.fn(() => []) }))
+vi.mock('../sessions/localShellsService', () => ({
+  localShellsService: { available: vi.fn(() => ({ powershell: false, pwsh: false, cmd: false, bash: false, zsh: false, sh: false })) }
+}))
+vi.mock('../sessions/ScpTransferService', () => ({
+  scpTransferService: {
+    pickLocalFile: vi.fn(),
+    pickLocalDir: vi.fn(),
+    transfer: vi.fn()
+  }
+}))
 vi.mock('../windows/LogWindow', () => ({
   openLogWindow: mockOpenLogWindow,
   registerLogContext: mockRegisterLogContext
 }))
 vi.mock('../windows/ReportWindow', () => ({ openReportWindow: vi.fn() }))
 vi.mock('../windows/SessionWindow', () => ({ openSessionWindow: vi.fn() }))
+vi.mock('../windows/SessionWindowRegistry', () => ({
+  isRegisteredSessionWindow: vi.fn(() => false),
+  registerSessionWindow: vi.fn()
+}))
 vi.mock('../keys/SshKeyService', () => ({ sshKeyService: mockSshKeyService }))
 vi.mock('../keys/SshKeyDeployer', () => ({ sshKeyDeployer: mockSshKeyDeployer }))
 vi.mock('../preferences/AppPreferencesRepository', () => ({
@@ -231,6 +250,7 @@ describe('IPC channel inventory', () => {
     IPC_CHANNELS.sessionsVncPassword,
     IPC_CHANNELS.sessionsSnapshot,
     IPC_CHANNELS.wslList,
+    IPC_CHANNELS.localShellsAvailable,
     IPC_CHANNELS.workspaceSave,
     IPC_CHANNELS.workspaceLoad,
     IPC_CHANNELS.workspaceGetActive,
@@ -282,7 +302,12 @@ describe('IPC channel inventory', () => {
     IPC_CHANNELS.backupCreateNow,
     IPC_CHANNELS.backupRestore,
     IPC_CHANNELS.backupDelete,
-    IPC_CHANNELS.backupOpenFolder
+    IPC_CHANNELS.backupOpenFolder,
+    IPC_CHANNELS.scpPickFile,
+    IPC_CHANNELS.scpPickDir,
+    IPC_CHANNELS.scpTransfer,
+    IPC_CHANNELS.scpGetRecent,
+    IPC_CHANNELS.scpSetRecent
   ] as const
 
   const EXPECTED_ON_CHANNELS = [
