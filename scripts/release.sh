@@ -142,8 +142,7 @@ if [[ "$DRY_RUN" == true ]]; then
   echo "------------------"
   echo
   echo "Would run:"
-  echo "  node scripts/bump-version.mjs ${BUMP}   # clean tree + CHANGELOG + version files"
-  echo "  git commit -m \"chore(release): v${NEW_VERSION}\""
+  echo "  node scripts/bump-version.mjs ${BUMP}   # CHANGELOG + versions + release commit"
   echo "  git tag -a v${NEW_VERSION} -m \"Release v${NEW_VERSION}\""
   if [[ "$PUSH" == true ]]; then
     echo "  git push origin HEAD"
@@ -153,14 +152,6 @@ if [[ "$DRY_RUN" == true ]]; then
 fi
 
 node scripts/bump-version.mjs "$BUMP" >/dev/null
-
-git add \
-  CHANGELOG.md \
-  package.json \
-  apps/desktop/package.json \
-  packages/core/package.json \
-  apps/desktop/src/shared/appVersion.ts
-git commit -m "chore(release): v${NEW_VERSION}"
 git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
 
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"

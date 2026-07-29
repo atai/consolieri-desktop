@@ -124,18 +124,48 @@ function updateChangelog(version) {
   }
 }
 
+const VERSION_PATHS = [
+  'CHANGELOG.md',
+  'package.json',
+  'apps/desktop/package.json',
+  'packages/core/package.json',
+  'apps/desktop/src/shared/appVersion.ts'
+]
+
+function commitVersion(version) {
+  const add = spawnSync('git', ['add', '--', ...VERSION_PATHS], {
+    cwd: root,
+    encoding: 'utf8'
+  })
+  if (add.status !== 0) {
+    throw new Error(`git add failed: ${(add.stderr || '').trim()}`)
+  }
+
+  const commit = spawnSync(
+    'git',
+    ['commit', '-m', `chore(release): v${version}`],
+    { cwd: root, stdio: 'inherit' }
+  )
+  if (commit.status !== 0) {
+    throw new Error(`git commit failed for v${version}`)
+  }
+}
+
 function usage() {
   console.error(
-    'Usage: node scripts/bump-version.mjs <patch|minor|major|X.Y.Z> [--dry-run]\n' +
+    'Usage: node scripts/bump-version.mjs <patch|minor|major|X.Y.Z> [--dry-run] [--no-commit]\n' +
       '  Requires a clean git working tree (unless --dry-run).\n' +
-      '  Updates package.json files, appVersion.ts, and CHANGELOG.md via git-cliff.'
+      '  Updates package.json files, appVersion.ts, and CHANGELOG.md via git-cliff,\n' +
+      '  then commits with message chore(release): vX.Y.Z (unless --no-commit).'
   )
   process.exit(1)
 }
 
+const FLAGS = new Set(['--dry-run', '--no-commit'])
 const args = process.argv.slice(2)
 const dryRun = args.includes('--dry-run')
-const bumpArg = args.find((arg) => arg !== '--dry-run')
+const noCommit = args.includes('--no-commit')
+const bumpArg = args.find((arg) => !FLAGS.has(arg))
 
 if (!bumpArg) {
   usage()
@@ -161,6 +191,9 @@ try {
   requireCleanTree()
   updateChangelog(newVersion)
   setVersion(newVersion)
+  if (!noCommit) {
+    commitVersion(newVersion)
+  }
   console.log(newVersion)
 } catch (err) {
   console.error(`bump-version: ${err instanceof Error ? err.message : err}`)

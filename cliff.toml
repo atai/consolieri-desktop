@@ -19,7 +19,7 @@ body = """
 {% for group, commits in commits | group_by(attribute="group") %}
 ### {{ group | striptags | trim | upper_first }}
 {% for commit in commits %}
-- {% if commit.scope %}*({{ commit.scope }})* {% endif %}{% if commit.breaking %}[**breaking**] {% endif %}{{ commit.message | upper_first }}
+- {% if commit.scope %}*({{ commit.scope }})* {% endif %}{% if commit.breaking %}[**breaking**] {% endif %}{{ commit.message | split(pat="\n") | first | trim | upper_first }}
 {% endfor %}
 {% endfor %}
 """
@@ -35,6 +35,8 @@ sort_commits = "oldest"
 filter_commits = false
 commit_parsers = [
   { message = "^chore\\(release\\):", skip = true },
+  { message = "^Bump version", skip = true },
+  { message = "^Update version to ", skip = true },
   { message = "^feat", group = "Features" },
   { message = "^fix", group = "Bug Fixes" },
   { message = "^Add", group = "Features" },

@@ -46,4 +46,4 @@ jobs:
           git push origin "refs/tags/${TAG}"
 
           echo "Dispatching Release workflow for ${TAG}"
-          gh workflow run Release.yml --ref "${TAG}" -f "tag=${TAG}"
+          gh workflow run release.yml --ref "${TAG}" -f "tag=${TAG}"
