@@ -13,9 +13,9 @@ usage() {
   cat <<'EOF'
 Usage: scripts/release.sh [--dry-run] [--no-test] [--no-push] <patch|minor|major>
 
-Bump the semver version, update CHANGELOG.md, sync package.json files,
-create a release commit and annotated tag vX.Y.Z, then push both to origin
-(so GitHub Actions Release starts).
+Bump the semver version, update CHANGELOG.md (git-cliff), sync package.json /
+appVersion.ts, create a release commit and annotated tag vX.Y.Z, then push both
+to origin (so GitHub Actions Release starts).
 
 Options:
   --dry-run   Show the new version and changelog preview without writing
@@ -142,8 +142,7 @@ if [[ "$DRY_RUN" == true ]]; then
   echo "------------------"
   echo
   echo "Would run:"
-  echo "  git cliff --config cliff.toml --prepend CHANGELOG.md --tag v${NEW_VERSION}"
-  echo "  node scripts/bump-version.mjs ${BUMP}"
+  echo "  node scripts/bump-version.mjs ${BUMP}   # clean tree + CHANGELOG + version files"
   echo "  git commit -m \"chore(release): v${NEW_VERSION}\""
   echo "  git tag -a v${NEW_VERSION} -m \"Release v${NEW_VERSION}\""
   if [[ "$PUSH" == true ]]; then
@@ -153,10 +152,14 @@ if [[ "$DRY_RUN" == true ]]; then
   exit 0
 fi
 
-git cliff --config cliff.toml --prepend CHANGELOG.md --tag "v${NEW_VERSION}"
 node scripts/bump-version.mjs "$BUMP" >/dev/null
 
-git add CHANGELOG.md package.json apps/desktop/package.json packages/core/package.json
+git add \
+  CHANGELOG.md \
+  package.json \
+  apps/desktop/package.json \
+  packages/core/package.json \
+  apps/desktop/src/shared/appVersion.ts
 git commit -m "chore(release): v${NEW_VERSION}"
 git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
 

@@ -27,6 +27,7 @@ pnpm is bundled in root `devDependencies` (`pnpm@10.12.1`). A global install is 
 | `npm run test` | Vitest for **both** `@consoleri/core` and `@consoleri/desktop` |
 | `npm run rebuild-native` | re-run `electron-rebuild --only node-pty` (Electron ABI) |
 | `npm run install:electron` | manual fallback if postinstall was skipped |
+| `npm run version:patch` / `minor` / `major` | bump versions + CHANGELOG (requires clean tree, git-cliff) |
 | `npm run release -- patch` | bump version, changelog, commit+tag, push (starts Release CI) |
 
 `npm run dev` always runs a full pre-build first so main/preload/renderer are in sync before the dev server starts.

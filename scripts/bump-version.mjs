@@ -1,4 +1,5 @@
 import { readFileSync, writeFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -7,10 +8,12 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const PACKAGE_FILES = [
   join(root, 'package.json'),
   join(root, 'apps/desktop/package.json'),
-  join(root, 'packages/core/package.json'),
+  join(root, 'packages/core/package.json')
 ]
 
 const APP_VERSION_FILE = join(root, 'apps/desktop/src/shared/appVersion.ts')
+const CHANGELOG_FILE = join(root, 'CHANGELOG.md')
+const CLIFF_CONFIG = join(root, 'cliff.toml')
 
 const BUMP_TYPES = new Set(['patch', 'minor', 'major'])
 
@@ -58,8 +61,74 @@ function setVersion(version) {
   setAppVersion(version)
 }
 
+function requireCleanTree() {
+  const result = spawnSync('git', ['status', '--porcelain'], {
+    cwd: root,
+    encoding: 'utf8'
+  })
+  if (result.error) {
+    throw new Error(`git is not available: ${result.error.message}`)
+  }
+  if (result.status !== 0) {
+    throw new Error(`git status failed: ${(result.stderr || '').trim()}`)
+  }
+  if (result.stdout.trim()) {
+    throw new Error(
+      'Working tree is not clean. Commit or stash changes before bumping the version.'
+    )
+  }
+}
+
+function resolveCliffCommand() {
+  for (const cmd of [
+    ['git', ['cliff']],
+    ['git-cliff', []]
+  ]) {
+    const [bin, prefix] = cmd
+    const probe = spawnSync(bin, [...prefix, '--version'], {
+      cwd: root,
+      encoding: 'utf8'
+    })
+    if (probe.status === 0) {
+      return { bin, prefix }
+    }
+  }
+  throw new Error(
+    `git-cliff is not installed or not in PATH.
+
+Install git-cliff:
+  Windows:  scoop install git-cliff
+            choco install git-cliff
+  macOS:    brew install git-cliff
+  Linux:    cargo install git-cliff`
+  )
+}
+
+/** Prepend a Keep-a-Changelog section for vX.Y.Z via git-cliff. */
+function updateChangelog(version) {
+  const { bin, prefix } = resolveCliffCommand()
+  const tag = `v${version}`
+  const args = [
+    ...prefix,
+    '--config',
+    CLIFF_CONFIG,
+    '--prepend',
+    CHANGELOG_FILE,
+    '--tag',
+    tag
+  ]
+  const result = spawnSync(bin, args, { cwd: root, stdio: 'inherit' })
+  if (result.status !== 0) {
+    throw new Error(`git-cliff failed while updating CHANGELOG.md for ${tag}`)
+  }
+}
+
 function usage() {
-  console.error('Usage: node scripts/bump-version.mjs <patch|minor|major|X.Y.Z> [--dry-run]')
+  console.error(
+    'Usage: node scripts/bump-version.mjs <patch|minor|major|X.Y.Z> [--dry-run]\n' +
+      '  Requires a clean git working tree (unless --dry-run).\n' +
+      '  Updates package.json files, appVersion.ts, and CHANGELOG.md via git-cliff.'
+  )
   process.exit(1)
 }
 
@@ -87,5 +156,12 @@ if (dryRun) {
   process.exit(0)
 }
 
-setVersion(newVersion)
-console.log(newVersion)
+try {
+  requireCleanTree()
+  updateChangelog(newVersion)
+  setVersion(newVersion)
+  console.log(newVersion)
+} catch (err) {
+  console.error(`bump-version: ${err instanceof Error ? err.message : err}`)
+  process.exit(1)
+}

@@ -92,16 +92,38 @@ jobs:
     needs: build
 
     steps:
+      - uses: actions/checkout@v5
+        with:
+          # Need CHANGELOG.md from the tagged commit
+          ref: ${{ inputs.tag || github.ref }}
+
       - uses: actions/download-artifact@v7
         with:
           pattern: dist-*
           path: dist-artifacts
           merge-multiple: true
 
+      - name: Extract changelog for this version
+        id: notes
+        run: |
+          set -euo pipefail
+          TAG="${{ inputs.tag || github.ref_name }}"
+          if node scripts/changelog-section.mjs "$TAG" > release-notes.md; then
+            echo "has_notes=true" >> "$GITHUB_OUTPUT"
+            echo "Extracted CHANGELOG notes for $TAG"
+            cat release-notes.md
+          else
+            echo "has_notes=false" >> "$GITHUB_OUTPUT"
+            echo "No Keep-a-Changelog section for $TAG — using GitHub-generated notes"
+            : > release-notes.md
+          fi
+
       - name: Create GitHub Release and upload assets
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ inputs.tag || github.ref_name }}
+          body_path: release-notes.md
+          generate_release_notes: ${{ steps.notes.outputs.has_notes != 'true' }}
           files: |
             dist-artifacts/**/*-setup.exe
             dist-artifacts/**/*-setup.exe.blockmap
