@@ -66,3 +66,62 @@ describe('useProfileFormState submit errors', () => {
     expect(result.current.saving).toBe(false)
   })
 })
+
+describe('useProfileFormState auto-naming', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    installConsoleri()
+  })
+
+  it('updates suggested name when auth method changes', () => {
+    const { result } = renderHook(() =>
+      useProfileFormState({
+        linkHostId: 'host-1',
+        onSave: vi.fn()
+      })
+    )
+
+    expect(result.current.name).toBe('noname (ssh - password)')
+
+    act(() => {
+      result.current.setAuthMethod('key')
+    })
+
+    expect(result.current.name).toBe('noname (ssh - key)')
+  })
+
+  it('updates suggested name when username changes', () => {
+    const { result } = renderHook(() =>
+      useProfileFormState({
+        linkHostId: 'host-1',
+        onSave: vi.fn()
+      })
+    )
+
+    act(() => {
+      result.current.setUsername('alice')
+    })
+
+    expect(result.current.name).toBe('alice (ssh - password)')
+  })
+
+  it('stops auto-updating after the user edits the name', () => {
+    const { result } = renderHook(() =>
+      useProfileFormState({
+        linkHostId: 'host-1',
+        onSave: vi.fn()
+      })
+    )
+
+    act(() => {
+      result.current.setName('my custom profile')
+    })
+
+    act(() => {
+      result.current.setAuthMethod('key')
+      result.current.setUsername('alice')
+    })
+
+    expect(result.current.name).toBe('my custom profile')
+  })
+})

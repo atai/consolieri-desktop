@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   defaultPortForProtocol,
   isKeyFileRef,
@@ -78,6 +78,7 @@ export interface ProfileFormState {
 export function useProfileFormState(options: UseProfileFormStateOptions): ProfileFormState {
   const { linkHostId, profile, host, hosts: hostsProp, draft = false, onDraftSave, onSave } = options
   const isEdit = Boolean(profile)
+  const isNameManuallySet = useRef(isEdit)
 
   const [hosts, setHosts] = useState<Host[]>(hostsProp ?? [])
   const [name, setName] = useState(profile?.name ?? '')
@@ -110,6 +111,11 @@ export function useProfileFormState(options: UseProfileFormStateOptions): Profil
     return 'local'
   })
 
+  const setNameFromUser = (v: string): void => {
+    isNameManuallySet.current = true
+    setName(v)
+  }
+
   useEffect(() => {
     if (!hostsProp) {
       window.consoleri.hosts.list().then(setHosts)
@@ -127,7 +133,7 @@ export function useProfileFormState(options: UseProfileFormStateOptions): Profil
   }, [profile?.credentialRef])
 
   useEffect(() => {
-    if (isEdit || name.trim() !== '') return
+    if (isEdit || isNameManuallySet.current) return
     setName(
       suggestProfileName({
         username,
@@ -141,7 +147,7 @@ export function useProfileFormState(options: UseProfileFormStateOptions): Profil
         secretBackend
       })
     )
-  }, [isEdit, name, username, protocol, authMethod, jumpHostId, hosts, selectedKeyPath, privateKey, sshKeys, secretBackend])
+  }, [isEdit, username, protocol, authMethod, jumpHostId, hosts, selectedKeyPath, privateKey, sshKeys, secretBackend])
 
   const supportsAuth = protocol === 'ssh' || protocol === 'rdp' || protocol === 'vnc'
   const jumpHostOptions = hosts.filter((h) => h.id !== linkHostId)
@@ -165,6 +171,7 @@ export function useProfileFormState(options: UseProfileFormStateOptions): Profil
 
     if (sources.length === 1) {
       const template = applyProfileTemplate(sources[0]!)
+      isNameManuallySet.current = true
       setName(template.name)
       setProtocol(template.protocol)
       setUsername(template.username)
@@ -329,7 +336,7 @@ export function useProfileFormState(options: UseProfileFormStateOptions): Profil
     secretBackend,
     supportsAuth,
     jumpHostOptions,
-    setName,
+    setName: setNameFromUser,
     setProtocol,
     setUsername,
     setAuthMethod,

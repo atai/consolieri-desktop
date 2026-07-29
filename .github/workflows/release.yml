@@ -72,6 +72,8 @@ jobs:
       - name: Prepare macOS notarization credentials
         if: matrix.target == 'mac'
         env:
+          MAC_CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          MAC_CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
           APPLE_API_KEY_SECRET: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
@@ -80,6 +82,10 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
+          if [[ -z "${MAC_CSC_LINK:-}" || -z "${MAC_CSC_KEY_PASSWORD:-}" ]]; then
+            echo "::error::MAC_CSC_LINK / MAC_CSC_KEY_PASSWORD missing. Without a Developer ID Application .p12, electron-builder falls back to Apple Development and Apple notarization rejects the archive. See docs/ci-secrets.md."
+            exit 1
+          fi
           if [[ -n "${APPLE_API_KEY_SECRET:-}" && -n "${APPLE_API_KEY_ID:-}" && -n "${APPLE_API_ISSUER:-}" ]]; then
             KEY_PATH="${RUNNER_TEMP}/AuthKey_${APPLE_API_KEY_ID}.p8"
             if [[ "${APPLE_API_KEY_SECRET}" == *"BEGIN PRIVATE KEY"* ]]; then

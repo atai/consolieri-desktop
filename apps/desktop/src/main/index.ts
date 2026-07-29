@@ -19,6 +19,22 @@ if (!gotSingleInstanceLock) {
   app.quit()
 } else {
 let mainWindow: BrowserWindow | null = null
+const SHOW_FALLBACK_MS = 2500
+
+function isMainWindowAlive(): boolean {
+  return mainWindow !== null && !mainWindow.isDestroyed()
+}
+
+function showAndFocusMainWindow(): void {
+  if (!isMainWindowAlive()) {
+    createWindow()
+    return
+  }
+
+  if (mainWindow!.isMinimized()) mainWindow!.restore()
+  mainWindow!.show()
+  mainWindow!.focus()
+}
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -39,8 +55,37 @@ function createWindow(): void {
     }
   })
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow?.show()
+  let shown = false
+  let showFallbackTimer: ReturnType<typeof setTimeout> | undefined
+
+  const reveal = (): void => {
+    if (shown || !isMainWindowAlive()) return
+    shown = true
+    if (showFallbackTimer !== undefined) clearTimeout(showFallbackTimer)
+    mainWindow!.show()
+    mainWindow!.focus()
+  }
+
+  showFallbackTimer = setTimeout(() => {
+    if (!shown) {
+      console.warn('[main] Window ready-to-show timed out; forcing show')
+      reveal()
+    }
+  }, SHOW_FALLBACK_MS)
+
+  mainWindow.on('ready-to-show', reveal)
+
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    console.error(
+      `[main] Failed to load window content (${errorCode}): ${errorDescription} (${validatedURL})`
+    )
+    reveal()
+  })
+
+  mainWindow.on('closed', () => {
+    if (showFallbackTimer !== undefined) clearTimeout(showFallbackTimer)
+    mainWindow = null
+    app.quit()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -58,31 +103,31 @@ function createWindow(): void {
 }
 
 app.on('second-instance', () => {
-  if (mainWindow) {
-    if (mainWindow.isMinimized()) mainWindow.restore()
-    if (!mainWindow.isVisible()) mainWindow.show()
-    mainWindow.focus()
-  }
+  showAndFocusMainWindow()
 })
 
 app.whenReady().then(() => {
-  electronApp.setAppUserModelId('com.consoleri.desktop')
-  if (process.platform === 'darwin') {
-    app.dock?.setIcon(appIconPath())
+  try {
+    electronApp.setAppUserModelId('com.consoleri.desktop')
+    if (process.platform === 'darwin') {
+      app.dock?.setIcon(appIconPath())
+    }
+    getDatabase()
+
+    app.on('browser-window-created', (_, window) => {
+      optimizer.watchWindowShortcuts(window)
+    })
+
+    registerIpcHandlers(() => mainWindow)
+    backupService.startScheduler()
+  } catch (error) {
+    console.error('[main] Startup initialization failed:', error)
   }
-  getDatabase()
-
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
-  })
-
-  registerIpcHandlers(() => mainWindow)
-  backupService.startScheduler()
 
   createWindow()
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    showAndFocusMainWindow()
   })
 })
 
@@ -93,8 +138,6 @@ app.on('before-quit', () => {
 })
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+  app.quit()
 })
 }
