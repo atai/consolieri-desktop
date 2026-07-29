@@ -13,7 +13,7 @@ consoleri/
 └── pnpm-workspace.yaml
 ```
 
-pnpm is bundled in root `devDependencies` (`pnpm@10.12.1`). A global install is not required — use `npm run *` or `node scripts/pnpm.mjs` for everything.
+pnpm is bundled in root `devDependencies` (`pnpm@10.34.5`). A global install is not required — use `npm run *` or `node scripts/pnpm.mjs` for everything.
 
 ## Commands
 

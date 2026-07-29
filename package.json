@@ -3,7 +3,7 @@
   "version": "0.5.0",
   "private": true,
   "description": "Consoleri — remote host console manager",
-  "packageManager": "pnpm@10.12.1",
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "node scripts/pnpm.mjs --filter @consoleri/desktop build",
@@ -26,6 +26,6 @@
     "pnpm": ">=10"
   },
   "devDependencies": {
-    "pnpm": "10.34.4"
+    "pnpm": "10.34.5"
   }
 }
