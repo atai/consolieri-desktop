@@ -26,10 +26,24 @@ jobs:
         include:
           - os: ubuntu-latest
             target: linux
+            artifacts: |
+              apps/desktop/dist/*.AppImage
+              apps/desktop/dist/*.deb
+              apps/desktop/dist/latest-linux.yml
           - os: windows-latest
             target: win
+            artifacts: |
+              apps/desktop/dist/*-setup.exe
+              apps/desktop/dist/*-setup.exe.blockmap
+              apps/desktop/dist/latest.yml
           - os: macos-latest
             target: mac
+            artifacts: |
+              apps/desktop/dist/*.dmg
+              apps/desktop/dist/*.dmg.blockmap
+              apps/desktop/dist/*-mac.zip
+              apps/desktop/dist/*-mac.zip.blockmap
+              apps/desktop/dist/latest-mac.yml
 
     steps:
       - uses: actions/checkout@v5
@@ -64,13 +78,12 @@ jobs:
         if: matrix.target == 'linux'
         run: pnpm --filter @consoleri/desktop build:linux
 
-      - name: Upload dist
+      - name: Upload installers
         uses: actions/upload-artifact@v6
         with:
           name: dist-${{ matrix.target }}
-          path: |
-            apps/desktop/dist/**
-            apps/desktop/dist_*/**
+          # Installers only — not unpacked Electron trees (helper .exe noise).
+          path: ${{ matrix.artifacts }}
           if-no-files-found: error
 
   publish:
@@ -90,12 +103,16 @@ jobs:
         with:
           tag_name: ${{ inputs.tag || github.ref_name }}
           files: |
-            dist-artifacts/**/*.exe
+            dist-artifacts/**/*-setup.exe
+            dist-artifacts/**/*-setup.exe.blockmap
             dist-artifacts/**/*.dmg
-            dist-artifacts/**/*.zip
+            dist-artifacts/**/*.dmg.blockmap
+            dist-artifacts/**/*-mac.zip
+            dist-artifacts/**/*-mac.zip.blockmap
             dist-artifacts/**/*.AppImage
             dist-artifacts/**/*.deb
-            dist-artifacts/**/*.blockmap
-            dist-artifacts/**/*.yml
+            dist-artifacts/**/latest.yml
+            dist-artifacts/**/latest-mac.yml
+            dist-artifacts/**/latest-linux.yml
           fail_on_unmatched_files: true
           token: ${{ secrets.GITHUB_TOKEN }}
