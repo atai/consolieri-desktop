@@ -10,8 +10,6 @@ export interface AppSettings {
   autoOpenConnectionLog: boolean
   sessionOpenMode: SessionOpenMode
 }
-export type { HostLogVerbosity } from './logging/verbosity'
-import type { HostLogVerbosity } from './logging/verbosity'
 
 export interface Host {
   id: string
