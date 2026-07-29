@@ -9,6 +9,7 @@ interface SessionWorkspaceState {
   sessions: SessionInfo[]
   workspace: WorkspaceState
   addSession: (session: SessionInfo) => void
+  upsertSession: (session: SessionInfo) => void
   updateSession: (id: string, patch: Partial<SessionInfo>) => void
   removeSession: (id: string) => void
   setWorkspace: (ws: WorkspaceState) => void
@@ -23,6 +24,12 @@ export const useSessionWorkspaceStore = create<SessionWorkspaceState>((set, get)
   sessions: [],
   workspace: { layout: null, panes: [] },
   addSession: (session) => set({ sessions: [...get().sessions, session] }),
+  upsertSession: (session) =>
+    set({
+      sessions: get().sessions.some((s) => s.id === session.id)
+        ? get().sessions.map((s) => (s.id === session.id ? session : s))
+        : [...get().sessions, session]
+    }),
   updateSession: (id, patch) =>
     set({ sessions: get().sessions.map((s) => (s.id === id ? { ...s, ...patch } : s)) }),
   removeSession: (id) => set({ sessions: get().sessions.filter((s) => s.id !== id) }),

@@ -6,8 +6,8 @@ import { sessionManager } from '../sessions/SessionManager'
 import { formatSessionWindowTitle, joinWindowTitle, pinBrowserWindowTitle } from '../windowTitles'
 import {
   registerSessionWindow,
-  unregisterSessionWindow,
-  getRegisteredSessionWindow
+  getRegisteredSessionWindow,
+  unregisterAllForWindow
 } from './SessionWindowRegistry'
 
 export { getRegisteredSessionWindow as getSessionWindow }
@@ -50,8 +50,8 @@ export function openSessionWindow(sessionId: string): BrowserWindow {
   registerSessionWindow(sessionId, win)
 
   win.on('closed', () => {
-    unregisterSessionWindow(sessionId)
-    void sessionManager.close(sessionId)
+    sessionManager.closeSessionsForWindow(win)
+    unregisterAllForWindow(win)
   })
 
   const query = `?sessionId=${encodeURIComponent(sessionId)}`
@@ -70,6 +70,7 @@ export function closeSessionWindow(sessionId: string): void {
   const win = getRegisteredSessionWindow(sessionId)
   if (!win) return
   win.removeAllListeners('closed')
+  sessionManager.closeSessionsForWindow(win)
+  unregisterAllForWindow(win)
   win.close()
-  unregisterSessionWindow(sessionId)
 }

@@ -28,7 +28,10 @@ import type {
   ReportProgressEvent,
   VaultSettings,
   VaultSettingsUpdate,
-  VaultStatus
+  VaultStatus,
+  ScpTransferRequest,
+  ScpTransferResult,
+  ScpRecentEntry
 } from '../shared/types'
 import type { HostsExportDocument, AppExportDocument } from '@consoleri/core'
 import type { BackupSettings, BackupInfo } from '../shared/types'
@@ -176,6 +179,13 @@ export interface ConsoleriAPI {
     restore: (id: string) => Promise<void>
     delete: (id: string) => Promise<void>
     openFolder: () => Promise<void>
+  }
+  scp: {
+    pickFile: () => Promise<string | null>
+    pickDir: () => Promise<string | null>
+    transfer: (request: ScpTransferRequest) => Promise<ScpTransferResult>
+    getRecent: (profileId: string) => Promise<ScpRecentEntry | null>
+    setRecent: (profileId: string, entry: ScpRecentEntry) => Promise<void>
   }
 }
 
@@ -341,6 +351,14 @@ const consoleri: ConsoleriAPI = {
     restore: (id) => ipcRenderer.invoke(IPC_CHANNELS.backupRestore, id),
     delete: (id) => ipcRenderer.invoke(IPC_CHANNELS.backupDelete, id),
     openFolder: () => ipcRenderer.invoke(IPC_CHANNELS.backupOpenFolder)
+  },
+  scp: {
+    pickFile: () => ipcRenderer.invoke(IPC_CHANNELS.scpPickFile),
+    pickDir: () => ipcRenderer.invoke(IPC_CHANNELS.scpPickDir),
+    transfer: (request) => ipcRenderer.invoke(IPC_CHANNELS.scpTransfer, request),
+    getRecent: (profileId) => ipcRenderer.invoke(IPC_CHANNELS.scpGetRecent, profileId),
+    setRecent: (profileId, entry) =>
+      ipcRenderer.invoke(IPC_CHANNELS.scpSetRecent, profileId, entry)
   }
 }
 

@@ -1,11 +1,12 @@
 import { InlineConfirmButton, type InlineConfirmButtonProps } from './InlineConfirmButton'
 import type { ButtonVariant } from './Button'
+import type { ReactNode } from 'react'
 
 export type ConfirmDeleteButtonProps = Omit<
   InlineConfirmButtonProps,
   'label' | 'confirmLabel' | 'confirmVariant'
 > & {
-  label?: string
+  label?: ReactNode
   confirmLabel?: string
   variant?: ButtonVariant
 }

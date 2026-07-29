@@ -10,10 +10,12 @@ import {
 } from '@consoleri/core'
 import { getDatabase } from '../db/database'
 import type { AppSettings } from '../../shared/types'
+import type { ScpRecentEntry } from '../../shared/types'
 
 const HOST_LIST_VIEW_KEY = 'host_list_view'
 const MAP_VIEW_KEY = 'map_view'
 const APP_SETTINGS_KEY = 'app_settings'
+const SCP_RECENT_KEY = 'scp_recent'
 
 const DEFAULT_APP_SETTINGS: AppSettings = {
   autoOpenConnectionLog: false,
@@ -125,6 +127,36 @@ export class AppPreferencesRepository {
       )
       .run(APP_SETTINGS_KEY, JSON.stringify(merged))
     return merged
+  }
+
+  getScpRecent(profileId: string): ScpRecentEntry | null {
+    const all = this.getAllScpRecent()
+    return all[profileId] ?? null
+  }
+
+  setScpRecent(profileId: string, entry: ScpRecentEntry): void {
+    const all = this.getAllScpRecent()
+    all[profileId] = entry
+    getDatabase()
+      .prepare(
+        `INSERT INTO app_preferences (key, value) VALUES (?, ?)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value`
+      )
+      .run(SCP_RECENT_KEY, JSON.stringify(all))
+  }
+
+  private getAllScpRecent(): Record<string, ScpRecentEntry> {
+    const db = getDatabase()
+    const pref = db
+      .prepare('SELECT value FROM app_preferences WHERE key = ?')
+      .get(SCP_RECENT_KEY) as { value: string } | undefined
+    if (!pref?.value) return {}
+    try {
+      const parsed = JSON.parse(pref.value) as Record<string, ScpRecentEntry>
+      return typeof parsed === 'object' && parsed !== null ? parsed : {}
+    } catch {
+      return {}
+    }
   }
 }
 

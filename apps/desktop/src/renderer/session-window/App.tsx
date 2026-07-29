@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MosaicNode } from 'react-mosaic-component'
 import { nanoid } from 'nanoid'
 import type { OpenSessionRequest, PaneBinding, SessionInfo } from '@shared/types'
 import { SessionMosaic, closeMosaicPane } from '../src/session/mosaic/SessionMosaic'
 import { reconnectMosaicPane, splitMosaicPane } from '../src/session/mosaic/sessionMosaicOps'
+import { applySessionStatusUpdate } from '../src/session/applySessionStatus'
 import { useUxProfileStore } from '../src/stores/uxProfileStore'
 import { releaseTerminal } from '../src/terminal/TerminalPool'
 
@@ -17,6 +18,8 @@ export function SessionWindowApp(): React.JSX.Element {
   const [layout, setLayout] = useState<MosaicNode<string> | null>(null)
   const [panes, setPanes] = useState<PaneBinding[]>([])
   const [sessions, setSessions] = useState<SessionInfo[]>([])
+  const sessionsRef = useRef(sessions)
+  sessionsRef.current = sessions
   const [initError, setInitError] = useState<string | null>(null)
 
   const upsertSession = useCallback((session: SessionInfo): void => {
@@ -72,10 +75,12 @@ export function SessionWindowApp(): React.JSX.Element {
     if (!sessionId) return
 
     const unsubStatus = window.consoleri.sessions.onStatus(({ id, status, error }) => {
-      setSessions((prev) =>
-        prev.map((s) =>
-          s.id === id ? { ...s, status: status as SessionInfo['status'], error } : s
-        )
+      void applySessionStatusUpdate(
+        id,
+        status as SessionInfo['status'],
+        error,
+        () => sessionsRef.current,
+        upsertSession
       )
     })
 
@@ -90,7 +95,7 @@ export function SessionWindowApp(): React.JSX.Element {
       unsubStatus()
       unsubExit()
     }
-  }, [sessionId])
+  }, [sessionId, upsertSession])
 
   const handleSplitPane = async (paneId: string, direction: 'row' | 'column'): Promise<void> => {
     const result = await splitMosaicPane(layout, panes, paneId, direction)

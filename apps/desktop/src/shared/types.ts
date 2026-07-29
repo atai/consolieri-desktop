@@ -188,6 +188,28 @@ export interface DeployKeyResult {
   logId?: string
 }
 
+export type ScpDirection = 'upload' | 'download'
+
+export interface ScpTransferRequest {
+  hostId: string
+  profileId: string
+  direction: ScpDirection
+  sourcePath: string
+  destPath: string
+}
+
+export interface ScpTransferResult {
+  success: boolean
+  message: string
+  bytes?: number
+}
+
+export interface ScpRecentEntry {
+  direction: ScpDirection
+  sourcePath: string
+  destPath: string
+}
+
 export interface PaneBinding {
   paneId: string
   sessionId: string | null
@@ -297,7 +319,12 @@ export const IPC_CHANNELS = {
   backupCreateNow: 'backup:create-now',
   backupRestore: 'backup:restore',
   backupDelete: 'backup:delete',
-  backupOpenFolder: 'backup:open-folder'
+  backupOpenFolder: 'backup:open-folder',
+  scpPickFile: 'scp:pickFile',
+  scpPickDir: 'scp:pickDir',
+  scpTransfer: 'scp:transfer',
+  scpGetRecent: 'scp:getRecent',
+  scpSetRecent: 'scp:setRecent'
 } as const
 
 export interface BackupSettings {

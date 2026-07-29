@@ -3,6 +3,7 @@ import type { ConnectionProfile, Host } from '@shared/types'
 import { ProfileForm } from './ProfileForm'
 import { ProfileListItem } from './ProfileListItem'
 import { PickProfileDialog } from './PickProfileDialog'
+import { ScpDialog } from './ScpDialog'
 
 interface HostProfilesSectionProps {
   host: Host
@@ -21,6 +22,7 @@ export function HostProfilesSection({
   const [showAddForm, setShowAddForm] = useState(false)
   const [showPickDialog, setShowPickDialog] = useState(false)
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null)
+  const [scpProfileId, setScpProfileId] = useState<string | null>(null)
 
   useEffect(() => {
     window.consoleri.hosts.list().then(setHosts)
@@ -44,6 +46,8 @@ export function HostProfilesSection({
     setEditingProfileId(null)
     onProfilesChanged()
   }
+
+  const scpProfile = scpProfileId ? profiles.find((p) => p.id === scpProfileId) : undefined
 
   return (
     <div className="mb-2">
@@ -109,6 +113,7 @@ export function HostProfilesSection({
                 hosts={hosts}
                 compact
                 onConnect={(profileId) => onConnect(host, profileId)}
+                onScp={(profileId) => setScpProfileId(profileId)}
                 onEdit={() => setEditingProfileId(profile.id)}
                 onDelete={() => handleDetach(profile.id)}
                 deleteLabel="Remove"
@@ -125,6 +130,10 @@ export function HostProfilesSection({
           onClose={() => setShowPickDialog(false)}
           onPick={handlePick}
         />
+      )}
+
+      {scpProfile && (
+        <ScpDialog host={host} profile={scpProfile} onClose={() => setScpProfileId(null)} />
       )}
     </div>
   )

@@ -1,7 +1,8 @@
+import { ArrowRightLeft, Pencil, Play, Trash2 } from 'lucide-react'
 import type { ConnectionProfile, Host } from '@shared/types'
 import { profileSummaryLines } from './profileDisplay'
 import { ConfirmDeleteButton } from '../ui/ConfirmDeleteButton'
-import { Button } from '../ui/Button'
+import { IconButton } from '../ui/IconButton'
 
 interface ProfileListItemProps {
   profile: ConnectionProfile
@@ -13,6 +14,7 @@ interface ProfileListItemProps {
   deleteLabel?: string
   confirmDeleteLabel?: string
   onConnect?: (profileId: string) => void
+  onScp?: (profileId: string) => void
   onEdit: () => void
   onDelete: () => void | Promise<void>
   onUnlink?: () => void | Promise<void>
@@ -25,9 +27,9 @@ export function ProfileListItem({
   linkedHosts = [],
   compact = false,
   showLinkedHosts = !compact,
-  deleteLabel = 'Delete',
   confirmDeleteLabel = 'Delete',
   onConnect,
+  onScp,
   onEdit,
   onDelete,
   onUnlink
@@ -62,17 +64,28 @@ export function ProfileListItem({
             {[hostLine, ...summary].filter(Boolean).join(' · ')}
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        <div className="flex shrink-0 items-center gap-0.5">
           {onConnect && (
-            <Button variant="primary" size="sm" onClick={() => onConnect(profile.id)}>
-              Connect
-            </Button>
+            <IconButton
+              variant="primary"
+              size="sm"
+              icon={Play}
+              label="Connect"
+              onClick={() => onConnect(profile.id)}
+            />
           )}
-          <Button variant="default" size="sm" onClick={onEdit}>
-            Edit
-          </Button>
+          {profile.protocol === 'ssh' && onScp && (
+            <IconButton
+              variant="default"
+              size="sm"
+              icon={ArrowRightLeft}
+              label="SCP"
+              onClick={() => onScp(profile.id)}
+            />
+          )}
+          <IconButton variant="default" size="sm" icon={Pencil} label="Edit" onClick={onEdit} />
           <ConfirmDeleteButton
-            label={onUnlink ? 'Remove' : deleteLabel}
+            label={<Trash2 className="h-3.5 w-3.5" aria-hidden />}
             confirmLabel={onUnlink ? 'Remove' : confirmDeleteLabel}
             resetKey={profile.id}
             onConfirm={onUnlink ?? onDelete}
