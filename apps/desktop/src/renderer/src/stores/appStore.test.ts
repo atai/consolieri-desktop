@@ -281,6 +281,15 @@ describe('sessions state management', () => {
     expect(useSessionWorkspaceStore.getState().sessions[0].status).toBe('connected')
   })
 
+  it('upsertSession inserts or replaces a session', async () => {
+    const { useSessionWorkspaceStore } = await freshSessionWorkspaceStore()
+    const session = { id: 's1', protocol: 'ssh' as const, title: 'web01', status: 'connecting' as const, hostId: null, profileId: null }
+    useSessionWorkspaceStore.getState().upsertSession(session)
+    useSessionWorkspaceStore.getState().upsertSession({ ...session, status: 'connected' })
+    expect(useSessionWorkspaceStore.getState().sessions).toHaveLength(1)
+    expect(useSessionWorkspaceStore.getState().sessions[0].status).toBe('connected')
+  })
+
   it('removeSession removes a session by id', async () => {
     const { useSessionWorkspaceStore } = await freshSessionWorkspaceStore()
     const session = { id: 's1', protocol: 'ssh' as const, title: 'web01', status: 'connected' as const, hostId: null, profileId: null }

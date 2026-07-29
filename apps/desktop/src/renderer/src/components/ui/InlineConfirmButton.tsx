@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Button, type ButtonSize, type ButtonVariant } from './Button'
 
 export interface InlineConfirmButtonProps {
-  label: string
+  label: ReactNode
   confirmLabel?: string
   cancelLabel?: string
   onConfirm: () => void | Promise<void>

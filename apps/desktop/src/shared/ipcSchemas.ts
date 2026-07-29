@@ -158,3 +158,21 @@ export const ReportInputSchema = z.object({
   type: z.enum(['connectivity_test', 'inventory', 'custom_test']),
   config: z.record(z.unknown()).optional()
 }).passthrough()
+
+// ── SCP ───────────────────────────────────────────────────────────────────────
+
+export const ScpDirectionSchema = z.enum(['upload', 'download'])
+
+export const ScpTransferRequestSchema = z.object({
+  hostId: Id,
+  profileId: Id,
+  direction: ScpDirectionSchema,
+  sourcePath: NonEmptyString,
+  destPath: NonEmptyString
+})
+
+export const ScpRecentEntrySchema = z.object({
+  direction: ScpDirectionSchema,
+  sourcePath: NonEmptyString,
+  destPath: NonEmptyString
+})

@@ -1,4 +1,4 @@
-import { ipcMain, type BrowserWindow } from 'electron'
+import { BrowserWindow, ipcMain } from 'electron'
 import { z } from 'zod'
 import { IPC_CHANNELS } from '../../shared/types'
 import type { WorkspaceState } from '../../shared/types'
@@ -15,15 +15,26 @@ import { workspaceRepository } from '../hosts/WorkspaceRepository'
 import { listWslDistros } from '../sessions/shellUtils'
 import { openLogWindow } from '../windows/LogWindow'
 import { openSessionWindow } from '../windows/SessionWindow'
+import {
+  isRegisteredSessionWindow,
+  registerSessionWindow
+} from '../windows/SessionWindowRegistry'
 
 export function registerSessionIpc(getWindow: () => BrowserWindow | null): void {
   // ── sessions ───────────────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC_CHANNELS.sessionsOpen, async (_e, rawRequest: unknown, cols?: number, rows?: number) => {
+  ipcMain.handle(IPC_CHANNELS.sessionsOpen, async (event, rawRequest: unknown, cols?: number, rows?: number) => {
     const request = OpenSessionRequestSchema.parse(rawRequest)
     const win = getWindow()
     if (win) sessionManager.setWindow(win)
-    return sessionManager.open(request, cols, rows)
+    const session = sessionManager.open(request, cols, rows)
+
+    const senderWindow = BrowserWindow.fromWebContents(event.sender)
+    if (senderWindow && isRegisteredSessionWindow(senderWindow)) {
+      registerSessionWindow(session.id, senderWindow)
+    }
+
+    return session
   })
 
   ipcMain.handle(IPC_CHANNELS.sessionsClose,
@@ -43,11 +54,17 @@ export function registerSessionIpc(getWindow: () => BrowserWindow | null): void 
 
   ipcMain.handle(IPC_CHANNELS.sessionsList, () => sessionManager.list())
 
-  ipcMain.handle(IPC_CHANNELS.sessionsReconnect,
-    createHandler(Id, (sessionId: string) =>
-      sessionManager.reconnect(sessionId)
-    )
-  )
+  ipcMain.handle(IPC_CHANNELS.sessionsReconnect, async (event, rawSessionId: unknown) => {
+    const sessionId = Id.parse(rawSessionId)
+    const session = await sessionManager.reconnect(sessionId)
+
+    const senderWindow = BrowserWindow.fromWebContents(event.sender)
+    if (session && senderWindow && isRegisteredSessionWindow(senderWindow)) {
+      registerSessionWindow(session.id, senderWindow)
+    }
+
+    return session
+  })
 
   ipcMain.handle(IPC_CHANNELS.sessionsGetConnectRequest,
     createHandler(Id, (sessionId: string) =>

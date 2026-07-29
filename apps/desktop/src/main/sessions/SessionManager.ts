@@ -12,7 +12,11 @@ import type { ITransport } from './Transport'
 import { RdpProxy } from './rdp/RdpProxy'
 import { VncProxy } from './VncProxy'
 import { formatSessionWindowTitle } from '../windowTitles'
-import { getRegisteredSessionWindow } from '../windows/SessionWindowRegistry'
+import {
+  getRegisteredSessionWindow,
+  getSessionIdsForWindow,
+  unregisterSessionWindow
+} from '../windows/SessionWindowRegistry'
 
 interface ManagedSession {
   info: SessionInfo
@@ -246,7 +250,7 @@ export class SessionManager {
     }
   }
 
-  close(sessionId: string): void {
+  close(sessionId: string, options?: { closeWindow?: boolean }): void {
     const session = this.sessions.get(sessionId)
     if (!session) return
     session.transport?.disconnect()
@@ -257,9 +261,22 @@ export class SessionManager {
     this.send(IPC_CHANNELS.sessionExit, { id: sessionId, code: 0 })
 
     const sessionWin = getRegisteredSessionWindow(sessionId)
-    if (sessionWin) {
+    unregisterSessionWindow(sessionId)
+
+    if (!sessionWin) return
+
+    const remainingIds = getSessionIdsForWindow(sessionWin)
+    const shouldCloseWindow = options?.closeWindow ?? remainingIds.length === 0
+    if (shouldCloseWindow) {
       sessionWin.removeAllListeners('closed')
       sessionWin.close()
+    }
+  }
+
+  closeSessionsForWindow(win: BrowserWindow): void {
+    const sessionIds = [...getSessionIdsForWindow(win)]
+    for (const sessionId of sessionIds) {
+      this.close(sessionId, { closeWindow: false })
     }
   }
 

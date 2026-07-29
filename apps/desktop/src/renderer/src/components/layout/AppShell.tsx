@@ -10,6 +10,7 @@ import { useAppStore } from '../../stores/appStore'
 import { useSessionWorkspaceStore } from '../../stores/sessionWorkspaceStore'
 import { usePreferencesStore } from '../../stores/preferencesStore'
 import { useUxProfileStore } from '../../stores/uxProfileStore'
+import { applySessionStatusUpdate } from '../../session/applySessionStatus'
 
 interface AppShellProps {
   workspaceReady: boolean
@@ -17,7 +18,7 @@ interface AppShellProps {
 
 export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
   const { appView, loadMapView, mapViewLoaded, refreshAllHosts } = useAppStore()
-  const { addSession, updateSession, removeSession } = useSessionWorkspaceStore()
+  const { addSession, upsertSession, updateSession, removeSession } = useSessionWorkspaceStore()
   const { settings } = usePreferencesStore()
   const refreshUxProfiles = useUxProfileStore((s) => s.refresh)
   const refreshPreferences = usePreferencesStore((s) => s.refresh)
@@ -47,10 +48,13 @@ export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
       }
     })
     const unsubStatus = window.consoleri.sessions.onStatus(({ id, status, error }) => {
-      updateSession(id, {
-        status: status as 'connecting' | 'connected' | 'disconnected' | 'error',
-        error
-      })
+      void applySessionStatusUpdate(
+        id,
+        status as 'connecting' | 'connected' | 'disconnected' | 'error',
+        error,
+        () => useSessionWorkspaceStore.getState().sessions,
+        upsertSession
+      )
     })
 
     window.consoleri.sessions.list().then((sessions) => {
@@ -61,7 +65,7 @@ export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
       unsubExit()
       unsubStatus()
     }
-  }, [addSession, updateSession, removeSession])
+  }, [addSession, upsertSession, updateSession, removeSession])
 
   if (!bootstrapped) {
     return (

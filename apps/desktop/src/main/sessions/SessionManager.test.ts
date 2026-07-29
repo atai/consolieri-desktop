@@ -60,6 +60,19 @@ vi.mock('../services/CredentialResolver', () => ({
   credentialResolver: { resolvePassword: vi.fn(() => Promise.resolve(null)) }
 }))
 
+const { mockGetRegisteredSessionWindow, mockUnregisterSessionWindow, mockGetSessionIdsForWindow } =
+  vi.hoisted(() => ({
+    mockGetRegisteredSessionWindow: vi.fn(),
+    mockUnregisterSessionWindow: vi.fn(),
+    mockGetSessionIdsForWindow: vi.fn(() => [] as string[])
+  }))
+
+vi.mock('../windows/SessionWindowRegistry', () => ({
+  getRegisteredSessionWindow: mockGetRegisteredSessionWindow,
+  unregisterSessionWindow: mockUnregisterSessionWindow,
+  getSessionIdsForWindow: mockGetSessionIdsForWindow
+}))
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 import { SessionManager } from './SessionManager'
 import { IPC_CHANNELS } from '../../shared/types'
@@ -88,6 +101,8 @@ function makeFakeWindow() {
   const sent: Array<[string, unknown]> = []
   return {
     isDestroyed: () => false,
+    removeAllListeners: vi.fn(),
+    close: vi.fn(),
     webContents: {
       send: vi.fn((channel: string, payload: unknown) => {
         sent.push([channel, payload])
@@ -102,6 +117,8 @@ let manager: SessionManager
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mockGetRegisteredSessionWindow.mockReturnValue(undefined)
+  mockGetSessionIdsForWindow.mockReturnValue([])
   mockLogAppend.mockReturnValue({ id: 'log-1', sessionId: 'sess', level: 'info', message: '', timestamp: '' })
   manager = new SessionManager()
 })
@@ -263,6 +280,47 @@ describe('close', () => {
     await vi.waitFor(() => manager.list().find((s) => s.id === info.id)?.status === 'connected')
     manager.close(info.id)
     expect(transport.disconnect).toHaveBeenCalled()
+  })
+
+  it('does not close the session window while other panes remain', async () => {
+    const sessionWin = {
+      isDestroyed: () => false,
+      removeAllListeners: vi.fn(),
+      close: vi.fn(),
+      webContents: { send: vi.fn() }
+    }
+    mockCreateTransport.mockResolvedValue(makeTransportResult())
+    const first = manager.open({ protocol: 'ssh' })
+    const second = manager.open({ protocol: 'ssh' })
+    await vi.waitFor(() => manager.list().length === 2)
+
+    mockGetRegisteredSessionWindow.mockImplementation((id: string) =>
+      id === first.id || id === second.id ? sessionWin : undefined
+    )
+    mockGetSessionIdsForWindow.mockReturnValue([second.id])
+
+    manager.close(first.id)
+
+    expect(mockUnregisterSessionWindow).toHaveBeenCalledWith(first.id)
+    expect(sessionWin.close).not.toHaveBeenCalled()
+  })
+
+  it('forwards status updates to a registered session window', async () => {
+    const mainWin = makeFakeWindow()
+    const sessionWin = makeFakeWindow()
+    manager.setWindow(mainWin as unknown as Electron.BrowserWindow)
+
+    mockGetRegisteredSessionWindow.mockReturnValue(sessionWin as unknown as Electron.BrowserWindow)
+
+    mockCreateTransport.mockResolvedValue(makeTransportResult())
+    const info = manager.open({ protocol: 'ssh' })
+
+    await vi.waitFor(() =>
+      expect(sessionWin.webContents.send).toHaveBeenCalledWith(
+        IPC_CHANNELS.sessionStatus,
+        expect.objectContaining({ id: info.id, status: 'connected' })
+      )
+    )
   })
 })
 

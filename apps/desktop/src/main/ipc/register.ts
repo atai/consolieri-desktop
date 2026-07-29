@@ -8,6 +8,7 @@ import { registerPreferencesIpc } from './registerPreferencesIpc'
 import { registerReportIpc } from './registerReportIpc'
 import { registerAppIpc } from './registerAppIpc'
 import { registerLocalShellsIpc } from './registerLocalShellsIpc'
+import { registerScpIpc } from './registerScpIpc'
 
 export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void {
   registerHostIpc(getWindow)
@@ -19,4 +20,5 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
   registerPreferencesIpc()
   registerReportIpc(getWindow)
   registerAppIpc()
+  registerScpIpc()
 }
