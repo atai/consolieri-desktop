@@ -6,18 +6,21 @@ cd "$ROOT_DIR"
 
 DRY_RUN=false
 RUN_TESTS=true
+PUSH=true
 BUMP=""
 
 usage() {
   cat <<'EOF'
-Usage: scripts/release.sh [--dry-run] [--no-test] <patch|minor|major>
+Usage: scripts/release.sh [--dry-run] [--no-test] [--no-push] <patch|minor|major>
 
 Bump the semver version, update CHANGELOG.md, sync package.json files,
-create a release commit, and annotate tag vX.Y.Z.
+create a release commit and annotated tag vX.Y.Z, then push both to origin
+(so GitHub Actions Release starts).
 
 Options:
   --dry-run   Show the new version and changelog preview without writing
   --no-test   Skip "npm run test" before release
+  --no-push   Create commit+tag locally only (do not push)
 
 Environment:
   RELEASE_BRANCH   Override the required git branch (default: main or master)
@@ -85,6 +88,10 @@ while [[ $# -gt 0 ]]; do
       RUN_TESTS=false
       shift
       ;;
+    --no-push)
+      PUSH=false
+      shift
+      ;;
     -h | --help)
       usage
       exit 0
@@ -139,6 +146,10 @@ if [[ "$DRY_RUN" == true ]]; then
   echo "  node scripts/bump-version.mjs ${BUMP}"
   echo "  git commit -m \"chore(release): v${NEW_VERSION}\""
   echo "  git tag -a v${NEW_VERSION} -m \"Release v${NEW_VERSION}\""
+  if [[ "$PUSH" == true ]]; then
+    echo "  git push origin HEAD"
+    echo "  git push origin v${NEW_VERSION}"
+  fi
   exit 0
 fi
 
@@ -154,6 +165,15 @@ BRANCH="$(git rev-parse --abbrev-ref HEAD)"
 echo
 echo "Released v${NEW_VERSION}"
 echo
-echo "Push the release commit and tag:"
-echo "  git push origin ${BRANCH}"
-echo "  git push origin v${NEW_VERSION}"
+
+if [[ "$PUSH" == true ]]; then
+  echo "Pushing commit and tag to origin…"
+  git push origin "${BRANCH}"
+  git push origin "v${NEW_VERSION}"
+  echo
+  echo "Release workflow should start from tag v${NEW_VERSION}."
+else
+  echo "Push the release commit and tag:"
+  echo "  git push origin ${BRANCH}"
+  echo "  git push origin v${NEW_VERSION}"
+fi

@@ -69,14 +69,12 @@ Prerequisites:
 # Preview the next version and changelog
 npm run release -- --dry-run patch
 
-# Bump version, update CHANGELOG.md, commit, and tag
-npm run test
+# Bump version, update CHANGELOG.md, commit, tag, and push to origin
+# (pushing the tag starts the GitHub Actions Release workflow)
 npm run release -- patch   # or minor | major
-
-# Publish
-git push origin main
-git push origin vX.Y.Z
 ```
 
+If you only push a version bump to `main` without a tag, the **Tag version** workflow creates `vX.Y.Z` automatically when that tag is missing.
+
 Release commits use the message `chore(release): vX.Y.Z` and are excluded from future changelogs.
-Pass `--no-test` to skip the pre-release test run.
+Pass `--no-test` to skip the pre-release test run, `--no-push` to create commit+tag locally only.
