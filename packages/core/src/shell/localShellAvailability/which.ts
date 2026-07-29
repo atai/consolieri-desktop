@@ -1,6 +1,12 @@
-import * as path from 'node:path'
-
-export type WhichPlatform = 'win32' | 'linux' | 'darwin' | 'aix' | 'freebsd' | 'sunos' | 'openbsd' | 'netbsd'
+export type WhichPlatform =
+  | 'win32'
+  | 'linux'
+  | 'darwin'
+  | 'aix'
+  | 'freebsd'
+  | 'sunos'
+  | 'openbsd'
+  | 'netbsd'
 
 export interface WhichOptions {
   command: string
@@ -29,6 +35,20 @@ function defaultPathext(): string[] {
   return ['.EXE', '.BAT', '.CMD', '.COM', '.PS1']
 }
 
+/** Basename extname for Windows (matches node:path.win32.extname for shell names). */
+function winExtname(command: string): string {
+  const base = command.replace(/^.*[/\\]/, '')
+  const i = base.lastIndexOf('.')
+  return i > 0 ? base.slice(i) : ''
+}
+
+function joinPath(isWin: boolean, dir: string, file: string): string {
+  if (isWin) {
+    return `${dir.replace(/[/\\]+$/, '')}\\${file}`
+  }
+  return `${dir.replace(/\/+$/, '')}/${file}`
+}
+
 export function which({ command, platform, pathEnv, existsSync, pathext }: WhichOptions): string | null {
   if (isPathLike(command)) {
     return existsSync(command) ? command : null
@@ -40,20 +60,16 @@ export function which({ command, platform, pathEnv, existsSync, pathext }: Which
   const isWin = platform === 'win32'
   const pathextList = (pathext ?? defaultPathext()).filter(Boolean)
 
-  const ext = isWin ? path.win32.extname(command) : ''
+  const ext = isWin ? winExtname(command) : ''
   const candidates =
-    isWin && ext === ''
-      ? pathextList.map((e) => `${command}${e}`)
-      : [command]
+    isWin && ext === '' ? pathextList.map((e) => `${command}${e}`) : [command]
 
-  const joinFn = isWin ? path.win32.join : path.posix.join
   for (const dir of dirs) {
     for (const c of candidates) {
-      const full = joinFn(dir, c)
+      const full = joinPath(isWin, dir, c)
       if (existsSync(full)) return full
     }
   }
 
   return null
 }
-

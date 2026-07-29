@@ -1,15 +1,15 @@
-import initIronRdp, { setup } from 'ironrdp-wasm'
+import initIronRdp, * as ironrdpWasm from 'ironrdp-wasm'
 // Resolved via electron.vite.config.ts alias — package exports omit the wasm subpath.
 import wasmUrl from '@ironrdp-wasm-bg?url'
 
 let initPromise: Promise<void> | null = null
 
-export async function ensureIronRdpReady(): Promise<typeof import('ironrdp-wasm')> {
+export async function ensureIronRdpReady(): Promise<typeof ironrdpWasm> {
   if (!initPromise) {
     initPromise = (async () => {
       try {
         await initIronRdp(wasmUrl)
-        setup('info')
+        ironrdpWasm.setup('info')
       } catch (err) {
         initPromise = null
         const message = err instanceof Error ? err.message : String(err)
@@ -19,7 +19,7 @@ export async function ensureIronRdpReady(): Promise<typeof import('ironrdp-wasm'
   }
 
   await initPromise
-  return import('ironrdp-wasm')
+  return ironrdpWasm
 }
 
 export { formatIronError, logRdpError } from './rdpErrors'
