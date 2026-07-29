@@ -112,6 +112,7 @@ function updateChangelog(version) {
     ...prefix,
     '--config',
     CLIFF_CONFIG,
+    '--unreleased',
     '--prepend',
     CHANGELOG_FILE,
     '--tag',
