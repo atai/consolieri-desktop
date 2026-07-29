@@ -7,6 +7,9 @@ import { spawnPnpm } from './pnpm.mjs'
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const desktopDir = join(root, 'apps', 'desktop')
 
+/** Modules that must match the Electron ABI. Skip optional broken natives (e.g. cpu-features). */
+const ONLY_MODULES = 'node-pty'
+
 function electronPresent() {
   return [
     join(root, 'node_modules', 'electron'),
@@ -14,15 +17,17 @@ function electronPresent() {
   ].some(existsSync)
 }
 
-function electronBuilderPresent() {
+function electronRebuildPresent() {
   return [
-    join(root, 'node_modules', 'electron-builder'),
-    join(desktopDir, 'node_modules', 'electron-builder')
+    join(root, 'node_modules', '@electron', 'rebuild'),
+    join(desktopDir, 'node_modules', '@electron', 'rebuild')
   ].some(existsSync)
 }
 
 /**
- * Rebuild native deps against the installed Electron ABI.
+ * Rebuild required native deps against the installed Electron ABI.
+ * Uses `--only` so optional ssh2 deps like `cpu-features` (broken gyp) are skipped.
+ *
  * @param {string} [logPrefix='install-app-deps']
  * @returns {number} exit code (0 on skip/success/warned failure)
  */
@@ -31,31 +36,39 @@ export function installAppDeps(logPrefix = 'install-app-deps') {
     console.log(`[${logPrefix}] electron not installed yet, skipping`)
     return 0
   }
-  if (!electronBuilderPresent()) {
-    console.log(`[${logPrefix}] electron-builder not installed yet, skipping`)
+  if (!electronRebuildPresent()) {
+    console.log(`[${logPrefix}] @electron/rebuild not installed yet, skipping`)
     return 0
   }
 
-  console.log(`[${logPrefix}] electron-builder install-app-deps …`)
+  const args = [
+    'exec',
+    'electron-rebuild',
+    '-f',
+    '-o',
+    ONLY_MODULES,
+    '-m',
+    desktopDir
+  ]
+
+  console.log(`[${logPrefix}] electron-rebuild --only ${ONLY_MODULES} …`)
+
   const pnpmCjs = join(root, 'node_modules', 'pnpm', 'bin', 'pnpm.cjs')
   let status = 1
 
   if (existsSync(pnpmCjs)) {
-    const result = spawnSync(
-      process.execPath,
-      [pnpmCjs, 'exec', 'electron-builder', 'install-app-deps'],
-      { cwd: desktopDir, stdio: 'inherit' }
-    )
+    const result = spawnSync(process.execPath, [pnpmCjs, ...args], {
+      cwd: root,
+      stdio: 'inherit'
+    })
     status = result.status ?? 1
-  }
-
-  if (status !== 0) {
-    status = spawnPnpm(['exec', 'electron-builder', 'install-app-deps'], desktopDir)
+  } else {
+    status = spawnPnpm(args, root)
   }
 
   if (status !== 0) {
     console.warn(
-      `[${logPrefix}] native rebuild failed — terminal/ssh may not work until rebuilt`
+      `[${logPrefix}] native rebuild failed — local terminals may not work until rebuilt`
     )
     return 0
   }

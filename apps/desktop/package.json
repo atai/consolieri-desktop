@@ -5,6 +5,7 @@
   "main": "./out/main/index.js",
   "author": "consoleri",
   "homepage": "https://github.com/consoleri/consoleri",
+  "desktopName": "com.consoleri.desktop",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",

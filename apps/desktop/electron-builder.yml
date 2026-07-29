@@ -49,9 +49,13 @@ linux:
   target:
     - AppImage
     - deb
+  executableName: Consoleri
+  syncDesktopName: true
   maintainer: consoleri
   category: Network
 appImage:
+  artifactName: ${productName}-${version}.${ext}
+deb:
   artifactName: ${productName}-${version}.${ext}
 npmRebuild: false
 publish:
