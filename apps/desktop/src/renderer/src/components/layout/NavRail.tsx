@@ -1,7 +1,8 @@
 import type { AppView } from '@consoleri/core'
 import type { LucideIcon } from 'lucide-react'
-import { LayoutList, Network, Palette, ClipboardCheck } from 'lucide-react'
+import { LayoutList, Network, ClipboardCheck, Settings } from 'lucide-react'
 import { useAppStore } from '../../stores/appStore'
+import { APP_VERSION } from '@shared/appVersion'
 
 const MAIN_NAV_ITEMS: Array<{ view: AppView; label: string; title: string; Icon: LucideIcon }> = [
   { view: 'list', label: 'List', title: 'Host list and sessions', Icon: LayoutList },
@@ -9,11 +10,11 @@ const MAIN_NAV_ITEMS: Array<{ view: AppView; label: string; title: string; Icon:
   { view: 'map', label: 'Map', title: 'Network map', Icon: Network }
 ]
 
-const PROFILE_NAV_ITEM = {
-  view: 'profile' as const,
-  label: 'Profile',
-  title: 'Appearance profiles',
-  Icon: Palette
+const SETTINGS_NAV_ITEM = {
+  view: 'settings' as const,
+  label: 'Settings',
+  title: 'Application settings',
+  Icon: Settings
 }
 
 function NavRailButton({
@@ -68,14 +69,20 @@ export function NavRail(): React.JSX.Element {
         ))}
       </div>
 
-      <div className="mt-auto flex flex-col items-center pt-2">
+      <div className="mt-auto flex flex-col items-center gap-1 pt-2">
         <NavRailButton
-          active={appView === PROFILE_NAV_ITEM.view}
-          label={PROFILE_NAV_ITEM.label}
-          title={PROFILE_NAV_ITEM.title}
-          Icon={PROFILE_NAV_ITEM.Icon}
-          onClick={() => setAppView(PROFILE_NAV_ITEM.view)}
+          active={appView === SETTINGS_NAV_ITEM.view}
+          label={SETTINGS_NAV_ITEM.label}
+          title={SETTINGS_NAV_ITEM.title}
+          Icon={SETTINGS_NAV_ITEM.Icon}
+          onClick={() => setAppView(SETTINGS_NAV_ITEM.view)}
         />
+        <span
+          className="select-all pb-1 pt-0.5 text-[10px] leading-none text-gray-600"
+          title={`Consoleri v${APP_VERSION}`}
+        >
+          v{APP_VERSION}
+        </span>
       </div>
     </nav>
   )

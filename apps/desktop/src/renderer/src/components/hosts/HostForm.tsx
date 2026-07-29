@@ -1,9 +1,19 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { ConnectionProfile, Host, HostInput, HostLogVerbosity, OsType, ProfileInput, UxProfile } from '@shared/types'
-import { HOST_LOG_VERBOSITY_OPTIONS, normalizeHttpEndpoint, parseTagsInput } from '@consoleri/core'
+import { useEffect, useId, useMemo, useState } from 'react'
+import type { ConnectionProfile, Host, HostLogVerbosity, OsType, ProfileInput, UxProfile } from '@shared/types'
+import {
+  HOST_LOG_VERBOSITY_OPTIONS,
+  normalizeHostInput,
+  normalizeHttpEndpoint,
+  parseTagsInput
+} from '@consoleri/core'
+import type { HostFormInput } from '@consoleri/core'
 import { useAppStore } from '../../stores/appStore'
 import { ProfileForm } from '../profiles/ProfileForm'
 import { PickProfileDialog } from '../profiles/PickProfileDialog'
+import {
+  SCROLLABLE_FORM_MAX_HEIGHT_PANEL,
+  ScrollableFormShell
+} from '../ui/ScrollableFormShell'
 import { TagInput } from './TagInput'
 import { HostProfilesSection } from '../profiles/HostProfilesSection'
 import { hostCopyName } from './hostTemplate'
@@ -18,6 +28,7 @@ import {
 interface HostFormProps {
   host?: Host
   copyFrom?: Host
+  compact?: boolean
   initialPendingProfiles?: PendingProfile[]
   profiles?: ConnectionProfile[]
   onProfilesChanged?: () => void
@@ -31,6 +42,7 @@ const OS_OPTIONS: OsType[] = ['windows', 'linux', 'macos', 'unknown']
 export function HostForm({
   host,
   copyFrom,
+  compact = false,
   initialPendingProfiles,
   profiles,
   onProfilesChanged,
@@ -38,6 +50,7 @@ export function HostForm({
   onSave,
   onCancel
 }: HostFormProps): React.JSX.Element {
+  const formId = useId()
   const { allHostTags, allHosts, refreshAllHostTags, refreshAllHosts } = useAppStore()
   const source = host ?? copyFrom
   const isCopyMode = Boolean(copyFrom)
@@ -54,6 +67,7 @@ export function HostForm({
   const [uxProfileId, setUxProfileId] = useState(source?.uxProfileId ?? '')
   const [uxProfiles, setUxProfiles] = useState<UxProfile[]>([])
   const [saving, setSaving] = useState(false)
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
   const [httpEndpointError, setHttpEndpointError] = useState<string | null>(null)
   const [pendingProfiles, setPendingProfiles] = useState<PendingProfile[]>(
     initialPendingProfiles ?? []
@@ -75,6 +89,7 @@ export function HostForm({
 
   const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
+    setFormErrors({})
     setHttpEndpointError(null)
     let normalizedHttpEndpoint: string | null
     try {
@@ -85,7 +100,7 @@ export function HostForm({
     }
     setSaving(true)
     try {
-      const input: HostInput = {
+      const rawHostInput: HostFormInput = {
         name,
         hostname,
         port,
@@ -100,10 +115,16 @@ export function HostForm({
         groupId: copyFrom?.groupId ?? null
       }
 
+      const { errors: hostErrors, normalized: normalizedHost } = normalizeHostInput(rawHostInput)
+      if (!normalizedHost) {
+        setFormErrors(hostErrors)
+        return
+      }
+
       if (host) {
-        await window.consoleri.hosts.update(host.id, input)
+        await window.consoleri.hosts.update(host.id, normalizedHost)
       } else {
-        const savedHost = await window.consoleri.hosts.create(input)
+        const savedHost = await window.consoleri.hosts.create(normalizedHost)
         await applyPendingProfiles(pendingProfiles, savedHost.id)
 
         const sourceDefaultProfileId = copyFrom?.defaultProfileId
@@ -158,13 +179,47 @@ export function HostForm({
     setPendingProfiles((prev) => prev.filter((p) => p.key !== key))
   }
 
+  const formErrorEntries = Object.entries(formErrors)
+
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-3 p-4 text-sm">
-        {!host && (
-          <h3 className="text-base font-medium text-gray-200">
-            {isCopyMode ? 'Copy host' : 'Add host'}
-          </h3>
+      <ScrollableFormShell
+        bordered={!compact}
+        maxHeightClass={compact ? SCROLLABLE_FORM_MAX_HEIGHT_PANEL : undefined}
+        title={
+          !host ? (
+            <span className="text-base font-medium text-gray-200">
+              {isCopyMode ? 'Copy host' : 'Add host'}
+            </span>
+          ) : undefined
+        }
+        footer={
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="rounded px-3 py-1.5 text-gray-400 hover:bg-[#21262d]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              form={formId}
+              disabled={saving}
+              className="rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-500 disabled:opacity-50"
+            >
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        }
+      >
+        <form id={formId} onSubmit={handleSubmit} className="space-y-3 text-sm">
+        {formErrorEntries.length > 0 && (
+          <ul className="rounded border border-red-800 bg-red-950/40 px-3 py-2 text-xs text-red-400">
+            {formErrorEntries.map(([field, msg]) => (
+              <li key={field}>{msg}</li>
+            ))}
+          </ul>
         )}
         <label className="block">
           <span className="text-gray-400">Name</span>
@@ -295,6 +350,7 @@ export function HostForm({
             {showAddProfile && (
               <div className="mb-2 rounded border border-[#30363d] bg-[#0d1117]">
                 <ProfileForm
+                  compact
                   draft
                   excludeProfileIds={excludeProfileIds}
                   onDraftSave={handleDraftProfile}
@@ -398,23 +454,8 @@ export function HostForm({
           />
         )}
 
-        <div className="flex justify-end gap-2 pt-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded px-3 py-1.5 text-gray-400 hover:bg-[#21262d]"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-500 disabled:opacity-50"
-          >
-            {saving ? 'Saving…' : 'Save'}
-          </button>
-        </div>
-      </form>
+        </form>
+      </ScrollableFormShell>
 
       {showPickDialog && !host && (
         <PickProfileDialog

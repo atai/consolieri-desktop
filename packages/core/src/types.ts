@@ -4,6 +4,15 @@ export type AuthMethod = 'password' | 'key' | 'none'
 export type { HostLogVerbosity } from './logging/verbosity'
 import type { HostLogVerbosity } from './logging/verbosity'
 
+export type SessionOpenMode = 'workspace' | 'window'
+
+export interface AppSettings {
+  autoOpenConnectionLog: boolean
+  sessionOpenMode: SessionOpenMode
+}
+export type { HostLogVerbosity } from './logging/verbosity'
+import type { HostLogVerbosity } from './logging/verbosity'
+
 export interface Host {
   id: string
   name: string

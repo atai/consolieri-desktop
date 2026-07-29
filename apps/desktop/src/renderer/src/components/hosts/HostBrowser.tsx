@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { buildHostListSections, type HostListGroupBy, type HostListSortBy } from '@consoleri/core'
 import type { ConnectionProfile, Host } from '@shared/types'
 import { useAppStore } from '../../stores/appStore'
+import { usePreferencesStore } from '../../stores/preferencesStore'
 import { HostActionsMenu } from './HostActionsMenu'
 import { HostForm } from './HostForm'
 import { HostDetailPanel } from './HostDetailPanel'
@@ -44,7 +45,6 @@ export function HostBrowser(): React.JSX.Element {
     sortBy,
     sortDir,
     hostListViewLoaded,
-    settings,
     setSearch,
     setSelectedTags,
     setSelectedGroupId,
@@ -53,14 +53,14 @@ export function HostBrowser(): React.JSX.Element {
     setSortDir,
     toggleCollapsedSection,
     setSelectedHostId,
-    setAutoOpenConnectionLog,
-    setSessionOpenMode,
     loadHostListView,
     refreshHosts,
     refreshAllHostTags,
     refreshAllHosts,
     refreshGroups
   } = useAppStore()
+
+  const { settings, setAutoOpenConnectionLog, setSessionOpenMode } = usePreferencesStore()
 
   const [showForm, setShowForm] = useState(false)
   const [copyFrom, setCopyFrom] = useState<Host | null>(null)
@@ -136,22 +136,41 @@ export function HostBrowser(): React.JSX.Element {
 
   const handleImport = async (): Promise<void> => {
     try {
-      const items = JSON.parse(importJson) as Array<{
-        name: string
-        hostname: string
-        port?: number
-        osType?: Host['osType']
-        tags?: string[]
-        httpEndpoint?: string | null
-      }>
-      await window.consoleri.hosts.import(items)
+      const parsed: unknown = JSON.parse(importJson)
+      await window.consoleri.hosts.import(parsed)
       setImportJson('')
       setShowImport(false)
       refreshHosts()
       refreshAllHostTags()
-    refreshAllHosts()
-    } catch {
-      alert('Invalid JSON')
+      refreshAllHosts()
+      refreshGroups()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Invalid JSON')
+    }
+  }
+
+  const handleImportFromFile = async (): Promise<void> => {
+    try {
+      const result = await window.consoleri.hosts.importFromFile()
+      if ('canceled' in result) return
+      setShowImport(false)
+      refreshHosts()
+      refreshAllHostTags()
+      refreshAllHosts()
+      refreshGroups()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Import failed')
+    }
+  }
+
+  const handleExport = async (): Promise<void> => {
+    try {
+      const result = await window.consoleri.hosts.exportToFile()
+      if ('path' in result) {
+        alert(`Exported to ${result.path}`)
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Export failed')
     }
   }
 
@@ -213,6 +232,7 @@ export function HostBrowser(): React.JSX.Element {
               setShowForm(true)
             }}
             onImport={() => setShowImport(true)}
+            onExport={() => void handleExport()}
             onOpenPowerShell={() => openLocalShell('powershell')}
             onOpenBash={() => openLocalShell('bash')}
             wslDistros={wslDistros}
@@ -332,10 +352,22 @@ export function HostBrowser(): React.JSX.Element {
       <div className="min-h-0 flex-1 overflow-y-auto">
         {showImport && (
           <div className="border-b border-[#30363d] p-2">
+            <button
+              type="button"
+              onClick={handleImportFromFile}
+              className="mb-1 w-full rounded border border-[#30363d] py-1 text-xs text-gray-300 hover:bg-[#21262d]"
+            >
+              Choose file…
+            </button>
+            <div className="my-1 flex items-center gap-1 text-[10px] text-gray-500">
+              <span className="flex-1 border-t border-[#30363d]" />
+              or paste JSON
+              <span className="flex-1 border-t border-[#30363d]" />
+            </div>
             <textarea
               className="w-full rounded border border-[#30363d] bg-[#0d1117] p-2 text-xs text-gray-300"
               rows={4}
-              placeholder='[{"name":"web-01","hostname":"10.0.0.1","tags":["prod"]}]'
+              placeholder='{"version":1,"hosts":[{"name":"web-01","hostname":"10.0.0.1","tags":["prod"]}]}'
               value={importJson}
               onChange={(e) => setImportJson(e.target.value)}
             />

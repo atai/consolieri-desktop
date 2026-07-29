@@ -1,12 +1,20 @@
-import { useEffect, useState } from 'react'
-import { defaultPortForProtocol, isKeyFileRef, keyPathFromRef, makeKeyFileRef, resolveRdpPort } from '@consoleri/core'
-import type { AuthMethod, ConnectionProfile, Host, ProfileInput, Protocol, SshKeyInfo } from '@shared/types'
-import { profileAuthLabel, suggestProfileName } from './profileDisplay'
-import { applyProfileTemplate, profileInputFromTemplate } from './profileTemplate'
+import { useId } from 'react'
+import type { ConnectionProfile, Host, ProfileInput, Protocol } from '@shared/types'
+import {
+  SCROLLABLE_FORM_MAX_HEIGHT_COMPACT,
+  ScrollableFormShell
+} from '../ui/ScrollableFormShell'
+import { useProfileFormState } from './useProfileFormState'
+import { FormField, LabeledSelect, INPUT_CLASS } from './fields/FormField'
+import { AuthFields } from './fields/AuthFields'
+import { SshProfileFields } from './fields/SshProfileFields'
+import { RdpProfileFields } from './fields/RdpProfileFields'
+import { VncProfileFields } from './fields/VncProfileFields'
+import { WslProfileFields } from './fields/WslProfileFields'
 import { PickProfileDialog } from './PickProfileDialog'
 
 const PROTOCOLS: Protocol[] = ['ssh', 'rdp', 'vnc', 'wsl']
-const AUTH_METHODS: AuthMethod[] = ['password', 'key', 'none']
+const AUTH_METHODS = ['password', 'key', 'none'] as const
 
 interface ProfileFormProps {
   linkHostId?: string
@@ -14,6 +22,7 @@ interface ProfileFormProps {
   host?: Host
   hosts?: Host[]
   draft?: boolean
+  compact?: boolean
   excludeProfileIds?: readonly string[]
   onDraftSave?: (input: ProfileInput) => void
   onSave: () => void
@@ -26,434 +35,205 @@ export function ProfileForm({
   host,
   hosts: hostsProp,
   draft = false,
+  compact = false,
   excludeProfileIds,
   onDraftSave,
   onSave,
   onCancel
 }: ProfileFormProps): React.JSX.Element {
-  const isEdit = Boolean(profile)
-  const [hosts, setHosts] = useState<Host[]>(hostsProp ?? [])
-  const [name, setName] = useState(profile?.name ?? '')
-  const [protocol, setProtocol] = useState<Protocol>(profile?.protocol ?? 'ssh')
-  const [username, setUsername] = useState(profile?.username ?? '')
-  const [authMethod, setAuthMethod] = useState<AuthMethod>(profile?.authMethod ?? 'password')
-  const [password, setPassword] = useState('')
-  const [privateKey, setPrivateKey] = useState('')
-  const [selectedKeyPath, setSelectedKeyPath] = useState<string | null>(() => {
-    if (profile?.credentialRef && isKeyFileRef(profile.credentialRef)) {
-      return keyPathFromRef(profile.credentialRef)
-    }
-    return null
+  const formId = useId()
+  const state = useProfileFormState({
+    linkHostId,
+    profile,
+    host,
+    hosts: hostsProp,
+    draft,
+    excludeProfileIds,
+    onDraftSave,
+    onSave
   })
-  const [sshKeys, setSshKeys] = useState<SshKeyInfo[]>([])
-  const [shell, setShell] = useState(profile?.shell ?? '')
-  const [jumpHostId, setJumpHostId] = useState(profile?.jumpHostId ?? '')
-  const [rdpPort, setRdpPort] = useState(resolveRdpPort(profile?.extra))
-  const [vncPort, setVncPort] = useState(
-    (profile?.extra?.vncPort as number) ?? defaultPortForProtocol('vnc')
-  )
-  const [isDefault, setIsDefault] = useState(host?.defaultProfileId === profile?.id)
-  const [cloneFromProfileId, setCloneFromProfileId] = useState<string | null>(null)
-  const [showPickDialog, setShowPickDialog] = useState(false)
-  const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    if (!hostsProp) {
-      window.consoleri.hosts.list().then(setHosts)
-    }
-  }, [hostsProp])
-
-  useEffect(() => {
-    window.consoleri.keys.list().then(setSshKeys)
-  }, [])
-
-  useEffect(() => {
-    if (isEdit || name.trim() !== '') return
-    setName(
-      suggestProfileName({
-        username,
-        protocol,
-        authMethod,
-        jumpHostId,
-        hosts,
-        selectedKeyPath,
-        privateKey,
-        sshKeys
-      })
-    )
-  }, [
+  const {
     isEdit,
-    name,
-    username,
-    protocol,
-    authMethod,
-    jumpHostId,
-    hosts,
-    selectedKeyPath,
-    privateKey,
-    sshKeys
-  ])
+    name, setName,
+    protocol, setProtocol,
+    username, setUsername,
+    authMethod, setAuthMethod,
+    password, setPassword,
+    privateKey, setPrivateKey,
+    selectedKeyPath, setSelectedKeyPath,
+    sshKeys,
+    shell, setShell,
+    jumpHostId, setJumpHostId,
+    rdpPort, setRdpPort,
+    vncPort, setVncPort,
+    isDefault, setIsDefault,
+    cloneFromProfileId,
+    showPickDialog, setShowPickDialog,
+    saving,
+    formErrors,
+    vaultEnabled,
+    secretBackend, setSecretBackend,
+    supportsAuth,
+    jumpHostOptions,
+    handlePickKeyFile,
+    handlePickProfile,
+    handleSubmit
+  } = state
 
-  const supportsAuth = protocol === 'ssh' || protocol === 'rdp' || protocol === 'vnc'
-  const jumpHostOptions = hosts.filter((h) => h.id !== linkHostId)
-
-  const handlePickKeyFile = async (): Promise<void> => {
-    const path = await window.consoleri.keys.pickFile()
-    if (path) setSelectedKeyPath(path)
-  }
-
-  const handlePickProfile = async (sources: ConnectionProfile[]): Promise<void> => {
-    if (sources.length === 0) return
-
-    if (sources.length === 1) {
-      const template = applyProfileTemplate(sources[0]!)
-      setName(template.name)
-      setProtocol(template.protocol)
-      setUsername(template.username)
-      setAuthMethod(template.authMethod)
-      setShell(template.shell)
-      setJumpHostId(template.jumpHostId)
-      setRdpPort(template.rdpPort)
-      setVncPort(template.vncPort)
-      setSelectedKeyPath(template.selectedKeyPath)
-      setPassword('')
-      setPrivateKey('')
-      setCloneFromProfileId(template.cloneFromProfileId)
-      setShowPickDialog(false)
-      return
-    }
-
-    if (draft && onDraftSave) {
-      for (const source of sources) {
-        onDraftSave(profileInputFromTemplate(source))
-      }
-      onSave()
-      setShowPickDialog(false)
-      return
-    }
-
-    if (linkHostId) {
-      setSaving(true)
-      try {
-        for (const source of sources) {
-          await window.consoleri.profiles.create({
-            ...profileInputFromTemplate(source),
-            linkHostId
-          })
-        }
-        onSave()
-        setShowPickDialog(false)
-      } finally {
-        setSaving(false)
-      }
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault()
-    setSaving(true)
-    try {
-      const extra: Record<string, unknown> = { ...(profile?.extra ?? {}) }
-      if (protocol === 'rdp') extra.rdpPort = rdpPort
-      if (protocol === 'vnc') extra.vncPort = vncPort
-
-      const resolvedName =
-        name.trim() ||
-        suggestProfileName({
-          username,
-          protocol,
-          authMethod,
-          jumpHostId,
-          hosts,
-          selectedKeyPath,
-          privateKey,
-          sshKeys
-        })
-
-      const input: ProfileInput = {
-        name: resolvedName,
-        protocol,
-        shell: protocol === 'ssh' || protocol === 'wsl' ? shell.trim() || null : null,
-        username: username || null,
-        authMethod: supportsAuth ? authMethod : 'none',
-        jumpHostId: protocol === 'ssh' && jumpHostId ? jumpHostId : null,
-        extra
-      }
-
-      if (draft && onDraftSave) {
-        const draftInput: ProfileInput = {
-          ...input,
-          password: password || undefined,
-          privateKey: privateKey || undefined
-        }
-        if (authMethod === 'key' && selectedKeyPath) {
-          draftInput.credentialRef = makeKeyFileRef(selectedKeyPath)
-        }
-        if (cloneFromProfileId && !password && !privateKey && !draftInput.credentialRef) {
-          draftInput.cloneFromProfileId = cloneFromProfileId
-        }
-        onDraftSave(draftInput)
-        onSave()
-        return
-      }
-
-      let saved: ConnectionProfile
-      if (isEdit && profile) {
-        const patch: Partial<ProfileInput> = { ...input }
-        if (password) patch.password = password
-        if (privateKey) patch.privateKey = privateKey
-        if (authMethod === 'key' && selectedKeyPath) {
-          patch.credentialRef = makeKeyFileRef(selectedKeyPath)
-        }
-        saved = await window.consoleri.profiles.update(profile.id, patch)
-      } else {
-        const createInput: ProfileInput = {
-          ...input,
-          linkHostId,
-          password: password || undefined,
-          privateKey: privateKey || undefined
-        }
-        if (authMethod === 'key' && selectedKeyPath) {
-          createInput.credentialRef = makeKeyFileRef(selectedKeyPath)
-        }
-        if (cloneFromProfileId && !password && !privateKey && !createInput.credentialRef) {
-          createInput.cloneFromProfileId = cloneFromProfileId
-        }
-        saved = await window.consoleri.profiles.create(createInput)
-      }
-
-      if (linkHostId && host) {
-        if (isDefault && saved.id) {
-          await window.consoleri.hosts.update(linkHostId, { defaultProfileId: saved.id })
-        } else if (!isDefault && host.defaultProfileId === saved.id) {
-          await window.consoleri.hosts.update(linkHostId, { defaultProfileId: null })
-        }
-      }
-
-      onSave()
-    } finally {
-      setSaving(false)
-    }
-  }
+  const errorEntries = Object.entries(formErrors)
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-3 p-3 text-sm">
-        <div className="flex items-center justify-between gap-2">
-          <h4 className="text-sm font-medium text-gray-200">
-            {isEdit ? 'Edit profile' : 'Add profile'}
-          </h4>
-          {!isEdit && (linkHostId || draft) && (
+      <ScrollableFormShell
+        bordered={!compact}
+        maxHeightClass={compact ? SCROLLABLE_FORM_MAX_HEIGHT_COMPACT : undefined}
+        header={
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="text-sm font-medium text-gray-200">
+              {isEdit ? 'Edit profile' : 'Add profile'}
+            </h4>
+            {!isEdit && (linkHostId || draft) && (
+              <button
+                type="button"
+                onClick={() => setShowPickDialog(true)}
+                className="shrink-0 text-xs text-blue-400 hover:underline"
+              >
+                + Pick
+              </button>
+            )}
+          </div>
+        }
+        footer={
+          <div className="flex justify-end gap-2">
             <button
               type="button"
-              onClick={() => setShowPickDialog(true)}
-              className="shrink-0 text-xs text-blue-400 hover:underline"
+              onClick={onCancel}
+              className="rounded px-3 py-1.5 text-gray-400 hover:bg-[#21262d]"
             >
-              + Pick
+              Cancel
             </button>
-          )}
-        </div>
-
-        {cloneFromProfileId && !isEdit && (
-          <p className="text-xs text-gray-500">Settings copied from an existing profile</p>
-        )}
-
-        <label className="block">
-          <span className="text-gray-400">Name</span>
-          <input
-            className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </label>
-
-        <label className="block">
-          <span className="text-gray-400">Protocol</span>
-          {isEdit ? (
-            <div className="mt-1 uppercase text-gray-300">{protocol}</div>
-          ) : (
-            <select
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
-              value={protocol}
-              onChange={(e) => setProtocol(e.target.value as Protocol)}
+            <button
+              type="submit"
+              form={formId}
+              disabled={saving}
+              className="rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-500 disabled:opacity-50"
             >
-              {PROTOCOLS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        }
+      >
+        <form id={formId} onSubmit={handleSubmit} className="space-y-3 text-sm">
+          {errorEntries.length > 0 && (
+            <ul className="rounded border border-red-800 bg-red-950/40 px-3 py-2 text-xs text-red-400">
+              {errorEntries.map(([field, msg]) => (
+                <li key={field}>{msg}</li>
               ))}
-            </select>
+            </ul>
           )}
-        </label>
 
-        <label className="block">
-          <span className="text-gray-400">Username</span>
-          <input
-            className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </label>
+          {cloneFromProfileId && !isEdit && (
+            <p className="text-xs text-gray-500">Settings copied from an existing profile</p>
+          )}
 
-        {supportsAuth && (
-          <label className="block">
-            <span className="text-gray-400">Auth method</span>
-            <select
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
-              value={authMethod}
-              onChange={(e) => setAuthMethod(e.target.value as AuthMethod)}
-            >
-              {AUTH_METHODS.map((m) => (
-                <option key={m} value={m}>
-                  {m}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        {supportsAuth && authMethod === 'password' && (
-          <label className="block">
-            <span className="text-gray-400">Password</span>
-            {isEdit && profile?.credentialRef && (
-              <p className="text-xs text-gray-500">Current: {profileAuthLabel(profile)}</p>
-            )}
+          <FormField label="Name">
             <input
-              type="password"
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={isEdit ? 'Leave blank to keep current' : ''}
+              className={INPUT_CLASS}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
-          </label>
-        )}
+          </FormField>
 
-        {supportsAuth && authMethod === 'key' && (
-          <div className="space-y-2">
-            {isEdit && profile?.credentialRef && (
-              <p className="text-xs text-gray-500">Current: {profileAuthLabel(profile)}</p>
-            )}
-            <label className="block">
-              <span className="text-gray-400">SSH key</span>
+          <FormField label="Protocol">
+            {isEdit ? (
+              <div className="mt-1 uppercase text-gray-300">{protocol}</div>
+            ) : (
               <select
-                className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
-                value={selectedKeyPath ?? ''}
-                onChange={(e) => setSelectedKeyPath(e.target.value || null)}
+                className={INPUT_CLASS}
+                value={protocol}
+                onChange={(e) => setProtocol(e.target.value as Protocol)}
               >
-                <option value="">Select key…</option>
-                {sshKeys.map((k) => (
-                  <option key={k.id} value={k.privateKeyPath}>
-                    {k.label}
-                  </option>
+                {PROTOCOLS.map((p) => (
+                  <option key={p} value={p}>{p}</option>
                 ))}
               </select>
-            </label>
-            <button
-              type="button"
-              onClick={() => void handlePickKeyFile()}
-              className="rounded border border-[#30363d] px-2 py-1 text-xs text-gray-400 hover:bg-[#21262d]"
-            >
-              Pick key file…
-            </button>
-            <label className="block">
-              <span className="text-gray-400">Or paste private key (vault)</span>
-              <textarea
-                className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 font-mono text-xs text-gray-100"
-                rows={3}
-                value={privateKey}
-                onChange={(e) => setPrivateKey(e.target.value)}
-                placeholder={isEdit ? 'Leave blank to keep current' : ''}
-              />
-            </label>
-          </div>
-        )}
+            )}
+          </FormField>
 
-        {(protocol === 'ssh' || protocol === 'wsl') && (
-          <label className="block">
-            <span className="text-gray-400">Shell</span>
+          <FormField label="Username">
             <input
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
-              value={shell}
-              onChange={(e) => setShell(e.target.value)}
-              placeholder="Server default (recommended)"
+              className={INPUT_CLASS}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
-            <span className="mt-1 block text-xs text-gray-500">
-              Leave empty to use the user&apos;s login shell. Specify a path only when a specific shell
-              is required.
-            </span>
-          </label>
-        )}
+          </FormField>
 
-        {protocol === 'ssh' && (
-          <label className="block">
-            <span className="text-gray-400">Jump host (bastion)</span>
-            <select
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
-              value={jumpHostId}
-              onChange={(e) => setJumpHostId(e.target.value)}
+          {supportsAuth && (
+            <LabeledSelect
+              label="Auth method"
+              value={authMethod}
+              onChange={(v) => setAuthMethod(v as typeof AUTH_METHODS[number])}
             >
-              <option value="">None</option>
-              {jumpHostOptions.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name} ({h.hostname})
-                </option>
+              {AUTH_METHODS.map((m) => (
+                <option key={m} value={m}>{m}</option>
               ))}
-            </select>
-          </label>
-        )}
+            </LabeledSelect>
+          )}
 
-        {protocol === 'rdp' && (
-          <label className="block">
-            <span className="text-gray-400">RDP port</span>
-            <input
-              type="number"
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
-              value={rdpPort}
-              onChange={(e) => setRdpPort(Number(e.target.value))}
+          {supportsAuth && (
+            <AuthFields
+              authMethod={authMethod}
+              vaultEnabled={vaultEnabled}
+              secretBackend={secretBackend}
+              password={password}
+              privateKey={privateKey}
+              selectedKeyPath={selectedKeyPath}
+              sshKeys={sshKeys}
+              isEdit={isEdit}
+              profile={profile}
+              onSecretBackendChange={setSecretBackend}
+              onPasswordChange={setPassword}
+              onPrivateKeyChange={setPrivateKey}
+              onSelectedKeyPathChange={setSelectedKeyPath}
+              onPickKeyFile={() => void handlePickKeyFile()}
             />
-          </label>
-        )}
+          )}
 
-        {protocol === 'vnc' && (
-          <label className="block">
-            <span className="text-gray-400">VNC port</span>
-            <input
-              type="number"
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
-              value={vncPort}
-              onChange={(e) => setVncPort(Number(e.target.value))}
+          {protocol === 'ssh' && (
+            <SshProfileFields
+              shell={shell}
+              jumpHostId={jumpHostId}
+              jumpHostOptions={jumpHostOptions}
+              onShellChange={setShell}
+              onJumpHostChange={setJumpHostId}
             />
-          </label>
-        )}
+          )}
 
-        {isEdit && linkHostId && host && (
-          <label className="flex cursor-pointer items-center gap-2 text-gray-400">
-            <input
-              type="checkbox"
-              checked={isDefault}
-              onChange={(e) => setIsDefault(e.target.checked)}
-            />
-            Default profile for this host
-          </label>
-        )}
+          {protocol === 'rdp' && (
+            <RdpProfileFields rdpPort={rdpPort} onRdpPortChange={setRdpPort} />
+          )}
 
-        <div className="flex justify-end gap-2 pt-1">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded px-3 py-1.5 text-gray-400 hover:bg-[#21262d]"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-500 disabled:opacity-50"
-          >
-            {saving ? 'Saving…' : 'Save'}
-          </button>
-        </div>
-      </form>
+          {protocol === 'vnc' && (
+            <VncProfileFields vncPort={vncPort} onVncPortChange={setVncPort} />
+          )}
+
+          {protocol === 'wsl' && (
+            <WslProfileFields shell={shell} onShellChange={setShell} />
+          )}
+
+          {isEdit && linkHostId && host && (
+            <label className="flex cursor-pointer items-center gap-2 text-gray-400">
+              <input
+                type="checkbox"
+                checked={isDefault}
+                onChange={(e) => setIsDefault(e.target.checked)}
+              />
+              Default profile for this host
+            </label>
+          )}
+        </form>
+      </ScrollableFormShell>
 
       {showPickDialog && (linkHostId || draft) && (
         <PickProfileDialog

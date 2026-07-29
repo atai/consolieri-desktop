@@ -5,13 +5,27 @@ import { join } from 'path'
 import { nanoid } from 'nanoid'
 import {
   BUILTIN_UX_PROFILE_ID,
-  createBuiltinUxProfile,
-  DEFAULT_CHROME_APPEARANCE,
-  MAX_SIDEBAR_WIDTH,
-  MIN_SIDEBAR_WIDTH
+  createBuiltinUxProfile
 } from '@consoleri/core'
 
 let db: DatabaseSync | null = null
+
+// Exposed only for tests — production code never calls these.
+export function setDatabaseForTest(dbOrPath: ':memory:' | string = ':memory:'): void {
+  if (db) {
+    db.close()
+    db = null
+  }
+  db = new DatabaseSync(dbOrPath)
+  initializeDatabase(db)
+}
+
+export function resetDatabaseForTest(): void {
+  if (db) {
+    db.close()
+    db = null
+  }
+}
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS host_groups (
@@ -109,6 +123,27 @@ CREATE TABLE IF NOT EXISTS custom_ssh_keys (
 );
 `
 
+function initializeDatabase(database: DatabaseSync): void {
+  database.exec('PRAGMA journal_mode = WAL')
+  database.exec('PRAGMA foreign_keys = ON')
+  database.exec(SCHEMA)
+  migrateHostProfileLinks(database)
+  migrateHostLogVerbosity(database)
+  migrateUxProfiles(database)
+  migrateHostRelations(database)
+  migrateHostHttpEndpoint(database)
+  migrateReports(database)
+
+  const workspaceCount = database.prepare('SELECT COUNT(*) as c FROM workspaces').get() as {
+    c: number
+  }
+  if (workspaceCount.c === 0) {
+    database
+      .prepare(`INSERT INTO workspaces (id, name, layout_json, is_last_active) VALUES (?, ?, ?, 1)`)
+      .run(nanoid(), 'Default', 'null')
+  }
+}
+
 export function getDatabase(): DatabaseSync {
   if (db) return db
 
@@ -119,22 +154,7 @@ export function getDatabase(): DatabaseSync {
 
   const dbPath = join(userData, 'consoleri.db')
   db = new DatabaseSync(dbPath)
-  db.exec('PRAGMA journal_mode = WAL')
-  db.exec('PRAGMA foreign_keys = ON')
-  db.exec(SCHEMA)
-  migrateHostProfileLinks(db)
-  migrateHostLogVerbosity(db)
-  migrateUxProfiles(db)
-  migrateHostRelations(db)
-  migrateHostHttpEndpoint(db)
-  migrateReports(db)
-
-  const workspaceCount = db.prepare('SELECT COUNT(*) as c FROM workspaces').get() as { c: number }
-  if (workspaceCount.c === 0) {
-    db.prepare(
-      `INSERT INTO workspaces (id, name, layout_json, is_last_active) VALUES (?, ?, ?, 1)`
-    ).run(nanoid(), 'Default', 'null')
-  }
+  initializeDatabase(db)
 
   return db
 }
@@ -240,24 +260,3 @@ function migrateReports(database: DatabaseSync): void {
   `)
 }
 
-export function migrateSidebarWidthFromRenderer(width: number): void {
-  const clamped = Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, width))
-  if (clamped === DEFAULT_CHROME_APPEARANCE.sidebarWidth) return
-  const db = getDatabase()
-  const row = db.prepare('SELECT settings_json FROM ux_profiles WHERE id = ?').get(BUILTIN_UX_PROFILE_ID) as
-    | { settings_json: string }
-    | undefined
-  if (!row) return
-  const settings = JSON.parse(row.settings_json) as {
-    terminal?: unknown
-    chrome?: { sidebarWidth?: number }
-  }
-  if (settings.chrome?.sidebarWidth === clamped) return
-  settings.chrome = { ...DEFAULT_CHROME_APPEARANCE, ...settings.chrome, sidebarWidth: clamped }
-  const now = new Date().toISOString()
-  db.prepare(`UPDATE ux_profiles SET settings_json = ?, updated_at = ? WHERE id = ?`).run(
-    JSON.stringify(settings),
-    now,
-    BUILTIN_UX_PROFILE_ID
-  )
-}

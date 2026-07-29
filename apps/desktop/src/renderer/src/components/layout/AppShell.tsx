@@ -4,9 +4,11 @@ import { ResizableSidebar } from './ResizableSidebar'
 import { Sidebar } from './Sidebar'
 import { MosaicWorkspace } from '../workspace/MosaicWorkspace'
 import { HostMapView } from '../map/HostMapView'
-import { UxProfileManager } from '../ux/UxProfileManager'
 import { ReportsManager } from '../reports/ReportsManager'
+import { SettingsPanel } from '../settings/SettingsPanel'
 import { useAppStore } from '../../stores/appStore'
+import { useSessionWorkspaceStore } from '../../stores/sessionWorkspaceStore'
+import { usePreferencesStore } from '../../stores/preferencesStore'
 import { useUxProfileStore } from '../../stores/uxProfileStore'
 
 interface AppShellProps {
@@ -14,23 +16,18 @@ interface AppShellProps {
 }
 
 export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
-  const {
-    appView,
-    loadMapView,
-    mapViewLoaded,
-    refreshAllHosts,
-    addSession,
-    updateSession,
-    removeSession,
-    settings
-  } = useAppStore()
+  const { appView, loadMapView, mapViewLoaded, refreshAllHosts } = useAppStore()
+  const { addSession, updateSession, removeSession } = useSessionWorkspaceStore()
+  const { settings } = usePreferencesStore()
   const refreshUxProfiles = useUxProfileStore((s) => s.refresh)
+  const refreshPreferences = usePreferencesStore((s) => s.refresh)
   const [bootstrapped, setBootstrapped] = useState(false)
 
   useEffect(() => {
     void loadMapView().then(() => setBootstrapped(true))
     void refreshUxProfiles()
-  }, [loadMapView, refreshUxProfiles])
+    void refreshPreferences()
+  }, [loadMapView, refreshUxProfiles, refreshPreferences])
 
   useEffect(() => {
     if (!mapViewLoaded) return
@@ -41,7 +38,7 @@ export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
 
   useEffect(() => {
     const unsubExit = window.consoleri.sessions.onExit(({ id }) => {
-      const { workspace } = useAppStore.getState()
+      const { workspace } = useSessionWorkspaceStore.getState()
       const inWorkspace = workspace.panes.some((p) => p.sessionId === id)
       if (inWorkspace) {
         updateSession(id, { status: 'disconnected' })
@@ -107,9 +104,9 @@ export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
           <ReportsManager />
         </main>
       )}
-      {appView === 'profile' && (
+      {appView === 'settings' && (
         <main className="min-h-0 min-w-0 flex-1 overflow-hidden bg-[#161b22]">
-          <UxProfileManager />
+          <SettingsPanel />
         </main>
       )}
     </div>

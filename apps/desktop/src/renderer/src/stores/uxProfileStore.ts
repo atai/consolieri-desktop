@@ -3,8 +3,7 @@ import { resolveUxProfile } from '@consoleri/core'
 import type { TerminalAppearance, UxProfile } from '@consoleri/core'
 import { applyAppearanceToAll } from '../terminal/TerminalPool'
 import { useAppStore } from './appStore'
-
-const LEGACY_SIDEBAR_WIDTH_KEY = 'consoleri.sidebarWidth'
+import { useSessionWorkspaceStore } from './sessionWorkspaceStore'
 
 interface UxProfileState {
   profiles: UxProfile[]
@@ -19,7 +18,7 @@ interface UxProfileState {
 }
 
 function applyProfilesToOpenTerminals(): void {
-  const { sessions } = useAppStore.getState()
+  const { sessions } = useSessionWorkspaceStore.getState()
   const resolveTerminalForHost = useUxProfileStore.getState().resolveTerminalForHost
   applyAppearanceToAll(sessions, resolveTerminalForHost)
 }
@@ -29,19 +28,6 @@ export const useUxProfileStore = create<UxProfileState>((set, get) => ({
   activeId: null,
   loaded: false,
   refresh: async () => {
-    try {
-      const legacyRaw = localStorage.getItem(LEGACY_SIDEBAR_WIDTH_KEY)
-      if (legacyRaw) {
-        const legacyWidth = Number(legacyRaw)
-        if (Number.isFinite(legacyWidth)) {
-          await window.consoleri.uxProfiles.migrateSidebarWidth(legacyWidth)
-        }
-        localStorage.removeItem(LEGACY_SIDEBAR_WIDTH_KEY)
-      }
-    } catch {
-      /* ignore legacy migration errors */
-    }
-
     const [profiles, active] = await Promise.all([
       window.consoleri.uxProfiles.list(),
       window.consoleri.uxProfiles.getActive()

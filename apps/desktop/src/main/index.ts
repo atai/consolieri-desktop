@@ -1,11 +1,23 @@
 import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { getDataDir } from './paths'
 import { APP_NAME, appIconPath } from './appBranding'
 import { getDatabase, closeDatabase } from './db/database'
 import { registerIpcHandlers } from './ipc/register'
-import { sessionManager } from './sessions/SessionManager'
+import { sessionManager } from './compositionRoot'
+import { backupService } from './backup/backupServiceInstance'
 
+// Must be called before app.whenReady() and before any call to app.getPath('userData').
+// This redirects ALL Electron storage (SQLite, localStorage, IndexedDB, cookies)
+// to our custom data directory so dev and packaged builds never share state.
+app.setPath('userData', getDataDir())
+
+const gotSingleInstanceLock = app.requestSingleInstanceLock()
+
+if (!gotSingleInstanceLock) {
+  app.quit()
+} else {
 let mainWindow: BrowserWindow | null = null
 
 function createWindow(): void {
@@ -45,6 +57,14 @@ function createWindow(): void {
   sessionManager.setWindow(mainWindow)
 }
 
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    if (!mainWindow.isVisible()) mainWindow.show()
+    mainWindow.focus()
+  }
+})
+
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.consoleri.desktop')
   if (process.platform === 'darwin') {
@@ -57,6 +77,7 @@ app.whenReady().then(() => {
   })
 
   registerIpcHandlers(() => mainWindow)
+  backupService.startScheduler()
 
   createWindow()
 
@@ -66,6 +87,7 @@ app.whenReady().then(() => {
 })
 
 app.on('before-quit', () => {
+  backupService.stopScheduler()
   sessionManager.closeAll()
   closeDatabase()
 })
@@ -75,3 +97,4 @@ app.on('window-all-closed', () => {
     app.quit()
   }
 })
+}

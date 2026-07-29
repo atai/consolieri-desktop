@@ -1,10 +1,12 @@
 export type OsType = 'windows' | 'linux' | 'macos' | 'unknown'
 export type Protocol = 'ssh' | 'local_pty' | 'rdp' | 'vnc' | 'wsl'
 export type AuthMethod = 'password' | 'key' | 'none'
+
+export type { SessionOpenMode, AppSettings } from '@consoleri/core'
 export type SessionStatus = 'connecting' | 'connected' | 'disconnected' | 'error'
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
-export type { HostLogVerbosity, UxProfile, UxProfileInput, TerminalAppearance, ChromeAppearance, HostListViewSettings, HostListGroupBy, HostListSortBy, HostListSortDir, HostListGroupFilter, HostListSection, MapViewSettings, MapViewMode, AppView, Report, ReportInput, ReportType, ReportConfig, ReportResult, ReportHostEntry, ReportHostStatus, ConnectivityTestConfig, ConnectivityTestEntry, ConnectivityTestResult, ConnectivityTestHostResult, InventoryConfig, InventoryEntry, InventoryResult, InventoryHostResult, InventoryHostData, CustomTestConfig, CustomTestEntry, CustomTestCommand, CustomTestResult, CustomTestHostResult, CustomTestCommandResult, ReportProgressEvent } from '@consoleri/core'
-import type { HostLogVerbosity } from '@consoleri/core'
+export type { HostLogVerbosity, UxProfile, UxProfileInput, TerminalAppearance, ChromeAppearance, HostListViewSettings, HostListGroupBy, HostListSortBy, HostListSortDir, HostListGroupFilter, HostListSection, MapViewSettings, MapViewMode, AppView, Report, ReportInput, ReportType, ReportConfig, ReportResult, ReportHostEntry, ReportHostStatus, ConnectivityTestConfig, ConnectivityTestEntry, ConnectivityTestResult, ConnectivityTestHostResult, InventoryConfig, InventoryEntry, InventoryResult, InventoryHostResult, InventoryHostData, CustomTestConfig, CustomTestEntry, CustomTestCommand, CustomTestResult, CustomTestHostResult, CustomTestCommandResult, ReportProgressEvent, VaultSettings, VaultSettingsUpdate, VaultStatus, VaultAuthMethod, SecretBackendKind } from '@consoleri/core'
+import type { HostLogVerbosity, SecretBackendKind } from '@consoleri/core'
 
 export interface LogEntry {
   id: string
@@ -134,6 +136,7 @@ export interface ProfileInput {
   extra?: Record<string, unknown>
   password?: string
   privateKey?: string
+  secretBackend?: SecretBackendKind
   cloneFromProfileId?: string
   linkHostId?: string
 }
@@ -205,6 +208,9 @@ export const IPC_CHANNELS = {
   hostsUpdate: 'hosts:update',
   hostsDelete: 'hosts:delete',
   hostsImport: 'hosts:import',
+  hostsImportFromFile: 'hosts:import-from-file',
+  hostsExport: 'hosts:export',
+  hostsExportToFile: 'hosts:export-to-file',
   groupsList: 'hosts:groups:list',
   groupsCreate: 'hosts:groups:create',
   profilesList: 'hosts:profiles:list',
@@ -258,11 +264,12 @@ export const IPC_CHANNELS = {
   uxProfilesListHosts: 'uxProfiles:list-hosts',
   uxProfilesLinkHost: 'uxProfiles:link-host',
   uxProfilesUnlinkHost: 'uxProfiles:unlink-host',
-  uxProfilesMigrateSidebarWidth: 'uxProfiles:migrate-sidebar-width',
   preferencesGetHostListView: 'preferences:get-host-list-view',
   preferencesSetHostListView: 'preferences:set-host-list-view',
   preferencesGetMapView: 'preferences:get-map-view',
   preferencesSetMapView: 'preferences:set-map-view',
+  preferencesGetAppSettings: 'preferences:get-app-settings',
+  preferencesSetAppSettings: 'preferences:set-app-settings',
   reportsList: 'reports:list',
   reportsGet: 'reports:get',
   reportsCreate: 'reports:create',
@@ -270,8 +277,39 @@ export const IPC_CHANNELS = {
   reportsDelete: 'reports:delete',
   reportsRun: 'reports:run',
   reportsOpenWindow: 'reports:openWindow',
+  reportsSaveHtml: 'reports:saveHtml',
   reportProgress: 'report:progress',
   reportUpdated: 'report:updated',
   clipboardReadText: 'clipboard:readText',
-  clipboardWriteText: 'clipboard:writeText'
+  clipboardWriteText: 'clipboard:writeText',
+  vaultGetSettings: 'vault:getSettings',
+  vaultUpdateSettings: 'vault:updateSettings',
+  vaultTestConnection: 'vault:testConnection',
+  vaultLogin: 'vault:login',
+  vaultLogout: 'vault:logout',
+  vaultStatus: 'vault:status',
+  appExport: 'app:export',
+  appExportToFile: 'app:export-to-file',
+  appImportFromFile: 'app:import-from-file',
+  backupGetSettings: 'backup:get-settings',
+  backupUpdateSettings: 'backup:update-settings',
+  backupList: 'backup:list',
+  backupCreateNow: 'backup:create-now',
+  backupRestore: 'backup:restore',
+  backupDelete: 'backup:delete',
+  backupOpenFolder: 'backup:open-folder'
 } as const
+
+export interface BackupSettings {
+  enabled: boolean
+  maxCount: number
+  intervalMinutes: number
+  lastBackupAt: string | null
+}
+
+export interface BackupInfo {
+  id: string
+  filename: string
+  createdAt: string
+  sizeBytes: number
+}

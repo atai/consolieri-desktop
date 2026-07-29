@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { IPC_CHANNELS } from '../shared/types'
 import type {
+  AppSettings,
   Host,
   HostFilter,
   HostGroup,
@@ -24,8 +25,13 @@ import type {
   Report,
   ReportInput,
   ReportResult,
-  ReportProgressEvent
+  ReportProgressEvent,
+  VaultSettings,
+  VaultSettingsUpdate,
+  VaultStatus
 } from '../shared/types'
+import type { HostsExportDocument, AppExportDocument } from '@consoleri/core'
+import type { BackupSettings, BackupInfo } from '../shared/types'
 
 export interface ConsoleriAPI {
   hosts: {
@@ -34,7 +40,10 @@ export interface ConsoleriAPI {
     create: (input: HostInput) => Promise<Host>
     update: (id: string, input: Partial<HostInput>) => Promise<Host>
     delete: (id: string) => Promise<void>
-    import: (items: HostInput[]) => Promise<Host[]>
+    import: (payload: unknown) => Promise<Host[]>
+    importFromFile: () => Promise<{ hosts: Host[] } | { canceled: true }>
+    export: () => Promise<HostsExportDocument>
+    exportToFile: () => Promise<{ path: string } | { canceled: true }>
   }
   groups: {
     list: () => Promise<HostGroup[]>
@@ -122,7 +131,6 @@ export interface ConsoleriAPI {
     listHosts: (profileId: string) => Promise<Host[]>
     linkHost: (hostId: string, profileId: string) => Promise<void>
     unlinkHost: (hostId: string) => Promise<void>
-    migrateSidebarWidth: (width: number) => Promise<void>
   }
   clipboard: {
     readText: () => Promise<string>
@@ -133,6 +141,8 @@ export interface ConsoleriAPI {
     setHostListView: (patch: Partial<HostListViewSettings>) => Promise<HostListViewSettings>
     getMapView: () => Promise<MapViewSettings>
     setMapView: (patch: Partial<MapViewSettings>) => Promise<MapViewSettings>
+    getAppSettings: () => Promise<AppSettings>
+    setAppSettings: (patch: Partial<AppSettings>) => Promise<AppSettings>
   }
   reports: {
     list: () => Promise<Report[]>
@@ -145,16 +155,41 @@ export interface ConsoleriAPI {
     onProgress: (cb: (event: ReportProgressEvent) => void) => () => void
     onUpdated: (cb: (report: Report) => void) => () => void
   }
+  vault: {
+    getSettings: () => Promise<VaultSettings>
+    updateSettings: (patch: VaultSettingsUpdate) => Promise<VaultSettings>
+    testConnection: () => Promise<VaultStatus>
+    getStatus: () => Promise<VaultStatus>
+    login: () => Promise<void>
+    logout: () => Promise<void>
+  }
+  app: {
+    export: () => Promise<AppExportDocument>
+    exportToFile: () => Promise<{ path: string } | { canceled: true }>
+    importFromFile: () => Promise<void>
+  }
+  backup: {
+    getSettings: () => Promise<BackupSettings>
+    updateSettings: (patch: Partial<BackupSettings>) => Promise<BackupSettings>
+    list: () => Promise<BackupInfo[]>
+    createNow: () => Promise<BackupInfo>
+    restore: (id: string) => Promise<void>
+    delete: (id: string) => Promise<void>
+    openFolder: () => Promise<void>
+  }
 }
 
 const consoleri: ConsoleriAPI = {
   hosts: {
-    list: (filter) => ipcRenderer.invoke(IPC_CHANNELS.hostsList, filter),
+    list: (filter) => ipcRenderer.invoke(IPC_CHANNELS.hostsList, filter ?? {}),
     get: (id) => ipcRenderer.invoke(IPC_CHANNELS.hostsGet, id),
     create: (input) => ipcRenderer.invoke(IPC_CHANNELS.hostsCreate, input),
     update: (id, input) => ipcRenderer.invoke(IPC_CHANNELS.hostsUpdate, id, input),
     delete: (id) => ipcRenderer.invoke(IPC_CHANNELS.hostsDelete, id),
-    import: (items) => ipcRenderer.invoke(IPC_CHANNELS.hostsImport, items)
+    import: (payload) => ipcRenderer.invoke(IPC_CHANNELS.hostsImport, payload),
+    importFromFile: () => ipcRenderer.invoke(IPC_CHANNELS.hostsImportFromFile),
+    export: () => ipcRenderer.invoke(IPC_CHANNELS.hostsExport),
+    exportToFile: () => ipcRenderer.invoke(IPC_CHANNELS.hostsExportToFile)
   },
   groups: {
     list: () => ipcRenderer.invoke(IPC_CHANNELS.groupsList),
@@ -252,9 +287,7 @@ const consoleri: ConsoleriAPI = {
     listHosts: (profileId) => ipcRenderer.invoke(IPC_CHANNELS.uxProfilesListHosts, profileId),
     linkHost: (hostId, profileId) =>
       ipcRenderer.invoke(IPC_CHANNELS.uxProfilesLinkHost, hostId, profileId),
-    unlinkHost: (hostId) => ipcRenderer.invoke(IPC_CHANNELS.uxProfilesUnlinkHost, hostId),
-    migrateSidebarWidth: (width) =>
-      ipcRenderer.invoke(IPC_CHANNELS.uxProfilesMigrateSidebarWidth, width)
+    unlinkHost: (hostId) => ipcRenderer.invoke(IPC_CHANNELS.uxProfilesUnlinkHost, hostId)
   },
   clipboard: {
     readText: () => ipcRenderer.invoke(IPC_CHANNELS.clipboardReadText),
@@ -264,7 +297,9 @@ const consoleri: ConsoleriAPI = {
     getHostListView: () => ipcRenderer.invoke(IPC_CHANNELS.preferencesGetHostListView),
     setHostListView: (patch) => ipcRenderer.invoke(IPC_CHANNELS.preferencesSetHostListView, patch),
     getMapView: () => ipcRenderer.invoke(IPC_CHANNELS.preferencesGetMapView),
-    setMapView: (patch) => ipcRenderer.invoke(IPC_CHANNELS.preferencesSetMapView, patch)
+    setMapView: (patch) => ipcRenderer.invoke(IPC_CHANNELS.preferencesSetMapView, patch),
+    getAppSettings: () => ipcRenderer.invoke(IPC_CHANNELS.preferencesGetAppSettings),
+    setAppSettings: (patch) => ipcRenderer.invoke(IPC_CHANNELS.preferencesSetAppSettings, patch)
   },
   reports: {
     list: () => ipcRenderer.invoke(IPC_CHANNELS.reportsList),
@@ -284,6 +319,28 @@ const consoleri: ConsoleriAPI = {
       ipcRenderer.on(IPC_CHANNELS.reportUpdated, listener)
       return () => ipcRenderer.removeListener(IPC_CHANNELS.reportUpdated, listener)
     }
+  },
+  vault: {
+    getSettings: () => ipcRenderer.invoke(IPC_CHANNELS.vaultGetSettings),
+    updateSettings: (patch) => ipcRenderer.invoke(IPC_CHANNELS.vaultUpdateSettings, patch),
+    testConnection: () => ipcRenderer.invoke(IPC_CHANNELS.vaultTestConnection),
+    getStatus: () => ipcRenderer.invoke(IPC_CHANNELS.vaultStatus),
+    login: () => ipcRenderer.invoke(IPC_CHANNELS.vaultLogin),
+    logout: () => ipcRenderer.invoke(IPC_CHANNELS.vaultLogout)
+  },
+  app: {
+    export: () => ipcRenderer.invoke(IPC_CHANNELS.appExport),
+    exportToFile: () => ipcRenderer.invoke(IPC_CHANNELS.appExportToFile),
+    importFromFile: () => ipcRenderer.invoke(IPC_CHANNELS.appImportFromFile)
+  },
+  backup: {
+    getSettings: () => ipcRenderer.invoke(IPC_CHANNELS.backupGetSettings),
+    updateSettings: (patch) => ipcRenderer.invoke(IPC_CHANNELS.backupUpdateSettings, patch),
+    list: () => ipcRenderer.invoke(IPC_CHANNELS.backupList),
+    createNow: () => ipcRenderer.invoke(IPC_CHANNELS.backupCreateNow),
+    restore: (id) => ipcRenderer.invoke(IPC_CHANNELS.backupRestore, id),
+    delete: (id) => ipcRenderer.invoke(IPC_CHANNELS.backupDelete, id),
+    openFolder: () => ipcRenderer.invoke(IPC_CHANNELS.backupOpenFolder)
   }
 }
 

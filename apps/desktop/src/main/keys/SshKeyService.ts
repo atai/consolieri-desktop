@@ -13,7 +13,8 @@ import { labelFromKeyPath, makeKeyFileRef, publicKeyPathForPrivate } from '@cons
 import type { AssignableHost, SshKeyInfo } from '../../shared/types'
 import { getDatabase } from '../db/database'
 import { hostRepository } from '../hosts/HostRepository'
-import { credentialVault } from '../hosts/CredentialVault'
+import { profileRepository } from '../hosts/ProfileRepository'
+import { secretBackendService } from '../secrets/SecretBackendService'
 
 function readTextIfExists(path: string): string | null {
   if (!existsSync(path)) return null
@@ -185,7 +186,7 @@ export class SshKeyService {
     const content = readTextIfExists(keyPath)
     if (!content) throw new Error(`Key file not found: ${keyPath}`)
 
-    await hostRepository.updateProfile(profileId, {
+    await profileRepository.updateProfile(profileId, {
       authMethod: 'key',
       credentialRef: makeKeyFileRef(keyPath)
     })
@@ -196,7 +197,7 @@ export class SshKeyService {
     const result: AssignableHost[] = []
 
     for (const host of hosts) {
-      const profiles = hostRepository
+      const profiles = profileRepository
         .listProfiles(host.id)
         .filter((p) => p.protocol === 'ssh')
         .map((p) => ({
@@ -220,7 +221,7 @@ export class SshKeyService {
   }
 
   async storePassphrase(keyPath: string, passphrase: string): Promise<void> {
-    await credentialVault.store(`keyfile:${keyPath}:passphrase`, passphrase)
+    await secretBackendService.store(`keyfile:${keyPath}:passphrase`, passphrase)
   }
 }
 

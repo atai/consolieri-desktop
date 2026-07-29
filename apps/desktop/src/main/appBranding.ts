@@ -1,7 +1,16 @@
-import { join } from 'path'
+import winIcon from '../../build/icon.ico?asset'
+import macIcon from '../../build/icon.icns?asset'
+import linuxIcon from '../../build/icon.png?asset'
 
-export const APP_NAME = 'Consoleri'
+export { APP_NAME } from './appName'
 
 export function appIconPath(): string {
-  return join(__dirname, '../../build/icon.png')
+  switch (process.platform) {
+    case 'win32':
+      return winIcon
+    case 'darwin':
+      return macIcon
+    default:
+      return linuxIcon
+  }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@consoleri/desktop",
-  "version": "0.1.0",
+  "version": "0.4.6",
   "description": "Consoleri desktop — SSH, shell, RDP, VNC host manager",
   "main": "./out/main/index.js",
   "author": "consoleri",
@@ -13,7 +13,8 @@
     "typecheck": "pnpm run typecheck:node && pnpm run typecheck:web",
     "start": "electron-vite preview",
     "build:app": "electron-vite build",
-    "dev:watch": "electron-vite dev",
+    "icons:build": "png2icons build/icon.png build/icon -allwe -bc",
+    "dev:watch": "cross-env CONSOLERI_DATA_DIR=.consoleri-dev electron-vite dev",
     "dev": "pnpm run build:app && pnpm run dev:watch",
     "build": "pnpm run typecheck && pnpm run build:app",
     "build:unpack": "pnpm run build && electron-builder --dir",
@@ -21,7 +22,7 @@
     "build:mac": "pnpm run build && electron-builder --mac",
     "build:linux": "pnpm run build && electron-builder --linux",
     "package": "pnpm run build:win",
-    "test": "vitest run && vitest run --config vitest.main.config.ts",
+    "test": "vitest run --coverage && vitest run --config vitest.main.config.ts --coverage",
     "test:main": "vitest run --config vitest.main.config.ts",
     "test:watch": "vitest"
   },
@@ -56,6 +57,7 @@
     "@electron-toolkit/tsconfig": "^2.0.0",
     "@electron/rebuild": "^3.7.2",
     "@tailwindcss/vite": "^4.1.11",
+    "@testing-library/react": "^16.3.2",
     "@types/d3-force": "^3.0.10",
     "@types/dagre": "^0.7.54",
     "@types/node": "^22.19.1",
@@ -64,6 +66,7 @@
     "@types/ssh2": "^1.15.5",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/coverage-v8": "3.2.6",
     "electron": "42.2.0",
     "electron-builder": "^26.0.12",
     "electron-vite": "^5.0.0",
@@ -71,11 +74,13 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
+    "jsdom": "^26.1.0",
+    "cross-env": "^7.0.3",
     "prettier": "^3.7.4",
+    "png2icons": "^2.0.1",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.9.3",
     "vite": "^7.2.6",
-    "vitest": "^3.2.4",
-    "jsdom": "^26.1.0"
+    "vitest": "^3.2.4"
   }
 }

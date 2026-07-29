@@ -1,7 +1,17 @@
-import { applyAuthToConnectConfig, isKeyFileRef, keyFilePassphraseRef, keyPathFromRef } from '@consoleri/core'
+import {
+  applyAuthToConnectConfig,
+  authTypeFromCredentialRef,
+  isKeyFileRef,
+  isVaultRef,
+  keyFilePassphraseRef,
+  keyPathFromRef,
+  makeProfileCredentialRef,
+  type SecretBackendKind
+} from '@consoleri/core'
 import { readFileSync } from 'fs'
 import type { ConnectionProfile, Host } from '../../shared/types'
-import { credentialVault } from '../hosts/CredentialVault'
+import { secretBackendService } from '../secrets/SecretBackendService'
+import { vaultSettingsRepository } from '../vault/VaultSettingsRepository'
 
 export interface ResolvedCredentials {
   username: string
@@ -11,6 +21,11 @@ export interface ResolvedCredentials {
 }
 
 export class CredentialResolver {
+  constructor(
+    private readonly _secretBackendService = secretBackendService,
+    private readonly _vaultSettingsRepository = vaultSettingsRepository
+  ) {}
+
   async resolveForProfile(profile: ConnectionProfile): Promise<ResolvedCredentials> {
     const username = profile.username ?? ''
     if (!profile.credentialRef) {
@@ -26,14 +41,17 @@ export class CredentialResolver {
         throw new Error(`Could not read SSH key file: ${keyPath}`)
       }
       const passphrase =
-        (await credentialVault.retrieve(keyFilePassphraseRef(keyPath))) ?? undefined
+        (await this._secretBackendService.retrieve(keyFilePassphraseRef(keyPath))) ?? undefined
       return { username, privateKey, passphrase }
     }
 
-    const secret = await credentialVault.retrieve(profile.credentialRef)
+    const secret = await this._secretBackendService.retrieve(profile.credentialRef)
     if (!secret) {
+      const backendHint = isVaultRef(profile.credentialRef)
+        ? 'Check Vault connectivity and permissions.'
+        : 'Check OS secure storage availability.'
       throw new Error(
-        `Could not load credentials for profile "${profile.name}". Check OS secure storage availability.`
+        `Could not load credentials for profile "${profile.name}". ${backendHint}`
       )
     }
     const auth = applyAuthToConnectConfig(profile.credentialRef, secret)
@@ -42,7 +60,29 @@ export class CredentialResolver {
 
   async resolvePassword(profile: ConnectionProfile): Promise<string | null> {
     if (!profile.credentialRef) return null
-    return credentialVault.retrieve(profile.credentialRef)
+    const secret = await this._secretBackendService.retrieve(profile.credentialRef)
+    if (!secret) return null
+    const authType = authTypeFromCredentialRef(profile.credentialRef)
+    return authType === 'password' ? secret : null
+  }
+
+  vaultOptionsForBackend(): { mount: string; prefix: string } {
+    const settings = this._vaultSettingsRepository.getSettings()
+    return {
+      mount: settings.defaultKvMount,
+      prefix: settings.secretPathPrefix
+    }
+  }
+
+  makeCredentialRef(
+    backend: SecretBackendKind,
+    profileId: string,
+    material: 'password' | 'privateKey'
+  ): string {
+    if (backend === 'vault') {
+      return makeProfileCredentialRef(backend, profileId, material, this.vaultOptionsForBackend())
+    }
+    return makeProfileCredentialRef(backend, profileId, material)
   }
 }
 

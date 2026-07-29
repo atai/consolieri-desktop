@@ -1,20 +1,26 @@
 import { nanoid } from 'nanoid'
-import { isKeyFileRef, normalizeHostLogVerbosity, normalizeGatewayHostId, normalizeHttpEndpoint, normalizeRelatedHostIds, rowToHost, rowToProfile } from '@consoleri/core'
+import {
+  normalizeHostLogVerbosity,
+  normalizeGatewayHostId,
+  normalizeHttpEndpoint,
+  normalizeRelatedHostIds,
+  rowToHost
+} from '@consoleri/core'
 import type {
-  ConnectionProfile,
   Host,
   HostFilter,
   HostGroup,
-  HostInput,
-  OpenSessionRequest,
-  PaneBinding,
-  ProfileInput,
-  Workspace,
-  WorkspaceState
+  HostInput
 } from '../../shared/types'
 import { getDatabase } from '../db/database'
-import { credentialVault } from './CredentialVault'
 
+/**
+ * Manages hosts and host groups.
+ *
+ * Profile operations → ProfileRepository
+ * Workspace operations → WorkspaceRepository
+ * Import/export operations → HostImportExportService
+ */
 export class HostRepository {
   private existingHostIdSet(): Set<string> {
     const rows = getDatabase().prepare('SELECT id FROM hosts').all() as Array<{ id: string }>
@@ -139,10 +145,6 @@ export class HostRepository {
     getDatabase().prepare('DELETE FROM hosts WHERE id = ?').run(id)
   }
 
-  importHosts(items: HostInput[]): Host[] {
-    return items.map((item) => this.createHost(item))
-  }
-
   listGroups(): HostGroup[] {
     return getDatabase()
       .prepare('SELECT * FROM host_groups ORDER BY sort_order, name')
@@ -158,337 +160,12 @@ export class HostRepository {
       })
   }
 
-  createGroup(name: string, parentId: string | null = null): HostGroup {
+  createGroup(name: string, parentId: string | null = null, sortOrder = 0): HostGroup {
     const id = nanoid()
     getDatabase()
       .prepare(`INSERT INTO host_groups (id, name, parent_id, sort_order) VALUES (?, ?, ?, ?)`)
-      .run(id, name, parentId, 0)
-    return { id, name, parentId, sortOrder: 0 }
-  }
-
-  private syncLegacyProfileLinks(): void {
-    getDatabase().exec(`
-      INSERT OR IGNORE INTO host_profile_links (host_id, profile_id)
-      SELECT host_id, id FROM connection_profiles WHERE host_id IS NOT NULL
-    `)
-  }
-
-  listProfiles(hostId?: string): ConnectionProfile[] {
-    this.syncLegacyProfileLinks()
-    const db = getDatabase()
-    const rows = hostId
-      ? db
-          .prepare(
-            `SELECT p.* FROM connection_profiles p
-             INNER JOIN host_profile_links l ON l.profile_id = p.id
-             WHERE l.host_id = ?
-             ORDER BY p.name`
-          )
-          .all(hostId)
-      : db.prepare('SELECT * FROM connection_profiles ORDER BY name').all()
-    return rows.map((r) => rowToProfile(r as Record<string, unknown>))
-  }
-
-  listHostsForProfile(profileId: string): Host[] {
-    this.syncLegacyProfileLinks()
-    const db = getDatabase()
-    const rows = db
-      .prepare(
-        `SELECT h.* FROM hosts h
-         INNER JOIN host_profile_links l ON l.host_id = h.id
-         WHERE l.profile_id = ?
-         ORDER BY h.name COLLATE NOCASE`
-      )
-      .all(profileId)
-    return rows.map((r) => rowToHost(r as Record<string, unknown>))
-  }
-
-  linkHostProfile(hostId: string, profileId: string): void {
-    const host = this.getHost(hostId)
-    if (!host) throw new Error(`Host not found: ${hostId}`)
-    const profile = this.getProfile(profileId)
-    if (!profile) throw new Error(`Profile not found: ${profileId}`)
-    getDatabase()
-      .prepare('INSERT OR IGNORE INTO host_profile_links (host_id, profile_id) VALUES (?, ?)')
-      .run(hostId, profileId)
-  }
-
-  unlinkHostProfile(hostId: string, profileId: string): void {
-    getDatabase()
-      .prepare('DELETE FROM host_profile_links WHERE host_id = ? AND profile_id = ?')
-      .run(hostId, profileId)
-  }
-
-  isProfileLinkedToHost(hostId: string, profileId: string): boolean {
-    const row = getDatabase()
-      .prepare(
-        'SELECT 1 FROM host_profile_links WHERE host_id = ? AND profile_id = ? LIMIT 1'
-      )
-      .get(hostId, profileId)
-    return Boolean(row)
-  }
-
-  getProfile(id: string): ConnectionProfile | null {
-    const row = getDatabase().prepare('SELECT * FROM connection_profiles WHERE id = ?').get(id)
-    return row ? rowToProfile(row as Record<string, unknown>) : null
-  }
-
-  private async copyCredentialRefForProfile(
-    sourceCredentialRef: string | null,
-    newProfileId: string
-  ): Promise<string | null> {
-    if (!sourceCredentialRef) return null
-    if (isKeyFileRef(sourceCredentialRef)) return sourceCredentialRef
-    if (!sourceCredentialRef.startsWith('profile:')) return sourceCredentialRef
-
-    const secret = await credentialVault.retrieve(sourceCredentialRef)
-    if (!secret) return null
-
-    const suffix = sourceCredentialRef.includes(':password') ? ':password' : ':key'
-    const credentialRef = `profile:${newProfileId}${suffix}`
-    await credentialVault.store(credentialRef, secret)
-    return credentialRef
-  }
-
-  async createProfile(input: ProfileInput): Promise<ConnectionProfile> {
-    const id = nanoid()
-    let credentialRef = input.credentialRef ?? null
-
-    if (input.password) {
-      credentialRef = `profile:${id}:password`
-      await credentialVault.store(credentialRef, input.password)
-    } else if (input.privateKey) {
-      credentialRef = `profile:${id}:key`
-      await credentialVault.store(credentialRef, input.privateKey)
-    } else if (input.cloneFromProfileId) {
-      const source = this.getProfile(input.cloneFromProfileId)
-      if (source) {
-        credentialRef = await this.copyCredentialRefForProfile(source.credentialRef, id)
-      }
-    }
-
-    getDatabase()
-      .prepare(
-        `INSERT INTO connection_profiles (id, host_id, name, protocol, shell, username, auth_method, credential_ref, jump_host_id, extra_json)
-         VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
-        id,
-        input.name,
-        input.protocol,
-        input.shell ?? null,
-        input.username ?? null,
-        input.authMethod ?? 'password',
-        credentialRef,
-        input.jumpHostId ?? null,
-        JSON.stringify(input.extra ?? {})
-      )
-
-    if (input.linkHostId) {
-      this.linkHostProfile(input.linkHostId, id)
-    }
-
-    return this.getProfile(id)!
-  }
-
-  async updateProfile(id: string, input: Partial<ProfileInput>): Promise<ConnectionProfile> {
-    const existing = this.getProfile(id)
-    if (!existing) throw new Error(`Profile not found: ${id}`)
-
-    let credentialRef = input.credentialRef !== undefined ? input.credentialRef : existing.credentialRef
-    if (input.password) {
-      credentialRef = `profile:${id}:password`
-      await credentialVault.store(credentialRef, input.password)
-    } else if (input.privateKey) {
-      credentialRef = `profile:${id}:key`
-      await credentialVault.store(credentialRef, input.privateKey)
-    }
-
-    getDatabase()
-      .prepare(
-        `UPDATE connection_profiles SET name=?, protocol=?, shell=?, username=?, auth_method=?, credential_ref=?, jump_host_id=?, extra_json=? WHERE id=?`
-      )
-      .run(
-        input.name ?? existing.name,
-        input.protocol ?? existing.protocol,
-        input.shell !== undefined ? input.shell : existing.shell,
-        input.username !== undefined ? input.username : existing.username,
-        input.authMethod ?? existing.authMethod,
-        credentialRef,
-        input.jumpHostId !== undefined ? input.jumpHostId : existing.jumpHostId,
-        JSON.stringify(input.extra ?? existing.extra),
-        id
-      )
-    return this.getProfile(id)!
-  }
-
-  deleteProfile(id: string): void {
-    getDatabase().prepare('DELETE FROM connection_profiles WHERE id = ?').run(id)
-  }
-
-  async duplicateProfile(
-    sourceId: string,
-    targetHostId?: string,
-    name?: string
-  ): Promise<ConnectionProfile> {
-    const source = this.getProfile(sourceId)
-    if (!source) throw new Error(`Profile not found: ${sourceId}`)
-
-    const id = nanoid()
-    const credentialRef = await this.copyCredentialRefForProfile(source.credentialRef, id)
-    const profileName = name ?? `${source.name} (copy)`
-
-    getDatabase()
-      .prepare(
-        `INSERT INTO connection_profiles (id, host_id, name, protocol, shell, username, auth_method, credential_ref, jump_host_id, extra_json)
-         VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
-        id,
-        profileName,
-        source.protocol,
-        source.shell,
-        source.username,
-        source.authMethod,
-        credentialRef,
-        source.jumpHostId,
-        JSON.stringify(source.extra ?? {})
-      )
-
-    if (targetHostId) {
-      this.linkHostProfile(targetHostId, id)
-    }
-
-    return this.getProfile(id)!
-  }
-
-  getActiveWorkspace(): Workspace {
-    const row = getDatabase()
-      .prepare('SELECT * FROM workspaces WHERE is_last_active = 1 LIMIT 1')
-      .get() as Record<string, unknown> | undefined
-    if (!row) {
-      const id = nanoid()
-      getDatabase()
-        .prepare(`INSERT INTO workspaces (id, name, layout_json, is_last_active) VALUES (?, ?, ?, 1)`)
-        .run(id, 'Default', 'null')
-      return { id, name: 'Default', layoutJson: 'null', isLastActive: true }
-    }
-    return {
-      id: row.id as string,
-      name: row.name as string,
-      layoutJson: row.layout_json as string,
-      isLastActive: Boolean(row.is_last_active)
-    }
-  }
-
-  saveWorkspace(state: WorkspaceState, name = 'Default'): Workspace {
-    const db = getDatabase()
-    const existing = this.getActiveWorkspace()
-    const layoutJson = JSON.stringify({ layout: state.layout, panes: state.panes })
-
-    db.prepare(`UPDATE workspaces SET is_last_active = 0`).run()
-    db.prepare(
-      `UPDATE workspaces SET name=?, layout_json=?, is_last_active=1 WHERE id=?`
-    ).run(name, layoutJson, existing.id)
-
-    db.prepare(`DELETE FROM workspace_panes WHERE workspace_id = ?`).run(existing.id)
-    const insertPane = db.prepare(
-      `INSERT INTO workspace_panes (id, workspace_id, pane_id, session_snapshot_json) VALUES (?, ?, ?, ?)`
-    )
-    for (const pane of state.panes) {
-      insertPane.run(nanoid(), existing.id, pane.paneId, JSON.stringify(pane))
-    }
-
-    return this.getActiveWorkspace()
-  }
-
-  loadWorkspace(): WorkspaceState {
-    const ws = this.getActiveWorkspace()
-    try {
-      const parsed = JSON.parse(ws.layoutJson) as WorkspaceState
-      if (parsed && 'layout' in parsed) {
-        return {
-          layout: parsed.layout,
-          panes: (parsed.panes ?? []).map((pane) => this.migratePaneBinding(pane))
-        }
-      }
-    } catch {
-      /* fall through */
-    }
-    return { layout: null, panes: [] }
-  }
-
-  private migratePaneBinding(raw: PaneBinding): PaneBinding {
-    let connectRequest: OpenSessionRequest = raw.connectRequest ?? {}
-    if (!raw.connectRequest && raw.sessionId) {
-      const snap = this.getSessionSnapshot(raw.sessionId)
-      if (snap) {
-        connectRequest = {
-          hostId: snap.hostId ?? undefined,
-          profileId: snap.profileId ?? undefined,
-          protocol: snap.protocol as OpenSessionRequest['protocol'],
-          title: snap.title
-        }
-      }
-    }
-    if (!connectRequest.title && raw.title) {
-      connectRequest = { ...connectRequest, title: raw.title }
-    }
-    return {
-      paneId: raw.paneId,
-      sessionId: null,
-      protocol: raw.protocol,
-      title: raw.title,
-      connectRequest
-    }
-  }
-
-  saveSessionSnapshot(snapshot: {
-    id: string
-    hostId: string | null
-    profileId: string | null
-    protocol: string
-    title: string
-    cwd: string | null
-    cols: number
-    rows: number
-    scrollbackSerialized: string | null
-  }): void {
-    getDatabase()
-      .prepare(
-        `INSERT OR REPLACE INTO session_snapshots (id, host_id, profile_id, protocol, title, cwd, cols, rows, scrollback_serialized, disconnected_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
-        snapshot.id,
-        snapshot.hostId,
-        snapshot.profileId,
-        snapshot.protocol,
-        snapshot.title,
-        snapshot.cwd,
-        snapshot.cols,
-        snapshot.rows,
-        snapshot.scrollbackSerialized,
-        new Date().toISOString()
-      )
-  }
-
-  getSessionSnapshot(id: string) {
-    const row = getDatabase().prepare('SELECT * FROM session_snapshots WHERE id = ?').get(id)
-    if (!row) return null
-    const r = row as Record<string, unknown>
-    return {
-      id: r.id as string,
-      hostId: (r.host_id as string) || null,
-      profileId: (r.profile_id as string) || null,
-      protocol: r.protocol as string,
-      title: r.title as string,
-      cwd: (r.cwd as string) || null,
-      cols: r.cols as number,
-      rows: r.rows as number,
-      scrollbackSerialized: (r.scrollback_serialized as string) || null,
-      disconnectedAt: (r.disconnected_at as string) || null
-    }
+      .run(id, name, parentId, sortOrder)
+    return { id, name, parentId, sortOrder }
   }
 }
 
