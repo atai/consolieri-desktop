@@ -14,10 +14,10 @@ Add secrets under the repository: **Settings → Secrets and variables → Actio
 | `WIN_CSC_KEY_PASSWORD` | Windows | Password for that certificate |
 | `MAC_CSC_LINK` | macOS | Base64-encoded `.p12` **Developer ID Application** certificate |
 | `MAC_CSC_KEY_PASSWORD` | macOS | Password for that certificate |
-| `APPLE_API_KEY` | macOS notarization (preferred) | Base64-encoded App Store Connect API `.p8` private key |
+| `APPLE_API_KEY` | macOS notarization (preferred) | Base64-encoded App Store Connect API `.p8` private key (or raw PEM) |
 | `APPLE_API_KEY_ID` | macOS notarization (preferred) | Key ID of that API key |
 | `APPLE_API_ISSUER` | macOS notarization (preferred) | Issuer ID (UUID) from App Store Connect |
-| `APPLE_TEAM_ID` | macOS notarization | 10-character Apple Team ID |
+| `APPLE_TEAM_ID` | macOS notarization (Apple ID method only) | 10-character Apple Team ID |
 | `APPLE_ID` | macOS notarization (alternative) | Apple ID email |
 | `APPLE_APP_SPECIFIC_PASSWORD` | macOS notarization (alternative) | App-specific password for that Apple ID |
 
@@ -25,7 +25,7 @@ Linux builds do not need signing or notarization secrets. `GITHUB_TOKEN` is prov
 
 If a signing secret is missing, `electron-builder` still produces installers, but they are unsigned. If notarization secrets are missing while notarize is enabled, the macOS job fails.
 
-You only need **one** complete notarization method (API Key **or** Apple ID), plus `APPLE_TEAM_ID` in both cases. Preferred for CI: API Key.
+You only need **one** complete notarization method: **API Key** (`APPLE_API_KEY` + `APPLE_API_KEY_ID` + `APPLE_API_ISSUER`) **or** **Apple ID** (`APPLE_ID` + `APPLE_APP_SPECIFIC_PASSWORD` + `APPLE_TEAM_ID`). Preferred for CI: API Key. Do not rely on mixing both sets — the Release workflow picks API Key when complete and ignores Apple ID credentials in that case.
 
 ---
 
@@ -72,7 +72,7 @@ You need a **Developer ID Application** certificate (distribution outside the Ma
 7. Double-click the `.cer` to install it into your **login** keychain.
 8. In Keychain Access → **My Certificates**, find **Developer ID Application: …** (it must show a disclosure triangle and a private key underneath).
 9. Export that certificate as a `.p12` file and set an export password.
-10. Note your **Team ID**: [developer.apple.com/account](https://developer.apple.com/account) → Membership details (10 characters, e.g. `ABCDE12345`). You will need it for notarization as `APPLE_TEAM_ID`.
+10. Note your **Team ID**: [developer.apple.com/account](https://developer.apple.com/account) → Membership details (10 characters, e.g. `ABCDE12345`). Needed only if you use Apple ID notarization (`APPLE_TEAM_ID`).
 
 ### On GitHub — signing secrets
 
@@ -87,13 +87,13 @@ base64 -i Consoleri-macos.p12 | tr -d '\n' > mac-csc-link.txt
 
 The Release workflow maps these to `CSC_LINK` / `CSC_KEY_PASSWORD` for `electron-builder` on the macOS runner.
 
-In a successful Release log, signing must show:
+In a successful Release log, signing **must** show:
 
 ```text
 identityName=Developer ID Application: …
 ```
 
-If you see `Apple Development: …` instead, `MAC_CSC_*` is missing or the `.p12` is not a Developer ID Application certificate.
+If you see `Apple Development: …` instead, Gatekeeper will keep blocking downloads even if notarization is configured: `MAC_CSC_*` is missing, empty, or the `.p12` is an **Apple Development** cert rather than **Developer ID Application**. Fix the certificate export and re-run Release.
 
 ---
 
@@ -110,14 +110,15 @@ Notarization is required so Gatekeeper stops showing **“Apple could not verify
 5. Name it something like `Consoleri CI`, access **Developer**, then generate.
 6. Copy the **Key ID** — this becomes `APPLE_API_KEY_ID`.
 7. Download the `.p8` private key file. Apple shows this download **once**; store it securely.
-8. Get **Team ID**: [developer.apple.com/account](https://developer.apple.com/account) → Membership details (10 characters) — this becomes `APPLE_TEAM_ID`.
 
-Encode the `.p8` for GitHub:
+Encode the `.p8` for GitHub (recommended):
 
 ```bash
 # AuthKey_XXXXXXXXXX.p8 from the App Store Connect download
 base64 -i AuthKey_XXXXXXXXXX.p8 | tr -d '\n' > apple-api-key.txt
 ```
+
+`notarytool` needs a **file path** to the `.p8`, not the base64 string. The Release workflow decodes `APPLE_API_KEY` into `${RUNNER_TEMP}/AuthKey_<KEY_ID>.p8` and sets `APPLE_API_KEY` to that path before `electron-builder` runs. You can also store the raw PEM (including `-----BEGIN PRIVATE KEY-----`) in the secret; the workflow detects that and writes the file without base64 decoding.
 
 ### On Apple — alternative: Apple ID + app-specific password
 
@@ -137,10 +138,11 @@ base64 -i AuthKey_XXXXXXXXXX.p8 | tr -d '\n' > apple-api-key.txt
 
 | Secret name | Value |
 |-------------|--------|
-| `APPLE_API_KEY` | Contents of `apple-api-key.txt` (base64 of the `.p8` file, no newlines) |
+| `APPLE_API_KEY` | Contents of `apple-api-key.txt` (base64 of the `.p8` file, no newlines) — or raw PEM |
 | `APPLE_API_KEY_ID` | Key ID from App Store Connect (e.g. `AB12CD34EF`) |
 | `APPLE_API_ISSUER` | Issuer ID UUID from the Integrations / Team Keys page |
-| `APPLE_TEAM_ID` | 10-character Team ID from Membership details |
+
+Do **not** set `APPLE_TEAM_ID` for this method in the workflow path — team is inferred from the API key. If API Key secrets are complete, the workflow ignores Apple ID secrets for that run.
 
 **Alternative — Apple ID**
 
@@ -150,7 +152,7 @@ base64 -i AuthKey_XXXXXXXXXX.p8 | tr -d '\n' > apple-api-key.txt
 | `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password from appleid.apple.com |
 | `APPLE_TEAM_ID` | 10-character Team ID from Membership details |
 
-The Release workflow passes both credential sets into the macOS build. `electron-builder` uses the first complete set that is present.
+Use this set only when API Key secrets are not configured.
 
 ---
 
@@ -159,7 +161,8 @@ The Release workflow passes both credential sets into the macOS build. `electron
 1. Confirm signing secrets and at least one complete notarization set exist in the repository.
 2. Cut a release: `npm run release -- patch` (pushes commit and tag when push is enabled).
 3. Open the **Release** workflow → macOS job. Expect:
-   - `identityName=Developer ID Application: …` (not `Apple Development`)
-   - notarization succeeding (not skipped / `notarize: false`)
+   - Prepare step: `Notarization strategy: App Store Connect API key` (or Apple ID)
+   - `identityName=Developer ID Application: …` — if you still see `Apple Development: …`, fix `MAC_CSC_*` before chasing Gatekeeper
+   - notarization succeeding (no `file couldn't be opened` / invalid `--key` errors)
 4. On a clean Mac: download the DMG from the GitHub Release, open the app. Gatekeeper should **not** show **“Apple could not verify Consoleri.app…”**.
 5. Confirm Release assets include `.exe`, `.dmg`, `.AppImage`, and `.deb` installers only (not helper tools from unpacked builds).

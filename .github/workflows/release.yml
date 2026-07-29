@@ -67,17 +67,54 @@ jobs:
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: pnpm --filter @consoleri/desktop build:win
 
-      - name: Build (macOS)
+      # notarytool --key needs a filesystem path. Secrets store base64 (or PEM) of the .p8.
+      # Prefer API Key credentials; do not mix with Apple ID + TEAM_ID (credential conflict).
+      - name: Prepare macOS notarization credentials
         if: matrix.target == 'mac'
         env:
-          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
-          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+          APPLE_API_KEY_SECRET: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${APPLE_API_KEY_SECRET:-}" && -n "${APPLE_API_KEY_ID:-}" && -n "${APPLE_API_ISSUER:-}" ]]; then
+            KEY_PATH="${RUNNER_TEMP}/AuthKey_${APPLE_API_KEY_ID}.p8"
+            if [[ "${APPLE_API_KEY_SECRET}" == *"BEGIN PRIVATE KEY"* ]]; then
+              printf '%s\n' "${APPLE_API_KEY_SECRET}" > "${KEY_PATH}"
+            else
+              printf '%s' "${APPLE_API_KEY_SECRET}" | base64 --decode > "${KEY_PATH}"
+            fi
+            chmod 600 "${KEY_PATH}"
+            {
+              echo "APPLE_API_KEY=${KEY_PATH}"
+              echo "APPLE_API_KEY_ID=${APPLE_API_KEY_ID}"
+              echo "APPLE_API_ISSUER=${APPLE_API_ISSUER}"
+            } >> "${GITHUB_ENV}"
+            echo "Notarization strategy: App Store Connect API key"
+          elif [[ -n "${APPLE_ID:-}" && -n "${APPLE_APP_SPECIFIC_PASSWORD:-}" && -n "${APPLE_TEAM_ID:-}" ]]; then
+            {
+              echo "APPLE_ID<<EOF"
+              echo "${APPLE_ID}"
+              echo "EOF"
+              echo "APPLE_APP_SPECIFIC_PASSWORD<<EOF"
+              echo "${APPLE_APP_SPECIFIC_PASSWORD}"
+              echo "EOF"
+              echo "APPLE_TEAM_ID=${APPLE_TEAM_ID}"
+            } >> "${GITHUB_ENV}"
+            echo "Notarization strategy: Apple ID + app-specific password"
+          else
+            echo "::error::macOS notarization secrets incomplete. Set APPLE_API_KEY + APPLE_API_KEY_ID + APPLE_API_ISSUER (preferred), or APPLE_ID + APPLE_APP_SPECIFIC_PASSWORD + APPLE_TEAM_ID."
+            exit 1
+          fi
+
+      - name: Build (macOS)
+        if: matrix.target == 'mac'
+        env:
+          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
         run: pnpm --filter @consoleri/desktop build:mac
 
       - name: Build (Linux)
