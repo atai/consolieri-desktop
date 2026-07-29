@@ -1,11 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
+import type { LocalShellAvailability, LocalShellExecutableType } from '@shared/types'
+
+const LOCAL_SHELL_ORDER: LocalShellExecutableType[] = ['powershell', 'pwsh', 'cmd', 'bash', 'zsh', 'sh']
+
+const LOCAL_SHELL_LABELS: Record<LocalShellExecutableType, string> = {
+  powershell: 'PowerShell',
+  pwsh: 'pwsh',
+  cmd: 'cmd',
+  bash: 'Bash',
+  zsh: 'zsh',
+  sh: 'sh'
+}
 
 interface HostActionsMenuProps {
   onAddHost: () => void
   onImport: () => void
   onExport: () => void
-  onOpenPowerShell: () => void
-  onOpenBash: () => void
+  onOpenLocalShell: (shell: LocalShellExecutableType) => void
+  availableLocalShells: Partial<LocalShellAvailability>
   wslDistros: { name: string }[]
   onOpenWsl: (distro: string) => void
 }
@@ -14,13 +26,14 @@ export function HostActionsMenu({
   onAddHost,
   onImport,
   onExport,
-  onOpenPowerShell,
-  onOpenBash,
+  onOpenLocalShell,
+  availableLocalShells,
   wslDistros,
   onOpenWsl
 }: HostActionsMenuProps): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
+  const visibleShells = LOCAL_SHELL_ORDER.filter((shell) => availableLocalShells[shell])
 
   useEffect(() => {
     if (!open) return
@@ -85,26 +98,18 @@ export function HostActionsMenu({
               Export JSON…
             </button>
           </li>
-          <li role="none">
-            <button
-              type="button"
-              role="menuitem"
-              className="block w-full px-3 py-1.5 text-left text-[11px] text-gray-300 hover:bg-[#21262d]"
-              onClick={() => run(onOpenPowerShell)}
-            >
-              PowerShell
-            </button>
-          </li>
-          <li role="none">
-            <button
-              type="button"
-              role="menuitem"
-              className="block w-full px-3 py-1.5 text-left text-[11px] text-gray-300 hover:bg-[#21262d]"
-              onClick={() => run(onOpenBash)}
-            >
-              Bash
-            </button>
-          </li>
+          {visibleShells.map((shell) => (
+            <li key={shell} role="none">
+              <button
+                type="button"
+                role="menuitem"
+                className="block w-full px-3 py-1.5 text-left text-[11px] text-gray-300 hover:bg-[#21262d]"
+                onClick={() => run(() => onOpenLocalShell(shell))}
+              >
+                {LOCAL_SHELL_LABELS[shell]}
+              </button>
+            </li>
+          ))}
           {wslDistros.map((distro) => (
             <li key={distro.name} role="none">
               <button

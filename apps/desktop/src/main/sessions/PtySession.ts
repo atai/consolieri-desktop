@@ -7,7 +7,7 @@ export class PtySession extends BaseTransport {
   private proc: pty.IPty | null = null
 
   constructor(
-    shell: 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'wsl',
+    shell: 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'zsh' | 'sh' | 'wsl',
     cols: number,
     rows: number,
     wslDistro?: string,

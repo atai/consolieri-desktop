@@ -11,7 +11,7 @@ export interface SessionConnectRequest {
   profileId?: string
   protocol?: Protocol
   title?: string
-  localShell?: 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'wsl'
+  localShell?: 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'zsh' | 'sh' | 'wsl'
   wslDistro?: string
 }
 

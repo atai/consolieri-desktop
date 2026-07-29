@@ -29,4 +29,24 @@ describe('resolveLocalShell', () => {
     })
     expect(spec.file).toBe('/bin/bash')
   })
+
+  it('resolves zsh on darwin', () => {
+    const spec = resolveLocalShell({
+      shell: 'zsh',
+      platform: 'darwin',
+      existsSync: (p) => p === '/bin/zsh'
+    })
+    expect(spec.file).toBe('/bin/zsh')
+    expect(spec.args).toEqual(['-l', '-i'])
+  })
+
+  it('resolves sh on linux', () => {
+    const spec = resolveLocalShell({
+      shell: 'sh',
+      platform: 'linux',
+      existsSync: (p) => p === '/bin/sh'
+    })
+    expect(spec.file).toBe('/bin/sh')
+    expect(spec.args).toEqual(['-l'])
+  })
 })

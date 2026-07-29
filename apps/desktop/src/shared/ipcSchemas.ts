@@ -121,7 +121,7 @@ export const OpenSessionRequestSchema = z.object({
   profileId: z.string().optional(),
   protocol: ProtocolSchema.optional(),
   title: z.string().optional(),
-  localShell: z.enum(['powershell', 'pwsh', 'cmd', 'bash', 'wsl']).optional(),
+  localShell: z.enum(['powershell', 'pwsh', 'cmd', 'bash', 'zsh', 'sh', 'wsl']).optional(),
   wslDistro: z.string().optional()
 })
 

@@ -28,10 +28,12 @@ import type {
   ReportProgressEvent,
   VaultSettings,
   VaultSettingsUpdate,
-  VaultStatus
+  VaultStatus,
+  LocalShellAvailability,
+  BackupSettings,
+  BackupInfo
 } from '../shared/types'
 import type { HostsExportDocument, AppExportDocument } from '@consoleri/core'
-import type { BackupSettings, BackupInfo } from '../shared/types'
 
 export interface ConsoleriAPI {
   hosts: {
@@ -103,6 +105,9 @@ export interface ConsoleriAPI {
   }
   wsl: {
     list: () => Promise<WslDistro[]>
+  }
+  localShells: {
+    available: () => Promise<LocalShellAvailability>
   }
   workspace: {
     save: (state: WorkspaceState, name?: string) => Promise<unknown>
@@ -257,6 +262,9 @@ const consoleri: ConsoleriAPI = {
   },
   wsl: {
     list: () => ipcRenderer.invoke(IPC_CHANNELS.wslList)
+  },
+  localShells: {
+    available: () => ipcRenderer.invoke(IPC_CHANNELS.localShellsAvailable)
   },
   workspace: {
     save: (state, name) => ipcRenderer.invoke(IPC_CHANNELS.workspaceSave, state, name),

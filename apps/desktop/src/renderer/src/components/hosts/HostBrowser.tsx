@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { buildHostListSections, type HostListGroupBy, type HostListSortBy } from '@consoleri/core'
-import type { ConnectionProfile, Host } from '@shared/types'
+import type { ConnectionProfile, Host, LocalShellAvailability, LocalShellType } from '@shared/types'
 import { useAppStore } from '../../stores/appStore'
 import { usePreferencesStore } from '../../stores/preferencesStore'
 import { HostActionsMenu } from './HostActionsMenu'
@@ -71,10 +71,18 @@ export function HostBrowser(): React.JSX.Element {
   const [showImport, setShowImport] = useState(false)
   const [showTagFilters, setShowTagFilters] = useState(false)
   const [wslDistros, setWslDistros] = useState<{ name: string }[]>([])
+  const [availableLocalShells, setAvailableLocalShells] = useState<Partial<LocalShellAvailability>>({})
 
   useEffect(() => {
     void loadHostListView()
   }, [loadHostListView])
+
+  useEffect(() => {
+    void window.consoleri.localShells.available().then(setAvailableLocalShells).catch(() => {
+      // If the availability probe fails for any reason, hide shell options conservatively.
+      setAvailableLocalShells({})
+    })
+  }, [])
 
   useEffect(() => {
     if (!hostListViewLoaded) return
@@ -123,10 +131,7 @@ export function HostBrowser(): React.JSX.Element {
     await connectFromList(host, profileId)
   }
 
-  const openLocalShell = async (
-    shell: 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'wsl',
-    wslDistro?: string
-  ): Promise<void> => {
+  const openLocalShell = async (shell: LocalShellType, wslDistro?: string): Promise<void> => {
     await openLocalSessionFromList({
       localShell: shell,
       wslDistro,
@@ -233,8 +238,8 @@ export function HostBrowser(): React.JSX.Element {
             }}
             onImport={() => setShowImport(true)}
             onExport={() => void handleExport()}
-            onOpenPowerShell={() => openLocalShell('powershell')}
-            onOpenBash={() => openLocalShell('bash')}
+            onOpenLocalShell={(shell) => openLocalShell(shell)}
+            availableLocalShells={availableLocalShells}
             wslDistros={wslDistros}
             onOpenWsl={(distro) => openLocalShell('wsl', distro)}
           />

@@ -1,5 +1,5 @@
 import { buildRdpDestination, defaultPortForProtocol, resolveRdpPort, resolveUxProfile } from '@consoleri/core'
-import type { ConnectionProfile, Host, OpenSessionRequest, Protocol } from '../../shared/types'
+import type { ConnectionProfile, Host, OpenSessionRequest, Protocol, LocalShellType } from '../../shared/types'
 import { hostRepository } from '../hosts/HostRepository'
 import { profileRepository } from '../hosts/ProfileRepository'
 import { uxProfileRepository } from '../ux/UxProfileRepository'
@@ -33,6 +33,12 @@ export class SessionFactory {
     private readonly _credentialResolver = credentialResolver,
     private readonly log: ConnectionLog = connectionLog
   ) {}
+
+  private defaultLocalShell(): Exclude<LocalShellType, 'wsl'> {
+    if (process.platform === 'win32') return 'powershell'
+    if (process.platform === 'darwin') return 'zsh'
+    return 'bash'
+  }
 
   resolveContext(request: OpenSessionRequest): {
     host: Host | null
@@ -79,7 +85,7 @@ export class SessionFactory {
     this.log.append(sessionId, 'info', `Starting ${protocol} session: ${title}`)
 
     if (!request.hostId && !request.profileId) {
-      const shell = request.localShell ?? (process.platform === 'win32' ? 'powershell' : 'bash')
+      const shell = request.localShell ?? this.defaultLocalShell()
       const localProtocol: Protocol = shell === 'wsl' ? 'wsl' : 'local_pty'
       const localTitle =
         shell === 'wsl' ? `WSL${request.wslDistro ? ` (${request.wslDistro})` : ''}` : shell
@@ -165,7 +171,7 @@ export class SessionFactory {
         }
       case 'local_pty':
       default: {
-        const shell = request.localShell ?? 'powershell'
+        const shell = request.localShell ?? this.defaultLocalShell()
         this.log.append(sessionId, 'info', `Opening local shell: ${shell}`)
         return {
           transport: new PtySession(shell, cols, rows),

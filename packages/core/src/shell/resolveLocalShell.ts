@@ -1,4 +1,4 @@
-export type LocalShellType = 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'wsl'
+export type LocalShellType = 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'zsh' | 'sh' | 'wsl'
 
 export interface ShellSpawnSpec {
   file: string
@@ -20,7 +20,7 @@ export function resolveLocalShell(options: ResolveLocalShellOptions): ShellSpawn
 
   switch (shell) {
     case 'pwsh':
-      return { file: 'pwsh.exe', args: [] }
+      return { file: platform === 'win32' ? 'pwsh.exe' : 'pwsh', args: [] }
     case 'powershell':
       return { file: 'powershell.exe', args: [] }
     case 'cmd':
@@ -32,6 +32,19 @@ export function resolveLocalShell(options: ResolveLocalShellOptions): ShellSpawn
           : ['/bin/bash', '/usr/bin/bash']
       const bash = candidates.find((p) => existsSync(p)) ?? 'bash'
       return { file: bash, args: ['--login', '-i'] }
+    }
+    case 'zsh': {
+      const candidates = platform === 'win32' ? [] : ['/bin/zsh', '/usr/bin/zsh']
+      const zsh = candidates.find((p) => existsSync(p)) ?? 'zsh'
+      return { file: zsh, args: ['-l', '-i'] }
+    }
+    case 'sh': {
+      const candidates =
+        platform === 'win32'
+          ? []
+          : ['/bin/sh', '/usr/bin/sh']
+      const sh = candidates.find((p) => existsSync(p)) ?? 'sh'
+      return { file: sh, args: ['-l'] }
     }
     case 'wsl':
       return {

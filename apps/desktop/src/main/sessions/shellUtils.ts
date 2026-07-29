@@ -19,7 +19,7 @@ export async function listWslDistros(): Promise<WslDistro[]> {
 export { resolveLocalShell }
 
 export function resolveLocalShellSpawn(
-  shell: 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'wsl',
+  shell: 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'zsh' | 'sh' | 'wsl',
   wslDistro?: string,
   wslShell = '/bin/bash'
 ): { file: string; args: string[]; cwd?: string } {

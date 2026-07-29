@@ -1,6 +1,9 @@
 export type OsType = 'windows' | 'linux' | 'macos' | 'unknown'
 export type Protocol = 'ssh' | 'local_pty' | 'rdp' | 'vnc' | 'wsl'
 export type AuthMethod = 'password' | 'key' | 'none'
+export type LocalShellType = 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'zsh' | 'sh' | 'wsl'
+export type LocalShellExecutableType = Exclude<LocalShellType, 'wsl'>
+export type LocalShellAvailability = Record<LocalShellExecutableType, boolean>
 
 export type { SessionOpenMode, AppSettings } from '@consoleri/core'
 export type SessionStatus = 'connecting' | 'connected' | 'disconnected' | 'error'
@@ -99,7 +102,7 @@ export interface OpenSessionRequest {
   profileId?: string
   protocol?: Protocol
   title?: string
-  localShell?: 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'wsl'
+  localShell?: LocalShellType
   wslDistro?: string
 }
 
@@ -233,6 +236,7 @@ export const IPC_CHANNELS = {
   sessionsSnapshot: 'sessions:snapshot',
   sessionsRdpCredentials: 'sessions:rdp-credentials',
   sessionsVncPassword: 'sessions:vnc-password',
+  localShellsAvailable: 'local-shells:available',
   wslList: 'wsl:list',
   workspaceSave: 'workspace:save',
   workspaceLoad: 'workspace:load',
