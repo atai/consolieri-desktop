@@ -5,6 +5,7 @@ import { VaultSettingsUpdateSchema } from '../../shared/ipcSchemas'
 import { createHandler } from './createHandler'
 import { vaultSettingsRepository } from '../vault/VaultSettingsRepository'
 import { startVaultOidcLogin, logoutVaultOidc } from '../vault/VaultOidcLogin'
+import { scheduleCloudUpload } from '../cloud/CloudSyncCoordinator'
 
 export function registerVaultIpc(_getWindow: () => BrowserWindow | null): void {
   ipcMain.handle(IPC_CHANNELS.vaultGetSettings, () => {
@@ -12,9 +13,11 @@ export function registerVaultIpc(_getWindow: () => BrowserWindow | null): void {
   })
 
   ipcMain.handle(IPC_CHANNELS.vaultUpdateSettings,
-    createHandler(VaultSettingsUpdateSchema, (patch: VaultSettingsUpdate) =>
-      Promise.resolve(vaultSettingsRepository.updateSettings(patch))
-    )
+    createHandler(VaultSettingsUpdateSchema, async (patch: VaultSettingsUpdate) => {
+      const next = await vaultSettingsRepository.updateSettings(patch)
+      scheduleCloudUpload()
+      return next
+    })
   )
 
   ipcMain.handle(IPC_CHANNELS.vaultTestConnection, () => {

@@ -3,15 +3,17 @@ import { usePreferencesStore } from '../../stores/preferencesStore'
 import { UxProfileManager } from '../ux/UxProfileManager'
 import { VaultSettingsPanel } from '../vault/VaultSettingsPanel'
 import { BackupSettingsPanel } from './BackupSettingsPanel'
+import { CloudSettingsPanel } from './CloudSettingsPanel'
 import { SessionOpenModeToggle } from '../hosts/SessionOpenModeToggle'
 
-type SettingsTab = 'general' | 'appearance' | 'vault' | 'backup'
+type SettingsTab = 'general' | 'appearance' | 'vault' | 'backup' | 'cloud'
 
 const TABS: Array<{ id: SettingsTab; label: string }> = [
   { id: 'general', label: 'General' },
   { id: 'appearance', label: 'Appearance' },
   { id: 'vault', label: 'Vault' },
-  { id: 'backup', label: 'Backup' }
+  { id: 'backup', label: 'Backup' },
+  { id: 'cloud', label: 'Cloud' }
 ]
 
 function GeneralTab(): React.JSX.Element {
@@ -100,6 +102,7 @@ export function SettingsPanel(): React.JSX.Element {
         {activeTab === 'appearance' && <UxProfileManager />}
         {activeTab === 'vault' && <VaultSettingsPanel />}
         {activeTab === 'backup' && <BackupSettingsPanel />}
+        {activeTab === 'cloud' && <CloudSettingsPanel />}
       </div>
     </div>
   )

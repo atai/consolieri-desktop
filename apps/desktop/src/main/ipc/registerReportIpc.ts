@@ -8,6 +8,7 @@ import { createHandler } from './createHandler'
 import { reportRepository } from '../reports/ReportRepository'
 import { reportRunner } from '../reports/ReportRunner'
 import { openReportWindow } from '../windows/ReportWindow'
+import { scheduleCloudUpload } from '../cloud/CloudSyncCoordinator'
 
 export function registerReportIpc(getWindow: () => BrowserWindow | null): void {
   ipcMain.handle(IPC_CHANNELS.reportsList, () => reportRepository.list())
@@ -19,20 +20,25 @@ export function registerReportIpc(getWindow: () => BrowserWindow | null): void {
   )
 
   ipcMain.handle(IPC_CHANNELS.reportsCreate,
-    createHandler(ReportInputSchema, (input) =>
-      Promise.resolve(reportRepository.create(input as unknown as ReportInput))
-    )
+    createHandler(ReportInputSchema, (input) => {
+      const report = reportRepository.create(input as unknown as ReportInput)
+      scheduleCloudUpload()
+      return Promise.resolve(report)
+    })
   )
 
   ipcMain.handle(IPC_CHANNELS.reportsUpdate,
-    createHandler(z.tuple([Id, ReportInputSchema.partial()]), ([id, patch]) =>
-      Promise.resolve(reportRepository.update(id, patch as unknown as Partial<ReportInput>))
-    )
+    createHandler(z.tuple([Id, ReportInputSchema.partial()]), ([id, patch]) => {
+      const report = reportRepository.update(id, patch as unknown as Partial<ReportInput>)
+      scheduleCloudUpload()
+      return Promise.resolve(report)
+    })
   )
 
   ipcMain.handle(IPC_CHANNELS.reportsDelete,
     createHandler(Id, (id: string) => {
       reportRepository.delete(id)
+      scheduleCloudUpload()
       return Promise.resolve()
     })
   )

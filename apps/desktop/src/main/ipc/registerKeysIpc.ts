@@ -8,17 +8,21 @@ import { createHandler } from './createHandler'
 import { sshKeyService } from '../keys/SshKeyService'
 import { sshKeyDeployer } from '../keys/SshKeyDeployer'
 import { openLogWindow, registerLogContext } from '../windows/LogWindow'
+import { scheduleCloudUpload } from '../cloud/CloudSyncCoordinator'
 
 export function registerKeysIpc(getWindow: () => BrowserWindow | null): void {
   ipcMain.handle(IPC_CHANNELS.keysList, () => sshKeyService.listKeys())
 
   ipcMain.handle(IPC_CHANNELS.keysAdd, (_e, path: string, label?: string) => {
-    return sshKeyService.addCustomKey(path, label)
+    const key = sshKeyService.addCustomKey(path, label)
+    scheduleCloudUpload()
+    return key
   })
 
   ipcMain.handle(IPC_CHANNELS.keysRemove,
     createHandler(Id, (id: string) => {
       sshKeyService.removeCustomKey(id)
+      scheduleCloudUpload()
       return Promise.resolve()
     })
   )
@@ -28,6 +32,7 @@ export function registerKeysIpc(getWindow: () => BrowserWindow | null): void {
   ipcMain.handle(IPC_CHANNELS.keysAssign,
     createHandler(z.tuple([Id, z.string().min(1)]), async ([profileId, keyPath]: [string, string]) => {
       await sshKeyService.assignToProfile(profileId, keyPath)
+      scheduleCloudUpload()
     })
   )
 
@@ -54,6 +59,7 @@ export function registerKeysIpc(getWindow: () => BrowserWindow | null): void {
   ipcMain.handle(IPC_CHANNELS.keysStorePassphrase,
     createHandler(z.tuple([z.string().min(1), z.string()]), async ([keyPath, passphrase]: [string, string]) => {
       await sshKeyService.storePassphrase(keyPath, passphrase)
+      scheduleCloudUpload()
     })
   )
 

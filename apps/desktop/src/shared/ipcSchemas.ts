@@ -176,3 +176,13 @@ export const ScpRecentEntrySchema = z.object({
   sourcePath: NonEmptyString,
   destPath: NonEmptyString
 })
+
+// ── Cloud sync ────────────────────────────────────────────────────────────────
+
+export const CloudSyncSettingsUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional()
+  })
+  .strict()
+
+export const CloudImportRecoveryKeySchema = z.string().min(1, 'recovery key must be non-empty')

@@ -324,6 +324,18 @@ export const IPC_CHANNELS = {
   backupRestore: 'backup:restore',
   backupDelete: 'backup:delete',
   backupOpenFolder: 'backup:open-folder',
+  cloudGetStatus: 'cloud:get-status',
+  cloudLogin: 'cloud:login',
+  cloudLogout: 'cloud:logout',
+  cloudGetSettings: 'cloud:get-settings',
+  cloudUpdateSettings: 'cloud:update-settings',
+  cloudBackupNow: 'cloud:backup-now',
+  cloudListBackups: 'cloud:list-backups',
+  cloudRestoreBackup: 'cloud:restore-backup',
+  cloudDeleteBackup: 'cloud:delete-backup',
+  cloudExportRecoveryKey: 'cloud:export-recovery-key',
+  cloudImportRecoveryKey: 'cloud:import-recovery-key',
+  cloudClearSyncKey: 'cloud:clear-sync-key',
   scpPickFile: 'scp:pickFile',
   scpPickDir: 'scp:pickDir',
   scpTransfer: 'scp:transfer',
@@ -343,4 +355,36 @@ export interface BackupInfo {
   filename: string
   createdAt: string
   sizeBytes: number
+}
+
+export interface CloudSyncSettings {
+  enabled: boolean
+  lastUploadAt: string | null
+  lastError: string | null
+}
+
+export interface CloudStatus {
+  signedIn: boolean
+  email: string | null
+  deviceId: string | null
+  enabled: boolean
+  hasSyncKey: boolean
+  lastUploadAt: string | null
+  lastError: string | null
+  /** Set on login when a new sync key was generated. */
+  syncKeyCreated?: boolean
+}
+
+export interface CloudBackupInfo {
+  id: string
+  createdAt: string
+  byteSize: number
+  label: string | null
+  deviceId: string | null
+  schemaVersion: number
+}
+
+export interface CloudLoginResult {
+  status: CloudStatus
+  syncKeyCreated: boolean
 }

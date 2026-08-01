@@ -9,6 +9,7 @@ import { registerReportIpc } from './registerReportIpc'
 import { registerAppIpc } from './registerAppIpc'
 import { registerLocalShellsIpc } from './registerLocalShellsIpc'
 import { registerScpIpc } from './registerScpIpc'
+import { registerCloudIpc } from './registerCloudIpc'
 
 export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void {
   registerHostIpc(getWindow)
@@ -20,5 +21,6 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
   registerPreferencesIpc()
   registerReportIpc(getWindow)
   registerAppIpc()
+  registerCloudIpc()
   registerScpIpc()
 }

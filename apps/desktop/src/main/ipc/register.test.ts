@@ -21,7 +21,9 @@ const {
   mockSshKeyDeployer,
   mockAppPrefs,
   mockReportRepo,
-  mockReportRunner
+  mockReportRunner,
+  mockCloudAuth,
+  mockCloudSync
 } = vi.hoisted(() => ({
   mockHostRepo: {
     listHosts: vi.fn(),
@@ -113,7 +115,24 @@ const {
     update: vi.fn(),
     delete: vi.fn()
   },
-  mockReportRunner: { run: vi.fn() }
+  mockReportRunner: { run: vi.fn() },
+  mockCloudAuth: {
+    login: vi.fn(),
+    logout: vi.fn()
+  },
+  mockCloudSync: {
+    getStatus: vi.fn(),
+    getSettings: vi.fn(),
+    updateSettings: vi.fn(),
+    backupNow: vi.fn(),
+    listBackups: vi.fn(),
+    restoreBackup: vi.fn(),
+    deleteBackup: vi.fn(),
+    exportRecoveryKey: vi.fn(),
+    importRecoveryKey: vi.fn(),
+    clearSyncKey: vi.fn(),
+    notifyDataChanged: vi.fn()
+  }
 }))
 
 // ── Module mocks ──────────────────────────────────────────────────────────────
@@ -196,6 +215,11 @@ vi.mock('../backup/backupServiceInstance', () => ({
     deleteBackup: vi.fn(),
     openBackupFolder: vi.fn()
   }
+}))
+vi.mock('../cloud/CloudAuthService', () => ({ cloudAuthService: mockCloudAuth }))
+vi.mock('../cloud/CloudSyncCoordinator', () => ({
+  cloudSyncCoordinator: mockCloudSync,
+  scheduleCloudUpload: vi.fn()
 }))
 
 // ── Setup ─────────────────────────────────────────────────────────────────────
@@ -303,6 +327,18 @@ describe('IPC channel inventory', () => {
     IPC_CHANNELS.backupRestore,
     IPC_CHANNELS.backupDelete,
     IPC_CHANNELS.backupOpenFolder,
+    IPC_CHANNELS.cloudGetStatus,
+    IPC_CHANNELS.cloudLogin,
+    IPC_CHANNELS.cloudLogout,
+    IPC_CHANNELS.cloudGetSettings,
+    IPC_CHANNELS.cloudUpdateSettings,
+    IPC_CHANNELS.cloudBackupNow,
+    IPC_CHANNELS.cloudListBackups,
+    IPC_CHANNELS.cloudRestoreBackup,
+    IPC_CHANNELS.cloudDeleteBackup,
+    IPC_CHANNELS.cloudExportRecoveryKey,
+    IPC_CHANNELS.cloudImportRecoveryKey,
+    IPC_CHANNELS.cloudClearSyncKey,
     IPC_CHANNELS.scpPickFile,
     IPC_CHANNELS.scpPickDir,
     IPC_CHANNELS.scpTransfer,

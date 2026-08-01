@@ -32,6 +32,10 @@ import type {
   LocalShellAvailability,
   BackupSettings,
   BackupInfo,
+  CloudStatus,
+  CloudSyncSettings,
+  CloudBackupInfo,
+  CloudLoginResult,
   ScpTransferRequest,
   ScpTransferResult,
   ScpRecentEntry
@@ -184,6 +188,20 @@ export interface ConsoleriAPI {
     restore: (id: string) => Promise<void>
     delete: (id: string) => Promise<void>
     openFolder: () => Promise<void>
+  }
+  cloud: {
+    getStatus: () => Promise<CloudStatus>
+    login: () => Promise<CloudLoginResult>
+    logout: () => Promise<CloudStatus>
+    getSettings: () => Promise<CloudSyncSettings>
+    updateSettings: (patch: Partial<CloudSyncSettings>) => Promise<CloudSyncSettings>
+    backupNow: () => Promise<CloudBackupInfo>
+    listBackups: () => Promise<CloudBackupInfo[]>
+    restoreBackup: (id: string) => Promise<void>
+    deleteBackup: (id: string) => Promise<void>
+    exportRecoveryKey: () => Promise<string>
+    importRecoveryKey: (key: string) => Promise<void>
+    clearSyncKey: () => Promise<void>
   }
   scp: {
     pickFile: () => Promise<string | null>
@@ -359,6 +377,20 @@ const consoleri: ConsoleriAPI = {
     restore: (id) => ipcRenderer.invoke(IPC_CHANNELS.backupRestore, id),
     delete: (id) => ipcRenderer.invoke(IPC_CHANNELS.backupDelete, id),
     openFolder: () => ipcRenderer.invoke(IPC_CHANNELS.backupOpenFolder)
+  },
+  cloud: {
+    getStatus: () => ipcRenderer.invoke(IPC_CHANNELS.cloudGetStatus),
+    login: () => ipcRenderer.invoke(IPC_CHANNELS.cloudLogin),
+    logout: () => ipcRenderer.invoke(IPC_CHANNELS.cloudLogout),
+    getSettings: () => ipcRenderer.invoke(IPC_CHANNELS.cloudGetSettings),
+    updateSettings: (patch) => ipcRenderer.invoke(IPC_CHANNELS.cloudUpdateSettings, patch),
+    backupNow: () => ipcRenderer.invoke(IPC_CHANNELS.cloudBackupNow),
+    listBackups: () => ipcRenderer.invoke(IPC_CHANNELS.cloudListBackups),
+    restoreBackup: (id) => ipcRenderer.invoke(IPC_CHANNELS.cloudRestoreBackup, id),
+    deleteBackup: (id) => ipcRenderer.invoke(IPC_CHANNELS.cloudDeleteBackup, id),
+    exportRecoveryKey: () => ipcRenderer.invoke(IPC_CHANNELS.cloudExportRecoveryKey),
+    importRecoveryKey: (key) => ipcRenderer.invoke(IPC_CHANNELS.cloudImportRecoveryKey, key),
+    clearSyncKey: () => ipcRenderer.invoke(IPC_CHANNELS.cloudClearSyncKey)
   },
   scp: {
     pickFile: () => ipcRenderer.invoke(IPC_CHANNELS.scpPickFile),

@@ -16,6 +16,7 @@ import { hostRepository } from '../hosts/HostRepository'
 import { profileRepository } from '../hosts/ProfileRepository'
 import { hostImportExportService } from '../hosts/hostImportExportServiceInstance'
 import { secretBackendService } from '../secrets/SecretBackendService'
+import { scheduleCloudUpload } from '../cloud/CloudSyncCoordinator'
 
 export function registerHostIpc(getWindow: () => BrowserWindow | null): void {
   // ── hosts ──────────────────────────────────────────────────────────────────
@@ -33,30 +34,39 @@ export function registerHostIpc(getWindow: () => BrowserWindow | null): void {
   )
 
   ipcMain.handle(IPC_CHANNELS.hostsCreate,
-    createHandler(HostInputSchema, (input: HostInput) =>
-      Promise.resolve(hostRepository.createHost(input))
-    )
+    createHandler(HostInputSchema, (input: HostInput) => {
+      const host = hostRepository.createHost(input)
+      scheduleCloudUpload()
+      return Promise.resolve(host)
+    })
   )
 
   ipcMain.handle(IPC_CHANNELS.hostsUpdate,
-    createHandler(z.tuple([Id, HostInputSchema.partial()]), ([id, input]: [string, Partial<HostInput>]) =>
-      Promise.resolve(hostRepository.updateHost(id, input))
-    )
+    createHandler(z.tuple([Id, HostInputSchema.partial()]), ([id, input]: [string, Partial<HostInput>]) => {
+      const host = hostRepository.updateHost(id, input)
+      scheduleCloudUpload()
+      return Promise.resolve(host)
+    })
   )
 
   ipcMain.handle(IPC_CHANNELS.hostsDelete,
     createHandler(Id, (id: string) => {
       hostRepository.deleteHost(id)
+      scheduleCloudUpload()
       return Promise.resolve()
     })
   )
 
   ipcMain.handle(IPC_CHANNELS.hostsImport, (_e, payload: unknown) => {
-    return hostImportExportService.importHosts(payload)
+    const result = hostImportExportService.importHosts(payload)
+    scheduleCloudUpload()
+    return result
   })
 
-  ipcMain.handle(IPC_CHANNELS.hostsImportFromFile, () => {
-    return hostImportExportService.importHostsFromFile()
+  ipcMain.handle(IPC_CHANNELS.hostsImportFromFile, async () => {
+    const result = await hostImportExportService.importHostsFromFile()
+    if (result && !('canceled' in result)) scheduleCloudUpload()
+    return result
   })
 
   ipcMain.handle(IPC_CHANNELS.hostsExport, () => {
@@ -72,9 +82,11 @@ export function registerHostIpc(getWindow: () => BrowserWindow | null): void {
   ipcMain.handle(IPC_CHANNELS.groupsList, () => hostRepository.listGroups())
 
   ipcMain.handle(IPC_CHANNELS.groupsCreate,
-    createHandler(z.tuple([z.string().min(1), z.string().nullable().optional()]), ([name, parentId]) =>
-      Promise.resolve(hostRepository.createGroup(name, parentId ?? null))
-    )
+    createHandler(z.tuple([z.string().min(1), z.string().nullable().optional()]), ([name, parentId]) => {
+      const group = hostRepository.createGroup(name, parentId ?? null)
+      scheduleCloudUpload()
+      return Promise.resolve(group)
+    })
   )
 
   // ── profiles ───────────────────────────────────────────────────────────────
@@ -84,26 +96,37 @@ export function registerHostIpc(getWindow: () => BrowserWindow | null): void {
   })
 
   ipcMain.handle(IPC_CHANNELS.profilesCreate,
-    createHandler(ProfileInputSchema, (input: ProfileInput) =>
-      withOperationalLogWindow(getWindow, () => profileRepository.createProfile(input))
-    )
+    createHandler(ProfileInputSchema, async (input: ProfileInput) => {
+      const profile = await withOperationalLogWindow(getWindow, () =>
+        profileRepository.createProfile(input)
+      )
+      scheduleCloudUpload()
+      return profile
+    })
   )
 
   ipcMain.handle(IPC_CHANNELS.profilesUpdate,
-    createHandler(z.tuple([Id, ProfileInputSchema.partial()]), ([id, input]: [string, Partial<ProfileInput>]) =>
-      withOperationalLogWindow(getWindow, () => profileRepository.updateProfile(id, input))
-    )
+    createHandler(z.tuple([Id, ProfileInputSchema.partial()]), async ([id, input]: [string, Partial<ProfileInput>]) => {
+      const profile = await withOperationalLogWindow(getWindow, () =>
+        profileRepository.updateProfile(id, input)
+      )
+      scheduleCloudUpload()
+      return profile
+    })
   )
 
   ipcMain.handle(IPC_CHANNELS.profilesDelete,
-    createHandler(Id, (id: string) =>
+    createHandler(Id, (id: string) => {
       profileRepository.deleteProfile(id)
-    )
+      scheduleCloudUpload()
+      return Promise.resolve()
+    })
   )
 
   ipcMain.handle(IPC_CHANNELS.profilesLink,
     createHandler(z.tuple([Id, Id]), ([hostId, profileId]: [string, string]) => {
       profileRepository.linkHostProfile(hostId, profileId)
+      scheduleCloudUpload()
       return Promise.resolve()
     })
   )
@@ -111,6 +134,7 @@ export function registerHostIpc(getWindow: () => BrowserWindow | null): void {
   ipcMain.handle(IPC_CHANNELS.profilesUnlink,
     createHandler(z.tuple([Id, Id]), ([hostId, profileId]: [string, string]) => {
       profileRepository.unlinkHostProfile(hostId, profileId)
+      scheduleCloudUpload()
       return Promise.resolve()
     })
   )
@@ -124,10 +148,13 @@ export function registerHostIpc(getWindow: () => BrowserWindow | null): void {
   ipcMain.handle(IPC_CHANNELS.profilesDuplicate,
     createHandler(
       z.tuple([Id, OptionalId, z.string().optional()]),
-      ([sourceId, targetHostId, name]: [string, string | undefined, string | undefined]) =>
-        withOperationalLogWindow(getWindow, () =>
+      async ([sourceId, targetHostId, name]: [string, string | undefined, string | undefined]) => {
+        const profile = await withOperationalLogWindow(getWindow, () =>
           profileRepository.duplicateProfile(sourceId, targetHostId, name)
         )
+        scheduleCloudUpload()
+        return profile
+      }
     )
   )
 
@@ -136,14 +163,17 @@ export function registerHostIpc(getWindow: () => BrowserWindow | null): void {
   ipcMain.handle(IPC_CHANNELS.credentialsStore,
     createHandler(
       z.tuple([CredentialRefSchema, z.string()]),
-      ([ref, secret]: [string, string]) =>
-        Promise.resolve(secretBackendService.store(ref, secret))
+      async ([ref, secret]: [string, string]) => {
+        await secretBackendService.store(ref, secret)
+        scheduleCloudUpload()
+      }
     )
   )
 
   ipcMain.handle(IPC_CHANNELS.credentialsDelete,
-    createHandler(CredentialRefSchema, (ref: string) =>
-      Promise.resolve(secretBackendService.delete(ref))
-    )
+    createHandler(CredentialRefSchema, async (ref: string) => {
+      await secretBackendService.delete(ref)
+      scheduleCloudUpload()
+    })
   )
 }

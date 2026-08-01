@@ -2,6 +2,7 @@ import { ipcMain } from 'electron'
 import { IPC_CHANNELS } from '../../shared/types'
 import { appImportExportService } from '../settings/appImportExportServiceInstance'
 import { backupService } from '../backup/backupServiceInstance'
+import { scheduleCloudUpload } from '../cloud/CloudSyncCoordinator'
 
 export function registerAppIpc(): void {
   ipcMain.handle(IPC_CHANNELS.appExport, () => appImportExportService.exportAppBundle())
@@ -10,9 +11,10 @@ export function registerAppIpc(): void {
     appImportExportService.exportAppToFile()
   )
 
-  ipcMain.handle(IPC_CHANNELS.appImportFromFile, () =>
-    appImportExportService.importAppFromFile()
-  )
+  ipcMain.handle(IPC_CHANNELS.appImportFromFile, async () => {
+    await appImportExportService.importAppFromFile()
+    scheduleCloudUpload()
+  })
 
   ipcMain.handle(IPC_CHANNELS.backupGetSettings, () => backupService.getSettings())
 
@@ -24,9 +26,10 @@ export function registerAppIpc(): void {
 
   ipcMain.handle(IPC_CHANNELS.backupCreateNow, () => backupService.createBackupNow())
 
-  ipcMain.handle(IPC_CHANNELS.backupRestore, (_e, id: string) =>
+  ipcMain.handle(IPC_CHANNELS.backupRestore, (_e, id: string) => {
     backupService.restoreBackup(id)
-  )
+    scheduleCloudUpload()
+  })
 
   ipcMain.handle(IPC_CHANNELS.backupDelete, (_e, id: string) =>
     backupService.deleteBackup(id)
