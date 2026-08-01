@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consoleri — Typography</title>
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <style>
+    body { margin: 0; font-family: var(--consoleri-font-sans); background: var(--consoleri-bg); color: var(--consoleri-fg); }
+    main { width: min(960px, calc(100vw - 48px)); margin: 40px auto; display: grid; gap: 20px; }
+    h1 { font-size: var(--consoleri-font-size-display); margin: 0; }
+    .specimen { border: 1px solid var(--consoleri-border); border-radius: var(--consoleri-radius-lg); padding: 20px; background: var(--consoleri-surface); }
+    .specimen .label { font-family: var(--consoleri-font-mono); font-size: var(--consoleri-font-size-xs); color: var(--consoleri-accent); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+    .display { font-size: var(--consoleri-font-size-display); font-weight: 700; letter-spacing: -0.02em; }
+    .section { font-size: var(--consoleri-font-size-xl); font-weight: 600; }
+    .body { font-size: var(--consoleri-font-size-base); line-height: var(--consoleri-line-normal); color: var(--consoleri-muted); }
+    .host-name { font-size: var(--consoleri-font-size-base); font-weight: 600; }
+    .host-domain { font-size: var(--consoleri-font-size-md); color: var(--consoleri-muted); }
+    .table-head { font-family: var(--consoleri-font-mono); font-size: var(--consoleri-font-size-sm); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--consoleri-muted); }
+    .mono-path { font-family: var(--consoleri-font-mono); font-size: var(--consoleri-font-size-sm); font-variant-numeric: tabular-nums; color: var(--consoleri-muted); word-break: break-all; }
+    .terminal { font-family: var(--consoleri-font-mono); font-size: var(--consoleri-font-size-md); background: var(--consoleri-terminal-bg); padding: 16px; border-radius: var(--consoleri-radius-md); border: 1px solid var(--consoleri-border); }
+    .prompt { color: var(--consoleri-terminal-prompt); }
+    .path { color: var(--consoleri-terminal-path); }
+  </style>
+</head>
+<body>
+  <main data-od-id="typography-specimens">
+    <h1>Typography specimens</h1>
+    <article class="specimen" data-od-id="type-display">
+      <div class="label">App title · HostList header</div>
+      <div class="display">SSH Keys</div>
+    </article>
+    <article class="specimen" data-od-id="type-section">
+      <div class="label">Section header · TabBar context</div>
+      <div class="section">Profiles</div>
+      <div class="body" style="margin-top:6px">Profiles are shared across hosts</div>
+    </article>
+    <article class="specimen" data-od-id="type-hostlist">
+      <div class="label">HostList row typography</div>
+      <div class="host-name">arcjenkins-test</div>
+      <div class="host-domain">arcjenkins-test.mycorp.internal</div>
+    </article>
+    <article class="specimen" data-od-id="type-table">
+      <div class="label">Report table headers · StatusBadge context</div>
+      <div class="table-head">Host · Profile · Status · Duration · Details</div>
+      <div style="margin-top:12px;display:flex;gap:16px">
+        <span style="color:var(--consoleri-success);font-weight:600">OK</span>
+        <span style="color:var(--consoleri-danger);font-weight:600">FAIL</span>
+      </div>
+    </article>
+    <article class="specimen" data-od-id="type-mono">
+      <div class="label">SSH key fingerprint · ConnectionPanel metadata</div>
+      <div class="mono-path">~/.ssh/id_ed25519_aws · SHA256:V7f3k2mN8pQ1rT5wX9yZ0aB4cD6eF8gH0iJ2kL4mN6oP</div>
+    </article>
+    <article class="specimen" data-od-id="type-terminal">
+      <div class="label">Terminal session · from image-3.png / image-4.png</div>
+      <div class="terminal"><span class="prompt">jnkauto@arcjenkins-test</span>:<span class="path">/u/relauto/.TOOLS_ROOT</span>$ ls -lah</div>
+    </article>
+  </main>
+</body>
+</html>

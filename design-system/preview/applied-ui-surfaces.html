@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consoleri — Applied UI Surfaces</title>
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <style>
+    body { margin: 0; font-family: var(--consoleri-font-sans); background: var(--consoleri-bg); color: var(--consoleri-fg); }
+    main { width: min(1100px, calc(100vw - 48px)); margin: 40px auto; display: grid; gap: 24px; }
+    h1 { margin: 0; font-size: var(--consoleri-font-size-display); }
+    p.lead { color: var(--consoleri-muted); line-height: var(--consoleri-line-normal); }
+    .surface-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+    .surface-card { border: 1px solid var(--consoleri-border); border-radius: var(--consoleri-radius-lg); overflow: hidden; background: var(--consoleri-surface); }
+    .surface-card img { width: 100%; display: block; border-bottom: 1px solid var(--consoleri-border); }
+    .surface-card .body { padding: 16px; }
+    .surface-card h2 { margin: 0 0 8px; font-size: var(--consoleri-font-size-lg); color: var(--consoleri-accent); }
+    .surface-card p { margin: 0; font-size: var(--consoleri-font-size-md); color: var(--consoleri-muted); line-height: var(--consoleri-line-normal); }
+    .components { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .chip { font-family: var(--consoleri-font-mono); font-size: 11px; padding: 4px 8px; border-radius: var(--consoleri-radius-pill); background: var(--consoleri-accent-muted); color: var(--consoleri-accent); border: 1px solid color-mix(in oklab, var(--consoleri-accent), var(--consoleri-border) 60%); }
+    .proto-link { display: inline-block; margin-top: 16px; padding: 12px 16px; background: var(--consoleri-surface); border: 1px solid var(--consoleri-border); border-radius: var(--consoleri-radius-md); color: var(--consoleri-fg); text-decoration: none; }
+    .proto-link:hover { border-color: var(--consoleri-accent); }
+  </style>
+</head>
+<body>
+  <main data-od-id="applied-ui-surfaces">
+    <h1>Applied UI surfaces</h1>
+    <p class="lead">Each card maps a Consoleri product surface to its source screenshot and the UI kit components that model it. The electron-viz prototype covers density/table experiments separately.</p>
+
+    <div class="surface-grid">
+      <article class="surface-card" data-od-id="surface-hosts">
+        <img src="../assets/screenshots/image.png" alt="Hosts surface" />
+        <div class="body">
+          <h2>Hosts workspace</h2>
+          <p>Tag-grouped host list with search, filter chips, and bottom ConnectionPanel for SSH profile selection.</p>
+          <div class="components"><span class="chip">Sidebar</span><span class="chip">TabBar</span><span class="chip">HostList</span><span class="chip">ConnectionPanel</span></div>
+        </div>
+      </article>
+
+      <article class="surface-card" data-od-id="surface-profiles">
+        <img src="../assets/screenshots/image-1.png" alt="Profiles surface" />
+        <div class="body">
+          <h2>Profiles manager</h2>
+          <p>Shared SSH/RDP profiles with protocol badges, dense host metadata, and row-level Edit/Delete actions.</p>
+          <div class="components"><span class="chip">TabBar</span><span class="chip">HostList</span><span class="chip">StatusBadge</span></div>
+        </div>
+      </article>
+
+      <article class="surface-card" data-od-id="surface-keys">
+        <img src="../assets/screenshots/image-2.png" alt="SSH Keys surface" />
+        <div class="body">
+          <h2>SSH Keys</h2>
+          <p>Key file management with fingerprints, Assign host / Deploy secondary actions, and profile grouping.</p>
+          <div class="components"><span class="chip">Sidebar</span><span class="chip">TabBar</span></div>
+        </div>
+      </article>
+
+      <article class="surface-card" data-od-id="surface-reports">
+        <img src="../assets/screenshots/image-5.png" alt="Reports surface" />
+        <div class="body">
+          <h2>Reports modal</h2>
+          <p>Connectivity test results with export toolbar, host table, and StatusBadge OK/FAIL semantics.</p>
+          <div class="components"><span class="chip">StatusBadge</span><span class="chip">TabBar</span></div>
+        </div>
+      </article>
+
+      <article class="surface-card" data-od-id="surface-network">
+        <img src="../assets/screenshots/image-6.png" alt="Network map surface" />
+        <div class="body">
+          <h2>Network map</h2>
+          <p>Interactive topology with Logical/Network toggle, node cards, colored status dots, and minimap.</p>
+          <div class="components"><span class="chip">Sidebar</span></div>
+        </div>
+      </article>
+
+      <article class="surface-card" data-od-id="surface-terminal">
+        <img src="../assets/screenshots/image-4.png" alt="Terminal surface" />
+        <div class="body">
+          <h2>Terminal multiplexer</h2>
+          <p>Split-pane SSH sessions with gold-bordered layout toggles and custom window chrome.</p>
+          <div class="components"><span class="chip">Sidebar</span></div>
+        </div>
+      </article>
+    </div>
+
+    <a class="proto-link" href="../source_examples/electron-viz-multi-screen.html" data-od-id="density-prototype-link">
+      Open electron-viz density prototype → HostList table hierarchy, KPI cards, density controls (10k–100k rows)
+    </a>
+  </main>
+</body>
+</html>

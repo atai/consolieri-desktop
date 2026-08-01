@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "preview/components-buttons.html",
+  "entry": "preview/components-buttons.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-07-29T09:43:50.688Z",
+  "updatedAt": "2026-07-29T09:43:50.688Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

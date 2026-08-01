@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 72" role="img" aria-label="Consoleri wordmark">
+  <defs>
+    <mask id="consoleri-aperture-wm">
+      <rect width="64" height="64" fill="#fff"/>
+      <circle cx="32" cy="32" r="8" fill="#000"/>
+    </mask>
+  </defs>
+  <rect x="4" y="8" width="56" height="56" rx="12" fill="#0c141f"/>
+  <g transform="translate(32 36) scale(0.63) translate(-32 -32)">
+    <polygon points="32,4 55.5,17.5 55.5,46.5 32,60 8.5,46.5 8.5,17.5" fill="#f59e0b" mask="url(#consoleri-aperture-wm)"/>
+  </g>
+  <text x="76" y="46" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif" font-size="32" font-weight="600" fill="#f8fafc" letter-spacing="-0.02em">Consoleri</text>
+</svg>

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "preview/applied-ui-surfaces.html",
+  "entry": "preview/applied-ui-surfaces.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-07-29T09:44:10.140Z",
+  "updatedAt": "2026-07-29T09:44:10.140Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

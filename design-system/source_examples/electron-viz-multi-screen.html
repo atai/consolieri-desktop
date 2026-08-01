@@ -1,0 +1,2139 @@
+
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Electron Viz — Prototype</title>
+  <style>
+    :root {
+      --bg:      oklch(98% 0.005 250);
+      --surface: oklch(100% 0 0);
+      --fg:      oklch(22% 0.02 240);
+      --muted:   oklch(50% 0.018 240);
+      --border:  oklch(90% 0.008 240);
+      --accent:  oklch(58% 0.16 145);
+
+      --font-display: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
+      --font-body:    -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
+      --font-mono:    'JetBrains Mono', 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+
+      --success: oklch(78% 0.14 145);
+      --warn:    oklch(73% 0.18  75);
+      --danger:  oklch(72% 0.19  30);
+
+      --radius: 14px;
+      --radius-sm: 10px;
+      --shadow: 0 10px 24px rgba(0,0,0,0.06);
+
+      --focus: color-mix(in oklab, var(--accent), white 8%);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--fg);
+      letter-spacing: 0;
+    }
+
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: 56px 1fr;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      background: color-mix(in oklab, var(--surface), var(--bg) 55%);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 260px;
+    }
+
+    .brandMark {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(180deg,
+        color-mix(in oklab, var(--surface), var(--accent) 10%),
+        color-mix(in oklab, var(--surface), var(--fg) 5%)
+      );
+      border: 1px solid color-mix(in oklab, var(--border), var(--fg) 8%);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+    }
+
+    .brandTitle {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+    .brandTitle strong {
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      font-size: 14px;
+      text-transform: none;
+    }
+    .brandTitle span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .topbarRight {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .kbd {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: color-mix(in oklab, var(--surface), var(--bg) 40%);
+      color: var(--fg);
+      letter-spacing: 0.01em;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 0;
+    }
+
+    .sidebar {
+      padding: 14px 12px;
+      border-right: 1px solid var(--border);
+      background: color-mix(in oklab, var(--surface), var(--bg) 62%);
+      min-height: 0;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .navBtn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid transparent;
+      background: transparent;
+      padding: 10px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      color: var(--fg);
+    }
+
+    .navBtn:hover {
+      background: color-mix(in oklab, var(--surface), var(--fg) 4%);
+      border-color: color-mix(in oklab, var(--border), var(--fg) 4%);
+    }
+
+    .navBtnActive {
+      background: color-mix(in oklab, var(--surface), var(--accent) 6%);
+      border-color: color-mix(in oklab, var(--accent), var(--border) 55%);
+      outline: 2px solid color-mix(in oklab, var(--accent), white 10%);
+      outline-offset: 2px;
+    }
+
+    .navBtn .label {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .navBtn .label strong {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      font-size: 13px;
+    }
+    .navBtn .label span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .navBtn .pill {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: color-mix(in oklab, var(--surface), var(--bg) 45%);
+    }
+
+    .main {
+      min-height: 0;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .screen {
+      display: none;
+      min-height: 0;
+    }
+    .screenActive { display: grid; min-height: 0; }
+
+    .screenGrid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+
+    @media (min-width: 980px) {
+      .screenGrid[data-layout="overview"] {
+        grid-template-columns: 1.35fr 0.65fr;
+        align-items: start;
+      }
+      .screenGrid[data-layout="table"] {
+        grid-template-columns: 1fr;
+      }
+      .screenGrid[data-layout="settings"] {
+        grid-template-columns: 0.9fr 1.1fr;
+        align-items: start;
+      }
+      .screenGrid[data-layout="components"] {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 26px rgba(0,0,0,0.04);
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .cardHeader {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .cardHeader h2 {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 18px;
+      letter-spacing: -0.01em;
+      font-weight: 650;
+    }
+    .cardHeader p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      max-width: 58ch;
+    }
+
+    .cardBody { padding: 14px 16px 16px; }
+
+    .kpiRow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 860px) {
+      .kpiRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    .kpi {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: color-mix(in oklab, var(--surface), var(--bg) 45%);
+      min-width: 0;
+    }
+
+    .kpi .t {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      font-family: var(--font-mono);
+    }
+
+    .kpi .v {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      font-size: 18px;
+      letter-spacing: -0.01em;
+      font-weight: 650;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chartWrap {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .chartTitle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .chartLegend {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .legendItem {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .legendSwatch {
+      width: 10px; height: 10px;
+      border-radius: 3px;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--surface), var(--fg) 8%);
+    }
+    .legendSwatch[data-k="a"] { background: color-mix(in oklab, var(--surface), var(--fg) 16%); }
+    .legendSwatch[data-k="b"] { background: color-mix(in oklab, var(--surface), var(--fg) 30%); }
+    .legendSwatch[data-k="c"] { background: color-mix(in oklab, var(--surface), var(--fg) 40%); }
+
+    .formGrid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      font-weight: 650;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+
+    .control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--surface), var(--bg) 48%);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--fg);
+      font-size: 14px;
+      outline: none;
+      min-width: 0;
+    }
+    select:focus, input[type="text"]:focus, input[type="number"]:focus,
+    button:focus {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .rangeRow {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .rangeVal {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--muted);
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: color-mix(in oklab, var(--surface), var(--bg) 55%);
+      white-space: nowrap;
+    }
+
+    .switchRow {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: color-mix(in oklab, var(--surface), var(--bg) 52%);
+    }
+    .switchRow .hint {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .switch {
+      position: relative;
+      width: 48px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--surface), var(--fg) 8%);
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+    .switch::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 4px;
+      transform: translateY(-50%);
+      width: 22px; height: 22px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid color-mix(in oklab, var(--border), var(--fg) 10%);
+      transition: left 160ms cubic-bezier(0.23,1,0.32,1);
+    }
+    .switchOn {
+      background: color-mix(in oklab, var(--surface), var(--accent) 16%);
+      border-color: color-mix(in oklab, var(--accent), var(--border) 55%);
+    }
+    .switchOn::after { left: 22px; }
+
+    .btnRow {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border-radius: 12px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--surface), var(--bg) 40%);
+      cursor: pointer;
+      color: var(--fg);
+      font-weight: 650;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      font-size: 13px;
+    }
+
+    .btnPrimary {
+      border-color: color-mix(in oklab, var(--accent), var(--border) 55%);
+      background: var(--accent);
+      color: oklch(98% 0.005 250);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.10);
+    }
+    .btnPrimary:hover {
+      filter: brightness(0.98);
+    }
+
+    .btnGhost:hover {
+      background: color-mix(in oklab, var(--surface), var(--fg) 6%);
+      border-color: color-mix(in oklab, var(--border), var(--fg) 8%);
+    }
+
+    .tableToolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .toolbarLeft {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 280px;
+      flex: 1;
+    }
+
+    .toolbarRight {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--surface), var(--bg) 55%);
+      color: var(--muted);
+      font-size: 13px;
+      max-width: 100%;
+    }
+
+    .chip strong {
+      color: var(--fg);
+      font-family: var(--font-mono);
+      font-weight: 650;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .mono { font-family: var(--font-mono); }
+    .num { font-variant-numeric: tabular-nums; }
+
+    .tableWrap {
+      height: 520px;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .thead {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: color-mix(in oklab, var(--surface), var(--bg) 66%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid color-mix(in oklab, var(--border), var(--surface) 30%);
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    th {
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .scrollArea {
+      overflow: auto;
+      min-height: 0;
+    }
+
+    .tr {
+      height: var(--row-h, 34px);
+    }
+
+    .groupRow td {
+      background: color-mix(in oklab, var(--surface), var(--bg) 72%);
+      border-bottom-color: color-mix(in oklab, var(--border), var(--fg) 6%);
+      font-weight: 700;
+    }
+
+    .groupIndent {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .groupDot {
+      width: 10px; height: 10px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--surface), var(--fg) 20%);
+      flex: 0 0 auto;
+    }
+
+    .serviceIndent {
+      padding-left: calc(var(--indent-step, 10px) * var(--indent, 0));
+    }
+
+    .statusPill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--surface), var(--fg) 2%);
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .statusPill .sw {
+      width: 10px; height: 10px;
+      border-radius: 4px;
+      border: 1px solid color-mix(in oklab, var(--border), var(--fg) 10%);
+      background: color-mix(in oklab, var(--surface), var(--fg) 24%);
+    }
+
+    .statusPill[data-s="success"] {
+      border-color: color-mix(in oklab, var(--success), var(--border) 75%);
+      background: color-mix(in oklab, var(--surface), var(--success) 14%);
+      color: color-mix(in oklab, var(--success), var(--fg) 10%);
+    }
+    .statusPill[data-s="success"] .sw { background: var(--success); border-color: color-mix(in oklab, var(--success), var(--border) 55%); }
+
+    .statusPill[data-s="warn"] {
+      border-color: color-mix(in oklab, var(--warn), var(--border) 75%);
+      background: color-mix(in oklab, var(--surface), var(--warn) 16%);
+      color: color-mix(in oklab, var(--warn), var(--fg) 8%);
+    }
+    .statusPill[data-s="warn"] .sw { background: var(--warn); border-color: color-mix(in oklab, var(--warn), var(--border) 55%); }
+
+    .statusPill[data-s="danger"] {
+      border-color: color-mix(in oklab, var(--danger), var(--border) 70%);
+      background: color-mix(in oklab, var(--surface), var(--danger) 16%);
+      color: color-mix(in oklab, var(--danger), var(--fg) 10%);
+    }
+    .statusPill[data-s="danger"] .sw { background: var(--danger); border-color: color-mix(in oklab, var(--danger), var(--border) 55%); }
+
+    .note {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .splitHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .tokenGrid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 980px) {
+      .tokenGrid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .token {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      background: color-mix(in oklab, var(--surface), var(--bg) 50%);
+      min-width: 0;
+    }
+
+    .token .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .token .row strong {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.01em;
+    }
+    .token .row span {
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 60%;
+    }
+
+    .swatch {
+      width: 100%;
+      height: 38px;
+      border-radius: 12px;
+      border: 1px solid color-mix(in oklab, var(--border), var(--fg) 10%);
+      background: var(--swatch);
+    }
+
+    .footerHint {
+      margin-top: auto;
+      padding-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      border-top: 1px solid var(--border);
+    }
+
+    .srOnly {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app" data-od-id="viz-app">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brandMark" aria-hidden="true"></div>
+        <div class="brandTitle">
+          <strong>Electron Viz Console</strong>
+          <span>table + charts · плотность · иерархия</span>
+        </div>
+      </div>
+      <div class="topbarRight">
+        <span class="kbd" title="Подсказка">⌘K: поиск</span>
+        <span class="kbd" title="Подсказка">D: плотность</span>
+      </div>
+    </div>
+
+    <div class="shell">
+      <aside class="sidebar" data-od-id="sidebar">
+        <div class="nav" role="navigation" aria-label="Навигация экранов">
+          <button class="navBtn navBtnActive" id="nav-overview" data-screen="overview" aria-current="page">
+            <div class="label">
+              <strong>Сводка</strong>
+              <span>иерархия по смыслу</span>
+            </div>
+            <div class="pill">01</div>
+          </button>
+
+          <button class="navBtn" id="nav-table" data-screen="table">
+            <div class="label">
+              <strong>Поток данных</strong>
+              <span>таблица 10k–100k</span>
+            </div>
+            <div class="pill">02</div>
+          </button>
+
+          <button class="navBtn" id="nav-settings" data-screen="settings">
+            <div class="label">
+              <strong>Настройки</strong>
+              <span>плотность + акценты</span>
+            </div>
+            <div class="pill">03</div>
+          </button>
+
+          <button class="navBtn" id="nav-components" data-screen="components">
+            <div class="label">
+              <strong>Дизайн-система</strong>
+              <span>токены + компоненты</span>
+            </div>
+            <div class="pill">04</div>
+          </button>
+        </div>
+
+        <div class="footerHint">
+          Прототип показывает, как “плотность” и “иерархия” спасают читаемость на больших объёмах.
+        </div>
+      </aside>
+
+      <main class="main">
+        <!-- OVERVIEW -->
+        <section class="screen screenActive" id="screen-overview" data-od-id="screen-overview">
+          <div class="screenGrid" data-layout="overview">
+            <div class="card">
+              <div class="cardHeader">
+                <div>
+                  <h2>Сводка: что важно при 10k–100k строк</h2>
+                  <p>Вместо “всё одинаковое” — приоритет по выбранному показателю и выделение групп.</p>
+                </div>
+              </div>
+              <div class="cardBody">
+                <div class="kpiRow" role="group" aria-label="KPI">
+                  <div class="kpi">
+                    <div class="t">Активный KPI</div>
+                    <div class="v mono num" id="kpiActiveMetric">Latency</div>
+                  </div>
+                  <div class="kpi">
+                    <div class="t">Строк в потоке</div>
+                    <div class="v mono num" id="kpiRowCount">50,000</div>
+                  </div>
+                  <div class="kpi">
+                    <div class="t">Режим плотности</div>
+                    <div class="v mono num" id="kpiDensity">1.00×</div>
+                  </div>
+                  <div class="kpi">
+                    <div class="t">Иерархия</div>
+                    <div class="v mono" id="kpiHierarchy">Вкл.</div>
+                  </div>
+                </div>
+
+                <div style="height: 12px;"></div>
+
+                <div class="chartWrap">
+                  <div class="chartTitle">
+                    <span>Распределение (схематично) · без “маркетинговых” метрик</span>
+                    <div class="chartLegend" aria-label="Легенда">
+                      <div class="legendItem"><span class="legendSwatch" data-k="a"></span>низкий</div>
+                      <div class="legendItem"><span class="legendSwatch" data-k="b"></span>средний</div>
+                      <div class="legendItem"><span class="legendSwatch" data-k="c"></span>высокий</div>
+                    </div>
+                  </div>
+
+                  <svg id="overviewChart" viewBox="0 0 740 220" width="100%" height="220" role="img" aria-label="График распределения">
+                    <!-- grid -->
+                    <g opacity="0.6">
+                      <line x1="40" y1="30" x2="720" y2="30" stroke="var(--border)" />
+                      <line x1="40" y1="75" x2="720" y2="75" stroke="var(--border)" />
+                      <line x1="40" y1="120" x2="720" y2="120" stroke="var(--border)" />
+                      <line x1="40" y1="165" x2="720" y2="165" stroke="var(--border)" />
+                      <line x1="40" y1="210" x2="720" y2="210" stroke="var(--border)" />
+                      <line x1="40" y1="30" x2="40" y2="210" stroke="var(--border)" />
+                      <line x1="200" y1="30" x2="200" y2="210" stroke="var(--border)" />
+                      <line x1="360" y1="30" x2="360" y2="210" stroke="var(--border)" />
+                      <line x1="520" y1="30" x2="520" y2="210" stroke="var(--border)" />
+                      <line x1="680" y1="30" x2="680" y2="210" stroke="var(--border)" />
+                    </g>
+
+                    <!-- series A -->
+                    <path d="" fill="none" stroke="color-mix(in oklab, var(--fg), var(--surface) 12%)" stroke-width="2.2" />
+                    <!-- series B -->
+                    <path d="" fill="none" stroke="color-mix(in oklab, var(--fg), var(--surface) 35%)" stroke-width="2.2" />
+                    <!-- series C -->
+                    <path d="" fill="none" stroke="color-mix(in oklab, var(--fg), var(--surface) 52%)" stroke-width="2.2" />
+                  </svg>
+
+                  <div class="note">
+                    Подсказка: откройте <strong>Поток данных</strong>, включите/выключите <strong>Иерархию</strong> и подвигайте <strong>Плотность</strong>.
+                    Проблема “сливается” обычно исчезает, когда появляются правильные уровни и фиксированная высота строк.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="cardHeader">
+                <div>
+                  <h2>Что именно “сливается”</h2>
+                  <p>Этот прототип решает 2 причины: высокая плотность и отсутствие явной иерархии.</p>
+                </div>
+              </div>
+              <div class="cardBody">
+                <div class="formGrid" aria-label="Список проблем и решений">
+                  <div class="chip">
+                    <span>1)</span>
+                    <span>Слишком высокая плотность →</span>
+                    <strong>контролируемая высота</strong>
+                  </div>
+                  <div class="chip">
+                    <span>2)</span>
+                    <span>Нет иерархии →</span>
+                    <strong>уровни + группировка</strong>
+                  </div>
+                  <div class="chip">
+                    <span>3)</span>
+                    <span>Большие объёмы →</span>
+                    <strong>виртуализация строк</strong>
+                  </div>
+                </div>
+
+                <div style="height: 14px;"></div>
+
+                <div class="btnRow">
+                  <button class="btn btnPrimary" id="ctaToTable" data-od-id="cta-to-table">Открыть поток данных</button>
+                  <button class="btn btnGhost" id="ctaToSettings" data-od-id="cta-to-settings">Настроить иерархию</button>
+                </div>
+
+                <div style="height: 14px;"></div>
+
+                <div class="note">
+                  Для прототипа данные генеративные и детерминированные — это помогает проверить UX-поведение, не “придумывая” реальные показатели.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TABLE -->
+        <section class="screen" id="screen-table" data-od-id="screen-table">
+          <div class="screenGrid" data-layout="table">
+            <div class="card">
+              <div class="cardHeader">
+                <div>
+                  <h2>Поток данных: таблица + быстрые фильтры</h2>
+                  <p>Визуальная иерархия держит смысл, а виртуализация не даёт “залипнуть” на 10k–100k строк.</p>
+                </div>
+              </div>
+              <div class="cardBody">
+                <div class="tableToolbar">
+                  <div class="toolbarLeft">
+                    <div class="field">
+                      <label for="searchInput">Поиск по сервису/кластеру</label>
+                      <div class="control">
+                        <input id="searchInput" type="text" placeholder="Напр.: cluster-12 или svc-73" aria-label="Поиск" />
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="clusterSelect">Кластер</label>
+                      <div class="control">
+                        <select id="clusterSelect" aria-label="Выбор кластера"></select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="toolbarRight" aria-label="Статус и режимы">
+                    <div class="chip" title="Детерминированный набор для прототипа">
+                      <span>dataset:</span>
+                      <strong class="mono num" id="chipRows">50,000</strong>
+                    </div>
+                    <div class="chip" title="Схема выделения строк">
+                      <span>иерархия:</span>
+                      <strong id="chipHierarchy">Вкл.</strong>
+                    </div>
+                    <div class="chip" title="Высота строк">
+                      <span>плотность:</span>
+                      <strong class="mono num" id="chipDensity">1.00×</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tableWrap" style="--row-h: 34px;" data-od-id="table-wrap">
+                  <div class="thead">
+                    <table aria-label="Таблица результатов">
+                      <colgroup>
+                        <col style="width: 140px;" />
+                        <col style="width: 220px;" />
+                        <col style="width: 140px;" />
+                        <col style="width: 140px;" />
+                        <col style="width: 130px;" />
+                        <col style="width: 120px;" />
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th scope="col">Кластер</th>
+                          <th scope="col">Сервис</th>
+                          <th scope="col" id="thMetric1">Latency</th>
+                          <th scope="col">Throughput</th>
+                          <th scope="col">Errors</th>
+                          <th scope="col">Статус</th>
+                        </tr>
+                      </thead>
+                    </table>
+                  </div>
+
+                  <div class="scrollArea" id="scrollArea" tabindex="0" aria-label="Прокрутка таблицы">
+                    <table>
+                      <colgroup>
+                        <col style="width: 140px;" />
+                        <col style="width: 220px;" />
+                        <col style="width: 140px;" />
+                        <col style="width: 140px;" />
+                        <col style="width: 130px;" />
+                        <col style="width: 120px;" />
+                      </colgroup>
+                      <tbody id="tbody"></tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div style="height: 12px;"></div>
+                <div class="btnRow">
+                  <button class="btn btnGhost" id="btnReset">Сбросить фильтры</button>
+                  <button class="btn btnPrimary" id="btnJumpToSettings" data-od-id="apply-settings">В настройки</button>
+                </div>
+
+                <div style="height: 10px;"></div>
+                <div class="note">
+                  Прототип показывает, как при большой выборке меняется читаемость: высота строки фиксируется, а “иерархия” добавляет группу.
+                  Это то самое решение для `density` и `hierarchy` из вашего brief.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="screen" id="screen-settings" data-od-id="screen-settings">
+          <div class="screenGrid" data-layout="settings">
+            <div class="card">
+              <div class="cardHeader">
+                <div>
+                  <h2>Настройки визуальной иерархии</h2>
+                  <p>Цель: устранить “слипание” без превращения UI в тяжёлый дизайн-макет.</p>
+                </div>
+              </div>
+              <div class="cardBody">
+                <div class="formGrid">
+                  <div class="field">
+                    <label for="rowCount">Количество строк (тест)</label>
+                    <div class="rangeRow">
+                      <input id="rowCount" type="number" min="10000" max="100000" step="10000" value="50000" />
+                      <div class="rangeVal mono num" id="rowCountVal">50,000</div>
+                    </div>
+                    <div class="note">Рекомендуемая зона: 10k–100k (как в вашем brief).</div>
+                  </div>
+
+                  <div class="field">
+                    <label for="densityRange">Плотность (высота строки)</label>
+                    <div class="rangeRow">
+                      <input id="densityRange" type="range" min="0.85" max="1.25" step="0.01" value="1.00" />
+                      <div class="rangeVal mono num" id="densityVal">1.00×</div>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label>Иерархия</label>
+                    <div class="switchRow">
+                      <div class="hint">Показываем уровни через “group rows” и отступы сервиса.</div>
+                      <div class="switch" id="hierSwitch" role="switch" aria-checked="true" tabindex="0"></div>
+                    </div>
+                  </div>
+
+                  <div class="field">
+                    <label for="metricSelect">Основной показатель (для выделения)</label>
+                    <div class="control">
+                      <select id="metricSelect" aria-label="Выбор основного показателя">
+                        <option value="latency" selected>Latency</option>
+                        <option value="throughput">Throughput</option>
+                        <option value="errors">Errors</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="btnRow">
+                    <button class="btn btnPrimary" id="btnApply" data-od-id="apply-button">Применить</button>
+                    <button class="btn btnGhost" id="btnResetSettings">Сброс</button>
+                  </div>
+
+                  <div class="note">
+                    Когда “плотность” и “иерархия” работают вместе, пользователь понимает “что важно” за секунды, а не сканирует 10k строк как одинаковую массу.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="cardHeader">
+                <div>
+                  <h2>Предпросмотр: как меняется визуальная структура</h2>
+                  <p>Показано на маленьком сэмпле, но стиль соответствует виртуализированной таблице.</p>
+                </div>
+              </div>
+              <div class="cardBody">
+                <div class="splitHeader">
+                  <div class="chip">
+                    <span>active metric:</span>
+                    <strong id="previewMetric" class="mono">Latency</strong>
+                  </div>
+                  <div class="chip">
+                    <span>hierarchy:</span>
+                    <strong id="previewHierarchy" class="mono">ON</strong>
+                  </div>
+                  <div class="chip">
+                    <span>density:</span>
+                    <strong id="previewDensity" class="mono num">1.00×</strong>
+                  </div>
+                </div>
+
+                <div style="height: 10px;"></div>
+
+                <div class="tableWrap" style="height: 280px; --row-h: 34px;">
+                  <div class="thead">
+                    <table>
+                      <colgroup>
+                        <col style="width: 140px;" />
+                        <col style="width: 220px;" />
+                        <col style="width: 140px;" />
+                        <col style="width: 140px;" />
+                        <col style="width: 130px;" />
+                        <col style="width: 120px;" />
+                      </colgroup>
+                      <thead>
+                        <tr>
+                          <th scope="col">Кластер</th>
+                          <th scope="col">Сервис</th>
+                          <th scope="col">Latency</th>
+                          <th scope="col">Throughput</th>
+                          <th scope="col">Errors</th>
+                          <th scope="col">Статус</th>
+                        </tr>
+                      </thead>
+                    </table>
+                  </div>
+                  <div class="scrollArea" style="overflow: hidden;">
+                    <table>
+                      <colgroup>
+                        <col style="width: 140px;" />
+                        <col style="width: 220px;" />
+                        <col style="width: 140px;" />
+                        <col style="width: 140px;" />
+                        <col style="width: 130px;" />
+                        <col style="width: 120px;" />
+                      </colgroup>
+                      <tbody id="previewTbody"></tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div style="height: 10px;"></div>
+                <div class="note">
+                  Если вам кажется, что “всё сливается” — чаще всего это из-за фиксированного смысла: добавьте уровни, а затем подберите плотность.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- COMPONENTS / DESIGN SYSTEM -->
+        <section class="screen" id="screen-components" data-od-id="screen-components">
+          <div class="screenGrid" data-layout="components">
+            <div class="card">
+              <div class="cardHeader">
+                <div>
+                  <h2>Токены (direction: tech-utility)</h2>
+                  <p>В будущем дизайн-система может расшириться, но “база” должна быть устойчивой для плотных таблиц.</p>
+                </div>
+              </div>
+              <div class="cardBody">
+                <div class="tokenGrid">
+                  <div class="token">
+                    <div class="row"><strong>--bg</strong><span>окружение</span></div>
+                    <div class="swatch" style="--swatch: var(--bg)"></div>
+                    <div class="note mono" style="margin-top:10px; font-size:12px;">var(--bg)</div>
+                  </div>
+                  <div class="token">
+                    <div class="row"><strong>--surface</strong><span>поверхности</span></div>
+                    <div class="swatch" style="--swatch: var(--surface)"></div>
+                    <div class="note mono" style="margin-top:10px; font-size:12px;">var(--surface)</div>
+                  </div>
+                  <div class="token">
+                    <div class="row"><strong>--fg</strong><span>основной текст</span></div>
+                    <div class="swatch" style="--swatch: var(--fg)"></div>
+                    <div class="note mono" style="margin-top:10px; font-size:12px;">var(--fg)</div>
+                  </div>
+                  <div class="token">
+                    <div class="row"><strong>--muted</strong><span>вторичный текст</span></div>
+                    <div class="swatch" style="--swatch: var(--muted)"></div>
+                    <div class="note mono" style="margin-top:10px; font-size:12px;">var(--muted)</div>
+                  </div>
+                  <div class="token">
+                    <div class="row"><strong>--border</strong><span>разделители</span></div>
+                    <div class="swatch" style="--swatch: var(--border)"></div>
+                    <div class="note mono" style="margin-top:10px; font-size:12px;">var(--border)</div>
+                  </div>
+                  <div class="token">
+                    <div class="row"><strong>--accent</strong><span>одна акцентная роль</span></div>
+                    <div class="swatch" style="--swatch: var(--accent)"></div>
+                    <div class="note mono" style="margin-top:10px; font-size:12px;">var(--accent)</div>
+                  </div>
+                </div>
+
+                <div style="height: 12px;"></div>
+                <div class="note">
+                  В этом прототипе акцент используется экономно: для активного состояния навигации и primary-CTA.
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="cardHeader">
+                <div>
+                  <h2>Компонентные паттерны</h2>
+                  <p>Для будущих доработок: это “набор решений”, который защищает от повторного слияния.</p>
+                </div>
+              </div>
+              <div class="cardBody">
+                <div class="formGrid">
+                  <div class="chip">
+                    <span class="mono">Table</span>
+                    <span>— фиксированная высота строк + виртуализация</span>
+                  </div>
+                  <div class="chip">
+                    <span class="mono">Hierarchy</span>
+                    <span>— group rows + отступы сервиса (без лишних цветов)</span>
+                  </div>
+                  <div class="chip">
+                    <span class="mono">Focus</span>
+                    <span>— один акцент в активных состояниях, остальное через border/muted</span>
+                  </div>
+                  <div class="chip">
+                    <span class="mono">Status</span>
+                    <span>— семантика success/warn/danger, без “просто красиво”</span>
+                  </div>
+                </div>
+
+                <div style="height: 14px;"></div>
+                <div class="btnRow">
+                  <button class="btn btnGhost" id="btnBackToTable">Назад к таблице</button>
+                  <button class="btn btnPrimary" id="btnBackToOverview">Назад к сводке</button>
+                </div>
+
+                <div style="height: 14px;"></div>
+                <div class="note">
+                  Когда дизайн-система закрепит эти правила, новые экраны (filters, charts, детализация) будут строиться “поверх” уже работающего каркаса.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // ---------- state ----------
+    const STORAGE_KEY = "od-eviz-proto-settings-v1";
+
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    const els = {
+      navOverview: $("#nav-overview"),
+      navTable: $("#nav-table"),
+      navSettings: $("#nav-settings"),
+      navComponents: $("#nav-components"),
+
+      screenOverview: $("#screen-overview"),
+      screenTable: $("#screen-table"),
+      screenSettings: $("#screen-settings"),
+      screenComponents: $("#screen-components"),
+
+      ctaToTable: $("#ctaToTable"),
+      ctaToSettings: $("#ctaToSettings"),
+
+      searchInput: $("#searchInput"),
+      clusterSelect: $("#clusterSelect"),
+
+      btnReset: $("#btnReset"),
+      btnJumpToSettings: $("#btnJumpToSettings"),
+
+      tbody: $("#tbody"),
+      scrollArea: $("#scrollArea"),
+      thMetric1: $("#thMetric1"),
+
+      rowCount: $("#rowCount"),
+      densityRange: $("#densityRange"),
+      densityVal: $("#densityVal"),
+      rowCountVal: $("#rowCountVal"),
+      hierSwitch: $("#hierSwitch"),
+      metricSelect: $("#metricSelect"),
+      btnApply: $("#btnApply"),
+      btnResetSettings: $("#btnResetSettings"),
+
+      btnResetSettings2: $("#btnResetSettings"),
+
+      previewTbody: $("#previewTbody"),
+      previewMetric: $("#previewMetric"),
+      previewHierarchy: $("#previewHierarchy"),
+      previewDensity: $("#previewDensity"),
+
+      chipRows: $("#chipRows"),
+      chipHierarchy: $("#chipHierarchy"),
+      chipDensity: $("#chipDensity"),
+
+      kpiActiveMetric: $("#kpiActiveMetric"),
+      kpiRowCount: $("#kpiRowCount"),
+      kpiDensity: $("#kpiDensity"),
+      kpiHierarchy: $("#kpiHierarchy"),
+
+      overviewChart: $("#overviewChart"),
+
+      btnReset: $("#btnReset"),
+      btnBackToTable: $("#btnBackToTable"),
+      btnBackToOverview: $("#btnBackToOverview")
+    };
+
+    const defaults = {
+      screen: "overview",
+      rowCount: 50000,
+      density: 1.00,
+      hierarchy: true,
+      metric: "latency",
+      searchText: "",
+      clusterId: "all"
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { ...defaults };
+        const parsed = JSON.parse(raw);
+        return { ...defaults, ...parsed };
+      } catch {
+        return { ...defaults };
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function setScreen(name) {
+      const all = ["overview", "table", "settings", "components"];
+      for (const s of all) {
+        const node = document.querySelector("#screen-" + s);
+        if (!node) continue;
+        node.classList.toggle("screenActive", s === name);
+        node.classList.toggle("screen", s !== name);
+      }
+      document.querySelector('[data-screen="overview"]').classList.toggle("navBtnActive", name === "overview");
+      document.querySelector('[data-screen="table"]').classList.toggle("navBtnActive", name === "table");
+      document.querySelector('[data-screen="settings"]').classList.toggle("navBtnActive", name === "settings");
+      document.querySelector('[data-screen="components"]').classList.toggle("navBtnActive", name === "components");
+      state.screen = name;
+      saveState();
+    }
+
+    function clamp(n, a, b) {
+      return Math.max(a, Math.min(b, n));
+    }
+
+    function mulberry32(seed) {
+      let t = seed >>> 0;
+      return function() {
+        t += 0x6D2B79F5;
+        let x = Math.imul(t ^ (t >>> 15), 1 | t);
+        x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
+        return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    // deterministic dataset synthesis: values derived from record index
+    function record(i) {
+      // cluster: fixed size groups for stable “big dataset” behaviour
+      const clusterSize = 200;
+      const clusterId = Math.floor(i / clusterSize); // 0..N
+      const serviceId = (i * 7 + 13) % 1000;
+
+      // metrics: deterministic curves + noise
+      const r = mulberry32(i + 12345)();
+      const baseLatency = 35 + (clusterId % 12) * 6 + (serviceId % 17) * 2.4;
+      const latency = baseLatency + Math.pow(r, 0.65) * 180;
+
+      const throughput = 50 + (clusterId % 10) * 4 + (serviceId % 23) * 1.2 + r * 90;
+      const errors = Math.max(0, (latency - 110) / 250) * 100 + r * 3.5; // percent-ish
+
+      // status based on thresholds (prototype)
+      // Avoids “invented claims”: it is purely derived from the synthetic values.
+      let status = "success";
+      if (errors > 7.5 || latency > 200) status = "danger";
+      else if (errors > 4.0 || latency > 140) status = "warn";
+
+      return {
+        clusterId,
+        clusterLabel: "cluster-" + (clusterId + 1),
+        serviceLabel: "svc-" + (serviceId + 1),
+        latency,
+        throughput,
+        errors,
+        status
+      };
+    }
+
+    function formatNum(n, digits) {
+      const d = typeof digits === "number" ? digits : 1;
+      return n.toFixed(d);
+    }
+
+    function buildClusterOptions(rowCount) {
+      const clusterSize = 200;
+      const clusterCount = Math.ceil(rowCount / clusterSize);
+      const cap = 24;
+
+      const sel = els.clusterSelect;
+      sel.innerHTML = "";
+
+      const optAll = document.createElement("option");
+      optAll.value = "all";
+      optAll.textContent = "Все кластеры";
+      sel.appendChild(optAll);
+
+      const step = Math.max(1, Math.ceil(clusterCount / cap));
+      for (let c = 0; c < clusterCount; c += step) {
+        const opt = document.createElement("option");
+        opt.value = String(c);
+        opt.textContent = "cluster-" + (c + 1);
+        sel.appendChild(opt);
+      }
+
+      // if too many, add a hint-like option (still finite; prototype)
+      if (clusterCount > cap * step) {
+        const opt = document.createElement("option");
+        opt.value = "any";
+        opt.textContent = "Показать пример из диапазона";
+        sel.appendChild(opt);
+      }
+    }
+
+    function computeVisibleIndices() {
+      const { rowCount, searchText, clusterId } = state;
+      const total = rowCount;
+
+      const q = (searchText || "").trim().toLowerCase();
+      if (!q && (clusterId === "all" || clusterId === "any")) {
+        // no filters: implicit identity mapping
+        state.visibleIndices = null;
+        state.visibleCount = total;
+        return;
+      }
+
+      const visible = [];
+      // search and/or cluster filtering on synthetic records
+      for (let i = 0; i < total; i++) {
+        const rec = record(i);
+
+        if (clusterId !== "all") {
+          if (clusterId === "any") {
+            // deterministic sample: show middle range
+            const midStart = Math.floor(total * 0.25);
+            const midEnd = Math.floor(total * 0.75);
+            if (i < midStart || i >= midEnd) continue;
+          } else {
+            const want = Number(clusterId);
+            if (rec.clusterId !== want) continue;
+          }
+        }
+
+        if (q) {
+          const hay = rec.clusterLabel + " " + rec.serviceLabel;
+          if (!hay.toLowerCase().includes(q)) continue;
+        }
+
+        visible.push(i);
+      }
+
+      state.visibleIndices = visible;
+      state.visibleCount = visible.length;
+    }
+
+    function buildHierarchyGroups() {
+      // groups are consecutive clusters in current visible order
+      const { hierarchy } = state;
+
+      if (!hierarchy || !state.visibleIndices) {
+        // hierarchy off or no filters -> use natural ordering: still build groups via math
+        // We still need groups for hierarchy rows, so we compute using record index ranges.
+      }
+
+      const rowCount = state.rowCount;
+      const visible = state.visibleIndices || null;
+
+      const clusterSize = 200;
+      const groups = [];
+      let current = null;
+
+      const pushCurrent = () => {
+        if (!current) return;
+        groups.push(current);
+      };
+
+      if (!visible) {
+        // natural mapping: clusters are fixed contiguous index ranges
+        const clusterCount = Math.ceil(rowCount / clusterSize);
+        for (let c = 0; c < clusterCount; c++) {
+          const startRecord = c * clusterSize;
+          const endExclusive = Math.min(rowCount, (c + 1) * clusterSize);
+          const groupSize = Math.max(0, endExclusive - startRecord);
+          if (groupSize <= 0) continue;
+          groups.push({
+            startPos: null,
+            recordStartPos: c,
+            clusterId: c,
+            clusterLabel: "cluster-" + (c + 1),
+            recordStartIndex: startRecord,
+            groupSize
+          });
+        }
+        // add correct startPos for each group (row positions in table-body)
+      } else {
+        // filtered: scan visible indices and build groups where cluster changes
+        for (let k = 0; k < visible.length; k++) {
+          const i = visible[k];
+          const rec = record(i);
+          if (!current || current.clusterId !== rec.clusterId) {
+            pushCurrent();
+            current = {
+              startPos: null,
+              recordStartPos: k,
+              clusterId: rec.clusterId,
+              clusterLabel: rec.clusterLabel,
+              recordStartIndex: i,
+              groupSize: 1
+            };
+          } else {
+            current.groupSize++;
+          }
+        }
+        pushCurrent();
+      }
+
+      // compute row start positions (header row + groupSize records)
+      let pos = 0;
+      for (const g of groups) {
+        g.startPos = pos; // header row position
+        g.recordStartPos = g.recordStartPos ?? 0;
+        pos += g.groupSize + 1;
+      }
+
+      state.groups = groups;
+      state.tableRowCount = state.visibleCount + groups.length;
+    }
+
+    function getRecordIndexAtRow(rowPos) {
+      if (!state.hierarchy) {
+        // flat mode
+        const idx = rowPos;
+        if (!state.visibleIndices) return idx;
+        return state.visibleIndices[idx] ?? null;
+      }
+
+      // hierarchy mode
+      const groups = state.groups || [];
+      if (groups.length === 0) return null;
+
+      // binary search by g.startPos
+      let lo = 0, hi = groups.length - 1, g = null;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        const cand = groups[mid];
+        if (rowPos < cand.startPos) {
+          hi = mid - 1;
+        } else {
+          g = cand;
+          lo = mid + 1;
+        }
+      }
+      if (!g) return null;
+
+      const within = rowPos - g.startPos;
+      if (within === 0) return { type: "groupHeader", group: g };
+      const recordOffset = within - 1;
+      const recordIndexInVisible = g.recordStartPos + recordOffset;
+
+      if (recordIndexInVisible < 0) return null;
+
+      if (!state.visibleIndices) {
+        const i = g.recordStartIndex + recordOffset;
+        if (i >= state.rowCount) return null;
+        return { type: "record", i };
+      } else {
+        const i = state.visibleIndices[recordIndexInVisible];
+        if (i == null) return null;
+        return { type: "record", i };
+      }
+    }
+
+    function renderTable() {
+      const tbody = els.tbody;
+      const scrollArea = els.scrollArea;
+
+      // ensure hierarchy meta up to date
+      computeVisibleIndices();
+      if (state.hierarchy) buildHierarchyGroups();
+      else state.tableRowCount = state.visibleCount;
+
+      // update chips + KPIs
+      els.chipRows.textContent = new Intl.NumberFormat("en-US").format(state.rowCount);
+      els.chipHierarchy.textContent = state.hierarchy ? "Вкл." : "Выкл.";
+      els.chipDensity.textContent = state.density.toFixed(2) + "×";
+
+      els.kpiRowCount.textContent = new Intl.NumberFormat("en-US").format(state.rowCount);
+      els.kpiDensity.textContent = state.density.toFixed(2) + "×";
+      els.kpiHierarchy.textContent = state.hierarchy ? "Вкл." : "Выкл.";
+      els.kpiActiveMetric.textContent = state.metric === "latency"
+        ? "Latency"
+        : state.metric === "throughput" ? "Throughput" : "Errors";
+
+      // density => row height
+      const rowH = Math.round(34 * state.density);
+      const root = document.documentElement;
+      root.style.setProperty("--row-h", String(rowH) + "px");
+
+      // virtual render based on scroll
+      const vh = scrollArea.clientHeight;
+      const overscan = 9;
+
+      function renderNow() {
+        const y = scrollArea.scrollTop;
+        const start = Math.max(0, Math.floor(y / rowH) - overscan);
+        const end = Math.min(state.tableRowCount, Math.ceil((y + vh) / rowH) + overscan);
+
+        // total height spacer via padding trick: we reflow by setting a translate.
+        const frag = document.createDocumentFragment();
+        tbody.innerHTML = "";
+
+        // create rows in [start, end)
+        for (let pos = start; pos < end; pos++) {
+          const cell = getRecordIndexAtRow(pos);
+
+          if (!cell) {
+            const trEmpty = document.createElement("tr");
+            trEmpty.className = "tr";
+            trEmpty.style.height = rowH + "px";
+            frag.appendChild(trEmpty);
+            continue;
+          }
+
+          if (cell.type === "groupHeader") {
+            const tr = document.createElement("tr");
+            tr.className = "tr groupRow";
+            tr.style.height = rowH + "px";
+
+            const tds = [];
+            // columns: cluster, service, metric1, throughput, errors, status
+            const tdCluster = document.createElement("td");
+            tdCluster.innerHTML = "";
+            tdCluster.colSpan = 6; // simplify header spanning (still readable)
+            tdCluster.style.paddingLeft = "12px";
+            tdCluster.textContent = cell.group.clusterLabel + " · уровень";
+
+            // Re-split visually by custom layout: use 1 cell spanning to preserve fixed table.
+            // We keep table headers align by using colSpan; in CSS, overflow handled by ellipsis.
+            tr.appendChild(tdCluster);
+
+            frag.appendChild(tr);
+            continue;
+          }
+
+          if (cell.type === "record") {
+            const rec = record(cell.i);
+
+            const tr = document.createElement("tr");
+            tr.className = "tr";
+            tr.style.height = rowH + "px";
+
+            // indent logic for hierarchy perception
+            const indent = state.hierarchy ? (cell.i % 3) : 0;
+
+            const tdCluster = document.createElement("td");
+            tdCluster.textContent = rec.clusterLabel;
+
+            const tdService = document.createElement("td");
+            tdService.className = "serviceIndent";
+            tdService.style.setProperty("--indent", String(indent));
+            tdService.textContent = rec.serviceLabel;
+
+            const tdLat = document.createElement("td");
+            tdLat.className = "num mono";
+            tdLat.textContent = formatNum(rec.latency, 0);
+
+            const tdThr = document.createElement("td");
+            tdThr.className = "num mono";
+            tdThr.textContent = formatNum(rec.throughput, 0);
+
+            const tdErr = document.createElement("td");
+            tdErr.className = "num mono";
+            tdErr.textContent = formatNum(rec.errors, 1) + "%";
+
+            const tdStatus = document.createElement("td");
+            const pill = document.createElement("span");
+            pill.className = "statusPill";
+            pill.dataset.s = rec.status;
+
+            const sw = document.createElement("span");
+            sw.className = "sw";
+            const label = document.createTextNode(
+              rec.status === "success" ? "OK" : rec.status === "warn" ? "WARN" : "ALERT"
+            );
+            pill.appendChild(sw);
+            pill.appendChild(label);
+
+            tdStatus.appendChild(pill);
+
+            // if metric highlighting is enabled, we emphasize one column via font-weight and border
+            const emphasize = (field) => {
+              const on = (state.metric === field);
+              return on;
+            };
+
+            if (emphasize("latency")) {
+              tdLat.style.fontWeight = "700";
+              tdLat.style.color = "var(--fg)";
+            }
+            if (emphasize("throughput")) {
+              tdThr.style.fontWeight = "700";
+              tdThr.style.color = "var(--fg)";
+            }
+            if (emphasize("errors")) {
+              tdErr.style.fontWeight = "700";
+              tdErr.style.color = "var(--fg)";
+            }
+
+            tr.appendChild(tdCluster);
+            tr.appendChild(tdService);
+            tr.appendChild(tdLat);
+            tr.appendChild(tdThr);
+            tr.appendChild(tdErr);
+            tr.appendChild(tdStatus);
+
+            frag.appendChild(tr);
+          }
+        }
+
+        // translate spacer:
+        // we can simulate virtualization via setting tbody padding-top.
+        const firstPos = start;
+        tbody.style.transform = "translateY(" + (firstPos * rowH) + "px)";
+        tbody.style.willChange = "transform";
+        tbody.appendChild(frag);
+      }
+
+      // initial: make sure transform doesn't accumulate incorrectly
+      tbody.style.transform = "translateY(0px)";
+      tbody.innerHTML = "";
+
+      // render function should run after layout
+      requestAnimationFrame(renderNow);
+
+      // re-render on scroll (throttle by rAF)
+      let ticking = false;
+      scrollArea.addEventListener("scroll", () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          ticking = false;
+          renderNow();
+        });
+      }, { passive: true });
+
+      // update overflow container height using a dummy element in CSS:
+      // Since we use translateY, we need to set a fake height on scrollArea's first row container.
+      // We'll do it by setting the height of a spacer div inside.
+      // Instead, set scrollArea's scrollHeight via a bottom padding on tbody wrapper:
+      // quick approach: set scrollArea padding-bottom.
+      scrollArea.style.paddingBottom = "0px";
+      // We can't easily set full height without adding a spacer element; insert one.
+      // We'll insert a spacer row into tbody for correct scroll height if needed.
+      const spacerId = "spacerRow";
+      let spacer = document.getElementById(spacerId);
+      if (!spacer) {
+        spacer = document.createElement("tr");
+        spacer.id = spacerId;
+        spacer.style.height = "0px";
+        spacer.style.borderBottom = "none";
+        tbody.appendChild(spacer);
+      }
+      // Set scroll height by putting an actual height on a spacer element.
+      spacer.style.height = (state.tableRowCount * rowH) + "px";
+      spacer.style.display = "table-row";
+      spacer.innerHTML = "";
+    }
+
+    function updatePreview() {
+      // small sample preview generation
+      const rowCount = Math.min(18, state.rowCount);
+      const density = state.density;
+
+      els.previewMetric.textContent = state.metric === "latency"
+        ? "Latency"
+        : state.metric === "throughput" ? "Throughput" : "Errors";
+      els.previewHierarchy.textContent = state.hierarchy ? "ON" : "OFF";
+      els.previewDensity.textContent = density.toFixed(2) + "×";
+
+      // mimic small table with real rendering logic (non-virtual)
+      const tbody = els.previewTbody;
+      tbody.innerHTML = "";
+
+      const rowH = Math.round(34 * density);
+
+      // compute groups for first N records
+      const previewVisible = [];
+      for (let i = 0; i < rowCount; i++) previewVisible.push(i);
+
+      // build hierarchy groups from preview order
+      const clusterSize = 200;
+      const groups = [];
+      let current = null;
+      for (const i of previewVisible) {
+        const rec = record(i);
+        if (!current || current.clusterId !== rec.clusterId) {
+          if (current) groups.push(current);
+          current = {
+            clusterId: rec.clusterId,
+            clusterLabel: rec.clusterLabel,
+            startIndex: i,
+            recordStartPos: previewVisible.indexOf(i),
+            group: []
+          };
+        }
+        current.group.push(i);
+      }
+      if (current) groups.push(current);
+
+      const metric = state.metric;
+
+      const addRow = (tr) => {
+        tr.style.height = rowH + "px";
+        tbody.appendChild(tr);
+      };
+
+      if (!state.hierarchy) {
+        for (let k = 0; k < previewVisible.length; k++) {
+          const i = previewVisible[k];
+          const rec = record(i);
+          addRow(renderRecordTr(rec, rowH, k, false, metric));
+        }
+      } else {
+        for (const g of groups.slice(0, 6)) {
+          const trHead = document.createElement("tr");
+          trHead.className = "tr groupRow";
+          trHead.style.height = rowH + "px";
+          const td = document.createElement("td");
+          td.colSpan = 6;
+          td.textContent = g.clusterLabel + " · уровень";
+          td.style.paddingLeft = "12px";
+          trHead.appendChild(td);
+          addRow(trHead);
+
+          for (const i of g.group) {
+            const rec = record(i);
+            addRow(renderRecordTr(rec, rowH, i, true, metric));
+          }
+        }
+      }
+    }
+
+    function renderRecordTr(rec, rowH, i, hierarchyOn, metric) {
+      const tr = document.createElement("tr");
+      tr.className = "tr";
+      tr.style.height = rowH + "px";
+
+      const indent = hierarchyOn ? (i % 3) : 0;
+
+      const tdCluster = document.createElement("td");
+      tdCluster.textContent = rec.clusterLabel;
+
+      const tdService = document.createElement("td");
+      tdService.className = "serviceIndent";
+      tdService.style.setProperty("--indent", String(indent));
+      tdService.textContent = rec.serviceLabel;
+
+      const tdLat = document.createElement("td");
+      tdLat.className = "num mono";
+      tdLat.textContent = formatNum(rec.latency, 0);
+
+      const tdThr = document.createElement("td");
+      tdThr.className = "num mono";
+      tdThr.textContent = formatNum(rec.throughput, 0);
+
+      const tdErr = document.createElement("td");
+      tdErr.className = "num mono";
+      tdErr.textContent = formatNum(rec.errors, 1) + "%";
+
+      const tdStatus = document.createElement("td");
+      const pill = document.createElement("span");
+      pill.className = "statusPill";
+      pill.dataset.s = rec.status;
+
+      const sw = document.createElement("span");
+      sw.className = "sw";
+      const label = document.createTextNode(
+        rec.status === "success" ? "OK" : rec.status === "warn" ? "WARN" : "ALERT"
+      );
+
+      pill.appendChild(sw);
+      pill.appendChild(label);
+      tdStatus.appendChild(pill);
+
+      if (metric === "latency") tdLat.style.fontWeight = "700";
+      if (metric === "throughput") tdThr.style.fontWeight = "700";
+      if (metric === "errors") tdErr.style.fontWeight = "700";
+
+      tr.appendChild(tdCluster);
+      tr.appendChild(tdService);
+      tr.appendChild(tdLat);
+      tr.appendChild(tdThr);
+      tr.appendChild(tdErr);
+      tr.appendChild(tdStatus);
+      return tr;
+    }
+
+    function setMetricUI() {
+      const map = { latency: "Latency", throughput: "Throughput", errors: "Errors" };
+      const val = state.metric;
+      const text = map[val] || "Latency";
+
+      els.previewMetric.textContent = text;
+      els.kpiActiveMetric.textContent = text;
+    }
+
+    function updateOverviewChart() {
+      // synthesize chart paths based on rowCount + metric
+      const svg = els.overviewChart;
+      if (!svg) return;
+
+      const paths = svg.querySelectorAll("path");
+      const w = 680;
+      const h = 180;
+      const x0 = 80; // left pad
+      const y0 = 40;
+
+      const bins = 18;
+      const dataA = [];
+      const dataB = [];
+      const dataC = [];
+
+      for (let b = 0; b < bins; b++) {
+        const t = b / (bins - 1);
+        const s = mulberry32(Math.floor(state.rowCount * 0.001) + b)();
+        // scale curves: “schematic distribution”
+        dataA.push(0.18 + 0.12 * Math.sin(t * 3.1) + s * 0.06);
+        dataB.push(0.32 + 0.14 * Math.cos(t * 2.2) + s * 0.08);
+        dataC.push(0.52 + 0.10 * Math.sin(t * 1.7 + 0.6) + s * 0.10);
+      }
+
+      // normalize
+      const max = Math.max(...dataC);
+      function makePath(arr, weight) {
+        let d = "";
+        for (let b = 0; b < bins; b++) {
+          const x = x0 + (b / (bins - 1)) * w;
+          const y = y0 + h * (1 - (arr[b] / max) * weight);
+          d += (b === 0 ? "M" : " L") + x.toFixed(1) + " " + y.toFixed(1);
+        }
+        return d;
+      }
+
+      paths[0].setAttribute("d", makePath(dataA, 0.55));
+      paths[1].setAttribute("d", makePath(dataB, 0.75));
+      paths[2].setAttribute("d", makePath(dataC, 0.95));
+    }
+
+    let state = loadState();
+
+    function bindUI() {
+      const navButtons = [els.navOverview, els.navTable, els.navSettings, els.navComponents];
+
+      navButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          setScreen(btn.dataset.screen);
+          if (btn.dataset.screen === "table") renderTable();
+          if (btn.dataset.screen === "settings") updatePreview();
+        });
+      });
+
+      els.ctaToTable.addEventListener("click", () => {
+        setScreen("table");
+        renderTable();
+      });
+      els.ctaToSettings.addEventListener("click", () => {
+        setScreen("settings");
+        updatePreview();
+      });
+
+      els.btnJumpToSettings.addEventListener("click", () => {
+        setScreen("settings");
+        updatePreview();
+      });
+
+      els.btnReset.addEventListener("click", () => {
+        state.searchText = "";
+        state.clusterId = "all";
+        els.searchInput.value = "";
+        els.clusterSelect.value = "all";
+        renderTable();
+      });
+
+      els.btnBackToTable.addEventListener("click", () => {
+        setScreen("table");
+        renderTable();
+      });
+      els.btnBackToOverview.addEventListener("click", () => {
+        setScreen("overview");
+        updateOverviewChart();
+      });
+
+      els.btnResetSettings.addEventListener("click", () => {
+        state.rowCount = defaults.rowCount;
+        state.density = defaults.density;
+        state.hierarchy = defaults.hierarchy;
+        state.metric = defaults.metric;
+        els.rowCount.value = String(state.rowCount);
+        els.densityRange.value = String(state.density);
+        els.densityVal.textContent = state.density.toFixed(2) + "×";
+        syncHierarchySwitch();
+        els.metricSelect.value = state.metric;
+        setMetricUI();
+        updatePreview();
+      });
+
+      els.btnApply.addEventListener("click", () => {
+        state.rowCount = clamp(parseInt(els.rowCount.value, 10) || defaults.rowCount, 10000, 100000);
+        state.density = clamp(parseFloat(els.densityRange.value) || 1.0, 0.85, 1.25);
+        state.hierarchy = !!state.hierarchy;
+        state.metric = els.metricSelect.value;
+
+        // refresh UI
+        els.rowCountVal.textContent = new Intl.NumberFormat("en-US").format(state.rowCount);
+        els.densityVal.textContent = state.density.toFixed(2) + "×";
+        updatePreview();
+        updateOverviewChart();
+
+        // apply to table if user goes there next
+        // re-render immediately if currently visible
+        setScreen("table");
+        renderTable();
+      });
+
+      // search + cluster
+      let searchTimer = null;
+      const onFilterChange = () => {
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+          renderTable();
+        }, 250);
+      };
+
+      els.searchInput.addEventListener("input", () => {
+        state.searchText = els.searchInput.value;
+        onFilterChange();
+      });
+
+      els.clusterSelect.addEventListener("change", () => {
+        state.clusterId = els.clusterSelect.value;
+        renderTable();
+      });
+
+      // table row virtualization density + hierarchy toggles are controlled via settings screen
+      const onDensitySlide = () => {
+        state.density = parseFloat(els.densityRange.value) || 1.0;
+        els.densityVal.textContent = state.density.toFixed(2) + "×";
+        updatePreview();
+      };
+      els.densityRange.addEventListener("input", onDensitySlide);
+
+      els.rowCount.addEventListener("input", () => {
+        const v = clamp(parseInt(els.rowCount.value, 10) || defaults.rowCount, 10000, 100000);
+        state.rowCount = v;
+        els.rowCountVal.textContent = new Intl.NumberFormat("en-US").format(v);
+        buildClusterOptions(v);
+        updatePreview();
+      });
+
+      // hierarchy switch
+      const switchNode = els.hierSwitch;
+      const toggleHierarchy = () => {
+        state.hierarchy = !state.hierarchy;
+        syncHierarchySwitch();
+        updatePreview();
+      };
+      function syncHierarchySwitch() {
+        switchNode.classList.toggle("switchOn", state.hierarchy);
+        switchNode.setAttribute("aria-checked", state.hierarchy ? "true" : "false");
+        els.previewHierarchy.textContent = state.hierarchy ? "ON" : "OFF";
+      }
+      switchNode.addEventListener("click", toggleHierarchy);
+      switchNode.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleHierarchy();
+        }
+      });
+
+      els.metricSelect.addEventListener("change", () => {
+        state.metric = els.metricSelect.value;
+        setMetricUI();
+        updatePreview();
+      });
+
+      // keyboard shortcuts
+      window.addEventListener("keydown", (e) => {
+        if (e.metaKey && (e.key === "k" || e.key === "K")) {
+          e.preventDefault();
+          setScreen("table");
+          els.searchInput.focus();
+          return;
+        }
+        if (!e.metaKey && !e.ctrlKey && !e.altKey && (e.key === "d" || e.key === "D")) {
+          e.preventDefault();
+          setScreen("settings");
+        }
+      });
+    }
+
+    function init() {
+      // initial screen
+      setScreen(state.screen || "overview");
+
+      // init UI controls from persisted state
+      els.rowCount.value = String(state.rowCount);
+      els.rowCountVal.textContent = new Intl.NumberFormat("en-US").format(state.rowCount);
+
+      els.densityRange.value = String(state.density);
+      els.densityVal.textContent = state.density.toFixed(2) + "×";
+
+      els.metricSelect.value = state.metric || "latency";
+      setMetricUI();
+
+      els.hierSwitch.classList.toggle("switchOn", !!state.hierarchy);
+      els.hierSwitch.setAttribute("aria-checked", state.hierarchy ? "true" : "false");
+
+      // build cluster select
+      buildClusterOptions(state.rowCount);
+      state.clusterId = state.clusterId || "all";
+      // choose cluster if exists; otherwise fallback
+      const wanted = state.clusterId;
+      if ([...els.clusterSelect.options].some(o => o.value === wanted)) els.clusterSelect.value = wanted;
+      else els.clusterSelect.value = "all";
+
+      els.searchInput.value = state.searchText || "";
+
+      // initial preview & chart
+      updatePreview();
+      updateOverviewChart();
+
+      bindUI();
+
+      // initial render for table if needed
+      if (state.screen === "table") renderTable();
+
+      // ensure Overview chart paths are drawn with first update
+      updateOverviewChart();
+    }
+
+    init();
+  </script>
+</body>
+</html>

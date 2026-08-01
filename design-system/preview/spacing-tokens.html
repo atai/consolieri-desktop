@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consoleri — Spacing & Radius</title>
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <style>
+    body { margin: 0; font-family: var(--consoleri-font-sans); background: var(--consoleri-bg); color: var(--consoleri-fg); }
+    main { width: min(960px, calc(100vw - 48px)); margin: 40px auto; display: grid; gap: 20px; }
+    h1 { margin: 0; font-size: var(--consoleri-font-size-display); }
+    p { color: var(--consoleri-muted); line-height: var(--consoleri-line-normal); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+    .token { border: 1px solid var(--consoleri-border); border-radius: var(--consoleri-radius-md); padding: 14px; background: var(--consoleri-surface); }
+    .token code { font-family: var(--consoleri-font-mono); font-size: var(--consoleri-font-size-sm); color: var(--consoleri-accent); }
+    .bar { background: var(--consoleri-accent-muted); border: 1px solid var(--consoleri-accent); height: 12px; margin-top: 8px; border-radius: 2px; }
+    .layout-demo { display: grid; grid-template-columns: var(--consoleri-sidebar-width) 1fr; border: 1px solid var(--consoleri-border); border-radius: var(--consoleri-radius-lg); overflow: hidden; min-height: 200px; }
+    .sidebar { background: var(--consoleri-surface-muted); display: flex; flex-direction: column; align-items: center; padding: var(--consoleri-space-2) 0; gap: var(--consoleri-space-2); }
+    .icon { width: 36px; height: 36px; border-radius: var(--consoleri-radius-sm); background: var(--consoleri-accent); }
+    .icon.inactive { background: transparent; border: 1px solid var(--consoleri-border); }
+    .workspace { padding: var(--consoleri-space-4); }
+    .row { height: var(--consoleri-row-height); border-bottom: 1px solid var(--consoleri-border); display: flex; align-items: center; padding: 0 var(--consoleri-space-3); font-size: var(--consoleri-font-size-md); }
+    .row.dense { height: var(--consoleri-row-height-dense); font-size: var(--consoleri-font-size-sm); }
+    .radius-demo { display: flex; gap: 16px; flex-wrap: wrap; }
+    .radius-box { width: 80px; height: 48px; background: var(--consoleri-surface-raised); border: 1px solid var(--consoleri-border); display: flex; align-items: center; justify-content: center; font-family: var(--consoleri-font-mono); font-size: 11px; color: var(--consoleri-muted); }
+  </style>
+</head>
+<body>
+  <main data-od-id="spacing-tokens">
+    <h1>Spacing & layout rhythm</h1>
+    <p>Spacing tokens from Consoleri production UI and electron-viz density prototype. Sidebar rail is 52px; default table row is 34px with 28px dense mode.</p>
+    <div class="grid">
+      <div class="token"><code>--consoleri-space-2</code><div class="bar" style="width:8px"></div>8px</div>
+      <div class="token"><code>--consoleri-space-3</code><div class="bar" style="width:12px"></div>12px</div>
+      <div class="token"><code>--consoleri-space-4</code><div class="bar" style="width:16px"></div>16px</div>
+      <div class="token"><code>--consoleri-space-6</code><div class="bar" style="width:24px"></div>24px</div>
+      <div class="token"><code>--consoleri-sidebar-width</code><div class="bar" style="width:52px"></div>52px</div>
+      <div class="token"><code>--consoleri-row-height</code><div class="bar" style="width:34px"></div>34px</div>
+    </div>
+    <h2 style="font-size:var(--consoleri-font-size-xl);margin:8px 0 0">Sidebar + HostList layout</h2>
+    <div class="layout-demo" data-od-id="sidebar-hostlist-layout">
+      <aside class="sidebar"><div class="icon"></div><div class="icon inactive"></div><div class="icon inactive"></div></aside>
+      <div class="workspace">
+        <div class="row">arc-grafana · SSH</div>
+        <div class="row">arcjenkins-test · SSH</div>
+        <div class="row dense">Dense mode row (28px) from electron-viz prototype</div>
+      </div>
+    </div>
+    <h2 style="font-size:var(--consoleri-font-size-xl);margin:8px 0 0">Border radius</h2>
+    <div class="radius-demo">
+      <div class="radius-box" style="border-radius:var(--consoleri-radius-sm)">6px sm</div>
+      <div class="radius-box" style="border-radius:var(--consoleri-radius-md)">10px md</div>
+      <div class="radius-box" style="border-radius:var(--consoleri-radius-lg)">14px lg</div>
+      <div class="radius-box" style="border-radius:var(--consoleri-radius-pill)">pill</div>
+    </div>
+  </main>
+</body>
+</html>
