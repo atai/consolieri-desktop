@@ -75,24 +75,24 @@ export function ReportHostEntriesSection({
   return (
     <div className={className}>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-sm text-gray-400">Hosts ({entries.length})</span>
+        <span className="text-sm text-muted">Hosts ({entries.length})</span>
         <button
           type="button"
           onClick={() => setShowPickHosts(true)}
           disabled={disabled}
-          className="rounded border border-[#30363d] px-2 py-0.5 text-xs text-gray-300 hover:bg-[#21262d]"
+          className="rounded border border-border px-2 py-0.5 text-xs text-fg-2 hover:bg-surface-raised"
         >
           + Add hosts
         </button>
       </div>
 
       {entries.length === 0 ? (
-        <p className="text-xs text-gray-500">No hosts added yet.</p>
+        <p className="text-xs text-muted">No hosts added yet.</p>
       ) : (
-        <div className="overflow-x-auto rounded border border-[#30363d]">
+        <div className="overflow-x-auto rounded border border-border">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-[#30363d] text-xs text-gray-500">
+              <tr className="border-b border-border text-xs text-muted">
                 <th className="px-2 py-1.5 font-medium">Host</th>
                 <th className="px-2 py-1.5 font-medium">SSH profile</th>
                 <th className="px-2 py-1.5" />
@@ -103,16 +103,16 @@ export function ReportHostEntriesSection({
                 const host = hostById.get(entry.hostId)
                 const sshProfiles = profilesByHost.get(entry.hostId) ?? []
                 return (
-                  <tr key={entry.hostId} className="border-b border-[#30363d] last:border-0">
-                    <td className="px-2 py-1.5 text-gray-200">
+                  <tr key={entry.hostId} className="border-b border-border last:border-0">
+                    <td className="px-2 py-1.5 text-fg">
                       {host?.name ?? entry.hostId}
                       {host && (
-                        <span className="ml-1 text-xs text-gray-500">({host.hostname})</span>
+                        <span className="ml-1 text-xs text-muted">({host.hostname})</span>
                       )}
                     </td>
                     <td className="px-2 py-1.5">
                       {sshProfiles.length <= 1 ? (
-                        <span className="text-gray-400">
+                        <span className="text-muted">
                           {sshProfiles[0]?.name ?? entry.profileId}
                         </span>
                       ) : (
@@ -120,7 +120,7 @@ export function ReportHostEntriesSection({
                           value={entry.profileId}
                           onChange={(e) => handleProfileChange(entry.hostId, e.target.value)}
                           disabled={disabled}
-                          className="w-full rounded border border-[#30363d] bg-[#161b22] px-1.5 py-0.5 text-gray-100"
+                          className="w-full rounded border border-border bg-surface px-1.5 py-0.5 text-fg"
                         >
                           {sshProfiles.map((p) => (
                             <option key={p.id} value={p.id}>
@@ -135,7 +135,7 @@ export function ReportHostEntriesSection({
                         type="button"
                         onClick={() => handleRemove(entry.hostId)}
                         disabled={disabled}
-                        className="text-xs text-red-400 hover:underline"
+                        className="text-xs text-danger hover:underline"
                       >
                         Remove
                       </button>

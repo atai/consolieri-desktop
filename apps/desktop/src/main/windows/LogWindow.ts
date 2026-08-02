@@ -4,6 +4,7 @@ import { is } from '@electron-toolkit/utils'
 import { appIconPath } from '../appBranding'
 import { sessionManager } from '../sessions/SessionManager'
 import { formatLogWindowTitle, pinBrowserWindowTitle, type LogWindowKind } from '../windowTitles'
+import { CHROME_BG_HEX } from '../../shared/chromeHex'
 
 const logWindows = new Map<string, BrowserWindow>()
 
@@ -83,7 +84,7 @@ export function openLogWindow(
     minHeight: 200,
     title: headerTitle,
     icon: appIconPath(),
-    backgroundColor: '#0d1117',
+    backgroundColor: CHROME_BG_HEX,
     parent: parent ?? undefined,
     autoHideMenuBar: true,
     webPreferences: {

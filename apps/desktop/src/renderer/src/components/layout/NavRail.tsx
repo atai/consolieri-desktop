@@ -39,8 +39,8 @@ function NavRailButton({
       onClick={onClick}
       className={`flex h-10 w-10 items-center justify-center rounded-md transition-colors ${
         active
-          ? 'bg-blue-600 text-white'
-          : 'text-gray-500 hover:bg-[#21262d] hover:text-gray-200'
+          ? 'bg-accent text-accent-on'
+          : 'text-muted hover:bg-surface-raised hover:text-fg'
       }`}
     >
       <Icon size={20} strokeWidth={1.75} aria-hidden />
@@ -53,7 +53,7 @@ export function NavRail(): React.JSX.Element {
 
   return (
     <nav
-      className="flex h-full w-[52px] shrink-0 flex-col items-center border-r border-[#30363d] bg-[#0d1117] py-2"
+      className="flex h-full w-[52px] shrink-0 flex-col items-center border-r border-border bg-bg py-2"
       aria-label="Main navigation"
     >
       <div className="flex flex-col items-center gap-1">
@@ -78,7 +78,7 @@ export function NavRail(): React.JSX.Element {
           onClick={() => setAppView(SETTINGS_NAV_ITEM.view)}
         />
         <span
-          className="select-all pb-1 pt-0.5 text-[10px] leading-none text-gray-600"
+          className="select-all pb-1 pt-0.5 text-[10px] leading-none text-muted"
           title={`Consoleri v${APP_VERSION}`}
         >
           v{APP_VERSION}

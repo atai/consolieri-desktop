@@ -17,6 +17,9 @@ importers:
       '@consoleri/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@consoleri/design-system':
+        specifier: workspace:*
+        version: link:../../design-system
       '@electron-toolkit/preload':
         specifier: ^3.0.2
         version: 3.0.2(electron@42.2.0)
@@ -171,6 +174,8 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.6(@types/debug@4.1.13)(@types/node@22.19.21)(jiti@2.7.0)(jsdom@26.1.0)(lightningcss@1.32.0)
+
+  design-system: {}
 
   packages/core:
     dependencies:

@@ -1,0 +1,107 @@
+/* Canonical Open Design tokens.css — source of truth for Consoleri.
+ * Derived caches (tailwind-v4.css) must regenerate from this file.
+ * Product-only C-extensions live in tokens.app-extensions.css.
+ */
+
+:root {
+  /* ─── Surface ─────────────────────────────────────────────────── */
+  --bg: oklch(14% 0.018 250);
+  --surface: oklch(18% 0.016 250);
+  --surface-warm: oklch(16% 0.015 250);
+
+  /* ─── Foreground ──────────────────────────────────────────────── */
+  --fg: oklch(96% 0.006 250);
+  --fg-2: oklch(78% 0.012 250);
+  --muted: oklch(62% 0.02 250);
+  --meta: var(--muted);
+
+  /* ─── Border ──────────────────────────────────────────────────── */
+  --border: oklch(28% 0.018 250);
+  --border-soft: oklch(24% 0.016 250);
+
+  /* ─── Accent ──────────────────────────────────────────────────── */
+  --accent: oklch(58% 0.19 255);
+  --accent-on: oklch(98% 0.005 250);
+  --accent-hover: oklch(54% 0.19 255);
+  --accent-active: oklch(50% 0.19 255);
+
+  /* ─── Semantic ────────────────────────────────────────────────── */
+  --success: oklch(72% 0.16 145);
+  --warn: oklch(78% 0.14 85);
+  --danger: oklch(62% 0.2 25);
+
+  /* ─── Typography ──────────────────────────────────────────────── */
+  --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 22px;
+  --text-3xl: 28px;
+  --text-4xl: 36px;
+
+  --leading-body: 1.4;
+  --leading-tight: 1.15;
+  --tracking-display: -0.01em;
+
+  /* ─── Spacing ─────────────────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  --section-y-desktop: 32px;
+  --section-y-tablet: 24px;
+  --section-y-phone: 16px;
+
+  /* ─── Radius ──────────────────────────────────────────────────── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* ─── Elevation ───────────────────────────────────────────────── */
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 10px 24px oklch(0% 0 0 / 0.35);
+
+  /* ─── Focus ───────────────────────────────────────────────────── */
+  --focus-ring: 0 0 0 2px color-mix(in oklab, var(--accent), white 12%);
+
+  /* ─── Motion ──────────────────────────────────────────────────── */
+  --motion-fast: 140ms;
+  --motion-base: 200ms;
+  --ease-standard: cubic-bezier(0.23, 1, 0.32, 1);
+
+  /* ─── Layout ──────────────────────────────────────────────────── */
+  --container-max: 1440px;
+  --container-gutter-desktop: 16px;
+  --container-gutter-tablet: 12px;
+  --container-gutter-phone: 8px;
+
+  /* Hex references for tooling / non-CSS consumers (sampled from v0.4.7) */
+  --hex-bg: #0c141f;
+  --hex-surface: #151d2b;
+  --hex-accent: #2b7fff;
+  --hex-brand: #f59e0b;
+  --hex-success: #10b981;
+  --hex-danger: #ef4444;
+  --hex-fg: #f1f5f9;
+  --hex-muted: #8b9bb4;
+  --hex-border: #2a3548;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+  }
+}

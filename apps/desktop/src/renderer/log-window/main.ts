@@ -1,3 +1,4 @@
+import './log.css'
 import type { LogEntry } from '../../shared/types'
 
 declare global {

@@ -9,13 +9,13 @@ export function Sidebar(): React.JSX.Element {
   const tabClass = (view: typeof sidebarView): string =>
     `flex-1 px-2 py-2 text-xs font-medium sm:px-3 sm:text-sm ${
       sidebarView === view
-        ? 'border-b-2 border-blue-500 text-gray-100'
-        : 'text-gray-500 hover:text-gray-300'
+        ? 'border-b-2 border-accent text-fg'
+        : 'text-muted hover:text-fg-2'
     }`
 
   return (
-    <div className="flex h-full min-h-0 flex-col border-r border-[#30363d]">
-      <div className="flex shrink-0 border-b border-[#30363d] bg-[#0d1117]">
+    <div className="flex h-full min-h-0 flex-col border-r border-border">
+      <div className="flex shrink-0 border-b border-border bg-bg">
         <button type="button" onClick={() => setSidebarView('hosts')} className={tabClass('hosts')}>
           Hosts
         </button>

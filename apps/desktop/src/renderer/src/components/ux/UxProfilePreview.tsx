@@ -56,5 +56,5 @@ export function UxProfilePreview({ appearance }: UxProfilePreviewProps): React.J
     fitAddon?.fit()
   }, [appearance])
 
-  return <div ref={containerRef} className="h-28 w-full rounded border border-[#30363d] bg-[#0d1117] p-1" />
+  return <div ref={containerRef} className="h-28 w-full rounded border border-border bg-bg p-1" />
 }

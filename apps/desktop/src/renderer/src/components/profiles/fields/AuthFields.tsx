@@ -53,7 +53,7 @@ export function AuthFields({
       {authMethod === 'password' && (
         <FormField label="Password">
           {isEdit && profile?.credentialRef && (
-            <p className="text-xs text-gray-500">Current: {profileAuthLabel(profile)}</p>
+            <p className="text-xs text-muted">Current: {profileAuthLabel(profile)}</p>
           )}
           <input
             type="password"
@@ -68,7 +68,7 @@ export function AuthFields({
       {authMethod === 'key' && (
         <div className="space-y-2">
           {isEdit && profile?.credentialRef && (
-            <p className="text-xs text-gray-500">Current: {profileAuthLabel(profile)}</p>
+            <p className="text-xs text-muted">Current: {profileAuthLabel(profile)}</p>
           )}
           <FormField label="SSH key">
             <select
@@ -87,13 +87,13 @@ export function AuthFields({
           <button
             type="button"
             onClick={onPickKeyFile}
-            className="rounded border border-[#30363d] px-2 py-1 text-xs text-gray-400 hover:bg-[#21262d]"
+            className="rounded border border-border px-2 py-1 text-xs text-muted hover:bg-surface-raised"
           >
             Pick key file…
           </button>
           <FormField label="Or paste private key (vault)">
             <textarea
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 font-mono text-xs text-gray-100"
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 font-mono text-xs text-fg"
               rows={3}
               value={privateKey}
               onChange={(e) => onPrivateKeyChange(e.target.value)}

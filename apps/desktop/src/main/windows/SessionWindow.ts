@@ -4,6 +4,7 @@ import { is } from '@electron-toolkit/utils'
 import { APP_NAME, appIconPath } from '../appBranding'
 import { sessionManager } from '../sessions/SessionManager'
 import { formatSessionWindowTitle, joinWindowTitle, pinBrowserWindowTitle } from '../windowTitles'
+import { CHROME_BG_HEX } from '../../shared/chromeHex'
 import {
   registerSessionWindow,
   getRegisteredSessionWindow,
@@ -32,7 +33,7 @@ export function openSessionWindow(sessionId: string): BrowserWindow {
     minHeight: 300,
     title,
     icon: appIconPath(),
-    backgroundColor: '#0f1117',
+    backgroundColor: CHROME_BG_HEX,
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),

@@ -1,0 +1,32 @@
+{
+  "name": "@consoleri/design-system",
+  "version": "0.6.0",
+  "private": true,
+  "description": "Open Design–compatible Consoleri design tokens and assets",
+  "type": "module",
+  "exports": {
+    "./tokens": "./tokens.css",
+    "./tokens.css": "./tokens.css",
+    "./extensions": "./tokens.app-extensions.css",
+    "./tailwind": "./tailwind-v4.css",
+    "./tailwind-v4.css": "./tailwind-v4.css",
+    "./brand.json": "./brand.json",
+    "./hex.json": "./hex.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "tokens.css",
+    "tokens.app-extensions.css",
+    "tailwind-v4.css",
+    "colors_and_type.css",
+    "manifest.json",
+    "brand.json",
+    "hex.json",
+    "DESIGN.md",
+    "USAGE.md",
+    "SYNC.md",
+    "assets",
+    "logos",
+    "preview"
+  ]
+}

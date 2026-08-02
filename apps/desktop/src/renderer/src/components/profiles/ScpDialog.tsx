@@ -32,11 +32,11 @@ function PathField({
 }): React.JSX.Element {
   return (
     <label className="block text-sm">
-      <span className="text-gray-400">{label}</span>
+      <span className="text-muted">{label}</span>
       <div className="mt-1 flex gap-2">
         <input
           type="text"
-          className="min-w-0 flex-1 rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-sm text-gray-100"
+          className="min-w-0 flex-1 rounded border border-border bg-bg px-2 py-1.5 text-sm text-fg"
           value={value}
           onChange={onChange ? (e) => onChange(e.target.value) : undefined}
           readOnly={readOnly}
@@ -48,7 +48,7 @@ function PathField({
             type="button"
             onClick={onBrowse}
             disabled={disabled}
-            className="inline-flex shrink-0 items-center gap-1 rounded border border-[#30363d] bg-[#21262d] px-2 py-1.5 text-xs text-gray-300 hover:bg-[#30363d] disabled:opacity-50"
+            className="inline-flex shrink-0 items-center gap-1 rounded border border-border bg-surface-raised px-2 py-1.5 text-xs text-fg-2 hover:bg-border disabled:opacity-50"
           >
             <FolderOpen className="h-3.5 w-3.5" aria-hidden />
             {browseLabel ?? 'Browse'}
@@ -165,8 +165,8 @@ export function ScpDialog({ host, profile, onClose }: ScpDialogProps): React.JSX
             disabled={transferring}
             className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded border px-3 py-2 text-sm transition-colors ${
               direction === 'upload'
-                ? 'border-blue-600 bg-blue-600/20 text-blue-300'
-                : 'border-[#30363d] bg-[#0d1117] text-gray-400 hover:bg-[#21262d]'
+                ? 'border-accent bg-accent/20 text-blue-300'
+                : 'border-border bg-bg text-muted hover:bg-surface-raised'
             }`}
           >
             <ArrowUpFromLine className="h-4 w-4" aria-hidden />
@@ -178,8 +178,8 @@ export function ScpDialog({ host, profile, onClose }: ScpDialogProps): React.JSX
             disabled={transferring}
             className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded border px-3 py-2 text-sm transition-colors ${
               direction === 'download'
-                ? 'border-blue-600 bg-blue-600/20 text-blue-300'
-                : 'border-[#30363d] bg-[#0d1117] text-gray-400 hover:bg-[#21262d]'
+                ? 'border-accent bg-accent/20 text-blue-300'
+                : 'border-border bg-bg text-muted hover:bg-surface-raised'
             }`}
           >
             <ArrowDownToLine className="h-4 w-4" aria-hidden />
@@ -187,8 +187,8 @@ export function ScpDialog({ host, profile, onClose }: ScpDialogProps): React.JSX
           </button>
         </div>
 
-        <div className="space-y-3 rounded border border-[#30363d] bg-[#0d1117] p-3">
-          <div className="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+        <div className="space-y-3 rounded border border-border bg-bg p-3">
+          <div className="text-[10px] font-medium uppercase tracking-wide text-muted">
             Источник
           </div>
           {sourceIsLocal ? (
@@ -212,8 +212,8 @@ export function ScpDialog({ host, profile, onClose }: ScpDialogProps): React.JSX
           )}
         </div>
 
-        <div className="space-y-3 rounded border border-[#30363d] bg-[#0d1117] p-3">
-          <div className="text-[10px] font-medium uppercase tracking-wide text-gray-500">
+        <div className="space-y-3 rounded border border-border bg-bg p-3">
+          <div className="text-[10px] font-medium uppercase tracking-wide text-muted">
             Назначение
           </div>
           {destIsLocal ? (
@@ -238,7 +238,7 @@ export function ScpDialog({ host, profile, onClose }: ScpDialogProps): React.JSX
         </div>
 
         {result && (
-          <p className={`text-xs ${result.success ? 'text-green-400' : 'text-red-400'}`}>
+          <p className={`text-xs ${result.success ? 'text-success' : 'text-danger'}`}>
             {result.message}
           </p>
         )}

@@ -143,7 +143,7 @@ export function ReportWindowApp(): React.JSX.Element {
 
   if (!reportId) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-red-400">
+      <div className="flex h-full items-center justify-center text-sm text-danger">
         Missing report ID
       </div>
     )
@@ -151,7 +151,7 @@ export function ReportWindowApp(): React.JSX.Element {
 
   if (!report) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-500">
+      <div className="flex h-full items-center justify-center text-sm text-muted">
         Loading report…
       </div>
     )
@@ -159,7 +159,7 @@ export function ReportWindowApp(): React.JSX.Element {
 
   const renderResults = (): React.JSX.Element => {
     if (!result) {
-      return <p className="text-sm text-gray-500">{emptyResultMessage(report.type)}</p>
+      return <p className="text-sm text-muted">{emptyResultMessage(report.type)}</p>
     }
 
     switch (result.type) {
@@ -189,7 +189,7 @@ export function ReportWindowApp(): React.JSX.Element {
           />
         )
       default:
-        return <p className="text-sm text-gray-500">Unsupported report type.</p>
+        return <p className="text-sm text-muted">Unsupported report type.</p>
     }
   }
 

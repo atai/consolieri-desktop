@@ -7,6 +7,7 @@ import { getDatabase, closeDatabase } from './db/database'
 import { registerIpcHandlers } from './ipc/register'
 import { sessionManager } from './compositionRoot'
 import { backupService } from './backup/backupServiceInstance'
+import { CHROME_BG_HEX } from '../shared/chromeHex'
 
 // Must be called before app.whenReady() and before any call to app.getPath('userData').
 // This redirects ALL Electron storage (SQLite, localStorage, IndexedDB, cookies)
@@ -46,7 +47,7 @@ function createWindow(): void {
     autoHideMenuBar: true,
     title: APP_NAME,
     icon: appIconPath(),
-    backgroundColor: '#0f1117',
+    backgroundColor: CHROME_BG_HEX,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,

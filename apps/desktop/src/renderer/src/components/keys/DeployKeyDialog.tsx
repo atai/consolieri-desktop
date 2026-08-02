@@ -81,22 +81,22 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md rounded-lg border border-[#30363d] bg-[#161b22] p-4 shadow-xl">
-        <h3 className="mb-3 text-base font-medium text-gray-100">Deploy public key</h3>
-        <p className="mb-1 truncate text-xs text-gray-500">{keyInfo.label}</p>
-        <p className="mb-3 text-xs text-gray-600">
-          Appends the public key to <code className="text-gray-400">~/.ssh/authorized_keys</code> on the
+      <div className="w-full max-w-md rounded-lg border border-border bg-surface p-4 shadow-xl">
+        <h3 className="mb-3 text-base font-medium text-fg">Deploy public key</h3>
+        <p className="mb-1 truncate text-xs text-muted">{keyInfo.label}</p>
+        <p className="mb-3 text-xs text-muted">
+          Appends the public key to <code className="text-muted">~/.ssh/authorized_keys</code> on the
           remote host.
         </p>
 
         {hosts.length === 0 ? (
-          <p className="mb-4 text-sm text-gray-400">No hosts with SSH profiles.</p>
+          <p className="mb-4 text-sm text-muted">No hosts with SSH profiles.</p>
         ) : (
           <div className="space-y-3">
             <label className="block text-sm">
-              <span className="text-gray-400">Host</span>
+              <span className="text-muted">Host</span>
               <select
-                className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                 value={hostId}
                 onChange={(e) => setHostId(e.target.value)}
                 disabled={deploying}
@@ -109,9 +109,9 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
               </select>
             </label>
             <label className="block text-sm">
-              <span className="text-gray-400">SSH profile (for connection)</span>
+              <span className="text-muted">SSH profile (for connection)</span>
               <select
-                className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                 value={profileId}
                 onChange={(e) => setProfileId(e.target.value)}
                 disabled={deploying}
@@ -126,10 +126,10 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
             </label>
             {needsPassword && (
               <label className="block text-sm">
-                <span className="text-gray-400">Password for SSH login</span>
+                <span className="text-muted">Password for SSH login</span>
                 <input
                   type="password"
-                  className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                  className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                   value={deployPassword}
                   onChange={(e) => setDeployPassword(e.target.value)}
                   placeholder="Required if profile has no credentials"
@@ -137,7 +137,7 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
                 />
               </label>
             )}
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-400">
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-muted">
               <input
                 type="checkbox"
                 checked={openLog}
@@ -151,14 +151,14 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
 
         {result && (
           <div className="mt-3 space-y-2">
-            <p className={`text-xs ${result.success ? 'text-green-400' : 'text-red-400'}`}>
+            <p className={`text-xs ${result.success ? 'text-success' : 'text-danger'}`}>
               {result.message}
             </p>
             {result.logId && (
               <button
                 type="button"
                 onClick={handleOpenLog}
-                className="text-xs text-blue-400 hover:underline"
+                className="text-xs text-accent hover:underline"
               >
                 View deploy log
               </button>
@@ -171,7 +171,7 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
             type="button"
             onClick={onClose}
             disabled={deploying}
-            className="rounded px-3 py-1.5 text-sm text-gray-400 hover:bg-[#21262d] disabled:opacity-50"
+            className="rounded px-3 py-1.5 text-sm text-muted hover:bg-surface-raised disabled:opacity-50"
           >
             {result?.success ? 'Close' : 'Cancel'}
           </button>
@@ -180,7 +180,7 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
               type="button"
               disabled={deploying || !hostId || (needsPassword && !deployPassword)}
               onClick={handleDeploy}
-              className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-500 disabled:opacity-50"
+              className="rounded bg-accent px-3 py-1.5 text-sm text-accent-on hover:bg-accent-hover disabled:opacity-50"
             >
               {deploying ? 'Deploying…' : 'Deploy'}
             </button>

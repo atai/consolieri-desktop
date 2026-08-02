@@ -1,0 +1,29 @@
+---
+description: Consoleri UI must consume Open Design tokens — no ad-hoc palettes
+globs: apps/desktop/src/renderer/**/*.{tsx,ts,css}
+alwaysApply: false
+---
+
+# Consoleri design system
+
+Before changing UI styles, read `design-system/USAGE.md` and `design-system/DESIGN.md`.
+
+## Source of truth
+
+- Canonical tokens: `design-system/tokens.css` (Open Design charter: `--bg`, `--accent`, …)
+- App C-extensions: `design-system/tokens.app-extensions.css`
+- Tailwind bridge: import `@consoleri/design-system/tailwind` only via `app.css` — do not add a second `@theme` in feature files
+- Hex for canvas/xterm: `apps/desktop/src/renderer/src/theme/hex.ts` (synced with `design-system/hex.json`)
+
+## Do
+
+- Use semantic utilities: `bg-bg`, `bg-surface`, `text-fg`, `text-muted`, `border-border`, `bg-accent`
+- Prefer `components/ui` primitives for buttons, modals, fields
+- Put product-only CSS vars in `tokens.app-extensions.css`, not in page components
+
+## Avoid
+
+- Arbitrary hex in `className` (`bg-[#…]`, `border-[#…]`)
+- Parallel palettes (`gray-*` / `blue-600` as brand colors)
+- Editing `tailwind-v4.css` values by hand — regenerate from `tokens.css`
+- Treating `brand.json` as runtime CSS source of truth

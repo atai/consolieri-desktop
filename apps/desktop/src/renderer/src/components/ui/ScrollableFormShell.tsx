@@ -25,17 +25,17 @@ export function ScrollableFormShell({
 
   return (
     <div
-      className={`flex min-h-0 flex-col overflow-hidden bg-[#0d1117] ${maxHeightClass} ${
-        bordered ? 'border-b border-[#30363d]' : ''
+      className={`flex min-h-0 flex-col overflow-hidden bg-bg ${maxHeightClass} ${
+        bordered ? 'border-b border-border' : ''
       }`}
     >
       {showHeader && (
         <div className="shrink-0 px-4 pt-4">
-          {header ?? <h3 className="text-sm font-medium text-gray-100">{title}</h3>}
+          {header ?? <h3 className="text-sm font-medium text-fg">{title}</h3>}
         </div>
       )}
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">{children}</div>
-      <div className="shrink-0 border-t border-[#30363d] px-4 py-3">{footer}</div>
+      <div className="shrink-0 border-t border-border px-4 py-3">{footer}</div>
     </div>
   )
 }

@@ -14,11 +14,11 @@ function formatDuration(ms: number): string {
 function statusBadge(status: string): string {
   switch (status) {
     case 'ok':
-      return 'text-green-400'
+      return 'text-success'
     case 'skipped':
-      return 'text-yellow-400'
+      return 'text-warn'
     default:
-      return 'text-red-400'
+      return 'text-danger'
   }
 }
 
@@ -52,7 +52,7 @@ export function ConnectivityResultsTable({
   return (
     <table className="w-full border-collapse text-left">
       <thead>
-        <tr className="border-b border-[#30363d] text-xs uppercase text-gray-500">
+        <tr className="border-b border-border text-xs uppercase text-muted">
           <th className="px-3 py-2 font-medium">Host</th>
           <th className="px-3 py-2 font-medium">Profile</th>
           <th className="px-3 py-2 font-medium">Ping</th>
@@ -76,12 +76,12 @@ export function ConnectivityResultsTable({
             (entry.log && entry.log.length > 0)
           return (
             <Fragment key={`${entry.hostId}-${entry.profileId}`}>
-              <tr className="border-b border-[#30363d]">
-                <td className="px-3 py-2 text-sm text-gray-200">{hostName(entry.hostId)}</td>
-                <td className="px-3 py-2 text-sm text-gray-400">{profileName(entry.profileId)}</td>
+              <tr className="border-b border-border">
+                <td className="px-3 py-2 text-sm text-fg">{hostName(entry.hostId)}</td>
+                <td className="px-3 py-2 text-sm text-muted">{profileName(entry.profileId)}</td>
                 <td
                   className={`px-3 py-2 text-sm font-medium uppercase ${
-                    entry.pingStatus ? statusBadge(entry.pingStatus) : 'text-gray-500'
+                    entry.pingStatus ? statusBadge(entry.pingStatus) : 'text-muted'
                   }`}
                 >
                   {formatPingStatus(entry.pingStatus)}
@@ -100,7 +100,7 @@ export function ConnectivityResultsTable({
                       : '—'}
                   </td>
                 )}
-                <td className="px-3 py-2 text-sm text-gray-400">
+                <td className="px-3 py-2 text-sm text-muted">
                   {formatDuration(entry.durationMs)}
                 </td>
                 <td className="px-3 py-2 text-sm">
@@ -108,7 +108,7 @@ export function ConnectivityResultsTable({
                     <button
                       type="button"
                       onClick={() => setExpandedHostId(expanded ? null : entry.hostId)}
-                      className="text-xs text-blue-400 hover:underline"
+                      className="text-xs text-accent hover:underline"
                     >
                       {expanded ? 'Hide' : 'Show log'}
                     </button>
@@ -116,19 +116,19 @@ export function ConnectivityResultsTable({
                 </td>
               </tr>
               {expanded && hasDetails && (
-                <tr className="bg-[#161b22]">
+                <tr className="bg-surface">
                   <td colSpan={columnCount} className="px-3 py-2">
                     {entry.pingError && (
-                      <p className="mb-1 text-xs text-red-400">PING ERROR: {entry.pingError}</p>
+                      <p className="mb-1 text-xs text-danger">PING ERROR: {entry.pingError}</p>
                     )}
                     {entry.httpError && (
-                      <p className="mb-1 text-xs text-red-400">HTTP ERROR: {entry.httpError}</p>
+                      <p className="mb-1 text-xs text-danger">HTTP ERROR: {entry.httpError}</p>
                     )}
                     {entry.error && (
-                      <p className="mb-1 text-xs text-red-400">SSH ERROR: {entry.error}</p>
+                      <p className="mb-1 text-xs text-danger">SSH ERROR: {entry.error}</p>
                     )}
                     {entry.log && entry.log.length > 0 && (
-                      <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-xs text-gray-400">
+                      <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-xs text-muted">
                         {entry.log.join('\n')}
                       </pre>
                     )}

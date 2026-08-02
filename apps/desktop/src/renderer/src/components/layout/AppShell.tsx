@@ -69,7 +69,7 @@ export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
 
   if (!bootstrapped) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#0f1117] text-sm text-gray-500">
+      <div className="flex h-screen w-screen items-center justify-center bg-bg text-sm text-muted">
         Loading…
       </div>
     )
@@ -78,7 +78,7 @@ export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
   const listUsesWindows = settings.sessionOpenMode === 'window'
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#0f1117] text-gray-100">
+    <div className="flex h-screen w-screen overflow-hidden bg-bg text-fg">
       <NavRail />
       {appView === 'list' && (
         <>
@@ -90,7 +90,7 @@ export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
               {workspaceReady ? (
                 <MosaicWorkspace />
               ) : (
-                <div className="flex h-full items-center justify-center text-sm text-gray-500">
+                <div className="flex h-full items-center justify-center text-sm text-muted">
                   Loading workspace…
                 </div>
               )}
@@ -104,12 +104,12 @@ export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
         </main>
       )}
       {appView === 'reports' && (
-        <main className="min-h-0 min-w-0 flex-1 overflow-hidden bg-[#161b22]">
+        <main className="min-h-0 min-w-0 flex-1 overflow-hidden bg-surface">
           <ReportsManager />
         </main>
       )}
       {appView === 'settings' && (
-        <main className="min-h-0 min-w-0 flex-1 overflow-hidden bg-[#161b22]">
+        <main className="min-h-0 min-w-0 flex-1 overflow-hidden bg-surface">
           <SettingsPanel />
         </main>
       )}

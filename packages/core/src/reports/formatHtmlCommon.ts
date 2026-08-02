@@ -51,13 +51,13 @@ const REPORT_HTML_STYLES = `
     font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     font-size: 14px;
     line-height: 1.5;
-    color: #e6edf3;
-    background: #0f1117;
+    color: #f1f5f9;
+    background: #0c141f;
   }
   h1 { margin: 0 0 0.25rem; font-size: 1.25rem; font-weight: 600; }
-  h2 { margin: 1.5rem 0 0.75rem; font-size: 1rem; font-weight: 600; color: #e6edf3; }
-  h3 { margin: 1rem 0 0.5rem; font-size: 0.875rem; font-weight: 600; color: #e6edf3; }
-  .meta { margin: 0 0 1.25rem; font-size: 0.75rem; color: #8b949e; }
+  h2 { margin: 1.5rem 0 0.75rem; font-size: 1rem; font-weight: 600; color: #f1f5f9; }
+  h3 { margin: 1rem 0 0.5rem; font-size: 0.875rem; font-weight: 600; color: #f1f5f9; }
+  .meta { margin: 0 0 1.25rem; font-size: 0.75rem; color: #8b9bb4; }
   table {
     width: 100%;
     border-collapse: collapse;
@@ -65,7 +65,7 @@ const REPORT_HTML_STYLES = `
   }
   th, td {
     padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid #30363d;
+    border-bottom: 1px solid #2a3548;
     text-align: left;
     vertical-align: top;
   }
@@ -74,14 +74,14 @@ const REPORT_HTML_STYLES = `
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    color: #8b949e;
+    color: #8b9bb4;
   }
-  td.host { color: #e6edf3; }
-  td.muted { color: #8b949e; }
-  .status-ok { color: #4ade80; }
-  .status-fail { color: #f87171; }
-  .status-skipped { color: #facc15; }
-  .status-muted { color: #8b949e; }
+  td.host { color: #f1f5f9; }
+  td.muted { color: #8b9bb4; }
+  .status-ok { color: #10b981; }
+  .status-fail { color: #ef4444; }
+  .status-skipped { color: #eab308; }
+  .status-muted { color: #8b9bb4; }
   .detail-section { margin-top: 1rem; }
   .log-block {
     margin: 0.5rem 0 0;
@@ -91,8 +91,8 @@ const REPORT_HTML_STYLES = `
     font-size: 0.8125rem;
     line-height: 1.45;
     color: #c9d1d9;
-    background: #161b22;
-    border: 1px solid #30363d;
+    background: #151d2b;
+    border: 1px solid #2a3548;
     border-radius: 6px;
     white-space: pre-wrap;
     word-break: break-word;
@@ -100,9 +100,9 @@ const REPORT_HTML_STYLES = `
   .summary {
     margin-top: 1.25rem;
     padding-top: 0.75rem;
-    border-top: 1px solid #30363d;
+    border-top: 1px solid #2a3548;
     font-size: 0.8125rem;
-    color: #8b949e;
+    color: #8b9bb4;
   }
   code {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;

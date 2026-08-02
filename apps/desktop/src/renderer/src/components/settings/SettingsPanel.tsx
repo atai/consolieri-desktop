@@ -22,12 +22,12 @@ function GeneralTab(): React.JSX.Element {
   return (
     <div className="max-w-lg space-y-6 p-6">
       <div>
-        <h2 className="mb-4 text-base font-semibold text-gray-100">Session</h2>
+        <h2 className="mb-4 text-base font-semibold text-fg">Session</h2>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-200">Open sessions in</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-sm text-fg">Open sessions in</p>
+              <p className="text-xs text-muted">
                 Workspace tabs keep everything in one window; separate windows open each session
                 independently
               </p>
@@ -40,8 +40,8 @@ function GeneralTab(): React.JSX.Element {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-200">Auto-open connection log</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-sm text-fg">Auto-open connection log</p>
+              <p className="text-xs text-muted">
                 Automatically show the connection log panel when a session opens
               </p>
             </div>
@@ -51,7 +51,7 @@ function GeneralTab(): React.JSX.Element {
               aria-checked={settings.autoOpenConnectionLog}
               onClick={() => void setAutoOpenConnectionLog(!settings.autoOpenConnectionLog)}
               className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none ${
-                settings.autoOpenConnectionLog ? 'bg-blue-600' : 'bg-[#30363d]'
+                settings.autoOpenConnectionLog ? 'bg-accent' : 'bg-border'
               }`}
             >
               <span
@@ -71,14 +71,14 @@ export function SettingsPanel(): React.JSX.Element {
   const [activeTab, setActiveTab] = useState<SettingsTab>('general')
 
   return (
-    <div className="flex h-full min-h-0 bg-[#161b22]">
+    <div className="flex h-full min-h-0 bg-surface">
       {/* Left tab rail */}
       <nav
-        className="flex w-44 shrink-0 flex-col border-r border-[#30363d] py-2"
+        className="flex w-44 shrink-0 flex-col border-r border-border py-2"
         aria-label="Settings sections"
       >
         <div className="px-3 pb-2 pt-1">
-          <h1 className="text-lg font-semibold text-gray-100">Settings</h1>
+          <h1 className="text-lg font-semibold text-fg">Settings</h1>
         </div>
         {TABS.map((tab) => (
           <button
@@ -87,8 +87,8 @@ export function SettingsPanel(): React.JSX.Element {
             onClick={() => setActiveTab(tab.id)}
             className={`px-3 py-2 text-left text-sm transition-colors ${
               activeTab === tab.id
-                ? 'bg-[#21262d] text-gray-100'
-                : 'text-gray-400 hover:bg-[#1c2128] hover:text-gray-200'
+                ? 'bg-surface-raised text-fg'
+                : 'text-muted hover:bg-surface-raised hover:text-fg'
             }`}
           >
             {tab.label}

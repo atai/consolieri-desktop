@@ -26,7 +26,7 @@ export function VaultSettingsPanel(): React.JSX.Element {
 
   if (!settings) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-500">
+      <div className="flex h-full items-center justify-center text-sm text-muted">
         Loading Vault settings…
       </div>
     )
@@ -121,9 +121,9 @@ export function VaultSettingsPanel(): React.JSX.Element {
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
-      <header className="border-b border-[#30363d] px-6 py-4">
-        <h1 className="text-lg font-semibold text-gray-100">HashiCorp Vault</h1>
-        <p className="mt-1 text-sm text-gray-500">
+      <header className="border-b border-border px-6 py-4">
+        <h1 className="text-lg font-semibold text-fg">HashiCorp Vault</h1>
+        <p className="mt-1 text-sm text-muted">
           Configure an optional Vault backend for profile credentials. Local OS vault remains available.
         </p>
       </header>
@@ -131,7 +131,7 @@ export function VaultSettingsPanel(): React.JSX.Element {
       <div className="min-h-0 flex-1 overflow-y-auto px-6 py-4">
         <div className="mx-auto max-w-2xl space-y-4 text-sm">
           {status && (
-            <div className="rounded border border-[#30363d] bg-[#0d1117] px-3 py-2 text-xs text-gray-400">
+            <div className="rounded border border-border bg-bg px-3 py-2 text-xs text-muted">
               {status.enabled ? (
                 <>
                   {status.authenticated ? 'Authenticated' : 'Not authenticated'}
@@ -153,13 +153,13 @@ export function VaultSettingsPanel(): React.JSX.Element {
               checked={settings.enabled}
               onChange={(e) => setSettings({ ...settings, enabled: e.target.checked })}
             />
-            <span className="text-gray-200">Enable Vault backend</span>
+            <span className="text-fg">Enable Vault backend</span>
           </label>
 
           <label className="block">
-            <span className="text-gray-400">Vault address</span>
+            <span className="text-muted">Vault address</span>
             <input
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
               value={settings.address}
               onChange={(e) => setSettings({ ...settings, address: e.target.value })}
               placeholder="https://vault.example.com:8200"
@@ -167,9 +167,9 @@ export function VaultSettingsPanel(): React.JSX.Element {
           </label>
 
           <label className="block">
-            <span className="text-gray-400">Namespace (optional)</span>
+            <span className="text-muted">Namespace (optional)</span>
             <input
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
               value={settings.namespace}
               onChange={(e) => setSettings({ ...settings, namespace: e.target.value })}
             />
@@ -177,17 +177,17 @@ export function VaultSettingsPanel(): React.JSX.Element {
 
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
-              <span className="text-gray-400">Default KV mount</span>
+              <span className="text-muted">Default KV mount</span>
               <input
-                className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                 value={settings.defaultKvMount}
                 onChange={(e) => setSettings({ ...settings, defaultKvMount: e.target.value })}
               />
             </label>
             <label className="block">
-              <span className="text-gray-400">Secret path prefix</span>
+              <span className="text-muted">Secret path prefix</span>
               <input
-                className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                 value={settings.secretPathPrefix}
                 onChange={(e) => setSettings({ ...settings, secretPathPrefix: e.target.value })}
               />
@@ -195,9 +195,9 @@ export function VaultSettingsPanel(): React.JSX.Element {
           </div>
 
           <label className="block">
-            <span className="text-gray-400">Default backend for new profiles</span>
+            <span className="text-muted">Default backend for new profiles</span>
             <select
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
               value={settings.defaultBackend}
               onChange={(e) =>
                 setSettings({
@@ -213,8 +213,8 @@ export function VaultSettingsPanel(): React.JSX.Element {
             </select>
           </label>
 
-          <fieldset className="space-y-3 rounded border border-[#30363d] p-3">
-            <legend className="px-1 text-gray-300">Authentication</legend>
+          <fieldset className="space-y-3 rounded border border-border p-3">
+            <legend className="px-1 text-fg-2">Authentication</legend>
             <div className="flex flex-wrap gap-2">
               {(['token', 'approle', 'oidc'] as const).map((method) => (
                 <button
@@ -223,8 +223,8 @@ export function VaultSettingsPanel(): React.JSX.Element {
                   onClick={() => setAuthMethod(method)}
                   className={`rounded px-2 py-1 text-xs uppercase ${
                     settings.auth.method === method
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-[#21262d] text-gray-300 hover:bg-[#30363d]'
+                      ? 'bg-accent text-accent-on'
+                      : 'bg-surface-raised text-fg-2 hover:bg-border'
                   }`}
                 >
                   {method}
@@ -234,12 +234,12 @@ export function VaultSettingsPanel(): React.JSX.Element {
 
             {settings.auth.method === 'token' && (
               <label className="block">
-                <span className="text-gray-400">
+                <span className="text-muted">
                   Token {settings.auth.hasToken ? '(configured)' : ''}
                 </span>
                 <input
                   type="password"
-                  className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                  className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                   value={tokenInput}
                   onChange={(e) => setTokenInput(e.target.value)}
                   placeholder={settings.auth.hasToken ? 'Leave blank to keep current token' : 'Vault token'}
@@ -250,9 +250,9 @@ export function VaultSettingsPanel(): React.JSX.Element {
             {settings.auth.method === 'approle' && (
               <>
                 <label className="block">
-                  <span className="text-gray-400">Role ID</span>
+                  <span className="text-muted">Role ID</span>
                   <input
-                    className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                    className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                     value={settings.auth.roleId}
                     onChange={(e) => {
                       if (settings.auth.method !== 'approle') return
@@ -264,9 +264,9 @@ export function VaultSettingsPanel(): React.JSX.Element {
                   />
                 </label>
                 <label className="block">
-                  <span className="text-gray-400">AppRole mount path</span>
+                  <span className="text-muted">AppRole mount path</span>
                   <input
-                    className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                    className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                     value={settings.auth.mountPath}
                     onChange={(e) => {
                       if (settings.auth.method !== 'approle') return
@@ -278,12 +278,12 @@ export function VaultSettingsPanel(): React.JSX.Element {
                   />
                 </label>
                 <label className="block">
-                  <span className="text-gray-400">
+                  <span className="text-muted">
                     Secret ID {settings.auth.hasSecretId ? '(configured)' : ''}
                   </span>
                   <input
                     type="password"
-                    className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                    className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                     value={secretIdInput}
                     onChange={(e) => setSecretIdInput(e.target.value)}
                     placeholder={
@@ -297,9 +297,9 @@ export function VaultSettingsPanel(): React.JSX.Element {
             {settings.auth.method === 'oidc' && (
               <>
                 <label className="block">
-                  <span className="text-gray-400">OIDC role</span>
+                  <span className="text-muted">OIDC role</span>
                   <input
-                    className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                    className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                     value={settings.auth.role}
                     onChange={(e) => {
                       if (settings.auth.method !== 'oidc') return
@@ -311,9 +311,9 @@ export function VaultSettingsPanel(): React.JSX.Element {
                   />
                 </label>
                 <label className="block">
-                  <span className="text-gray-400">OIDC mount path</span>
+                  <span className="text-muted">OIDC mount path</span>
                   <input
-                    className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                    className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                     value={settings.auth.mountPath}
                     onChange={(e) => {
                       if (settings.auth.method !== 'oidc') return
@@ -329,7 +329,7 @@ export function VaultSettingsPanel(): React.JSX.Element {
                     type="button"
                     disabled={saving}
                     onClick={() => void savePatch({ auth: settings.auth }).then(() => window.consoleri.vault.login()).then(refresh).catch((e) => setMessage(String(e)))}
-                    className="rounded bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-500 disabled:opacity-50"
+                    className="rounded bg-accent px-3 py-1.5 text-xs text-accent-on hover:bg-accent-hover disabled:opacity-50"
                   >
                     Sign in to Vault
                   </button>
@@ -337,7 +337,7 @@ export function VaultSettingsPanel(): React.JSX.Element {
                     type="button"
                     disabled={saving}
                     onClick={() => void window.consoleri.vault.logout().then(refresh)}
-                    className="rounded border border-[#30363d] px-3 py-1.5 text-xs text-gray-300 hover:bg-[#21262d]"
+                    className="rounded border border-border px-3 py-1.5 text-xs text-fg-2 hover:bg-surface-raised"
                   >
                     Sign out
                   </button>
@@ -346,7 +346,7 @@ export function VaultSettingsPanel(): React.JSX.Element {
             )}
           </fieldset>
 
-          <label className="flex items-center gap-2 text-xs text-amber-400/90">
+          <label className="flex items-center gap-2 text-xs text-brand/90">
             <input
               type="checkbox"
               checked={settings.tlsSkipVerify}
@@ -355,14 +355,14 @@ export function VaultSettingsPanel(): React.JSX.Element {
             Skip TLS verification (development only)
           </label>
 
-          {message && <p className="text-xs text-gray-400">{message}</p>}
+          {message && <p className="text-xs text-muted">{message}</p>}
 
           <div className="flex gap-2 pt-2">
             <button
               type="button"
               disabled={saving || testing}
               onClick={() => void handleSave()}
-              className="rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-500 disabled:opacity-50"
+              className="rounded bg-accent px-4 py-2 text-sm text-accent-on hover:bg-accent-hover disabled:opacity-50"
             >
               {saving ? 'Saving…' : 'Save'}
             </button>
@@ -370,7 +370,7 @@ export function VaultSettingsPanel(): React.JSX.Element {
               type="button"
               disabled={saving || testing}
               onClick={() => void handleTest()}
-              className="rounded border border-[#30363d] px-4 py-2 text-sm text-gray-200 hover:bg-[#21262d] disabled:opacity-50"
+              className="rounded border border-border px-4 py-2 text-sm text-fg hover:bg-surface-raised disabled:opacity-50"
             >
               {testing ? 'Testing…' : 'Test connection'}
             </button>

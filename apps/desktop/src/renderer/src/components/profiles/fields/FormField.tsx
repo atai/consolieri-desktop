@@ -7,14 +7,15 @@ interface FormFieldProps {
 export function FormField({ label, children, hint }: FormFieldProps): React.JSX.Element {
   return (
     <label className="block">
-      <span className="text-gray-400">{label}</span>
+      <span className="text-muted">{label}</span>
       {children}
-      {hint && <span className="mt-1 block text-xs text-gray-500">{hint}</span>}
+      {hint && <span className="mt-1 block text-xs text-muted">{hint}</span>}
     </label>
   )
 }
 
-const INPUT_CLASS = 'mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100'
+const INPUT_CLASS =
+  'mt-1 w-full rounded-sm border border-border bg-bg px-2 py-1.5 text-fg'
 
 interface LabeledSelectProps {
   label: string

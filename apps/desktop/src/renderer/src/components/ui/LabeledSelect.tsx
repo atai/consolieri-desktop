@@ -20,9 +20,9 @@ export function LabeledSelect({
 }: LabeledSelectProps): React.JSX.Element {
   return (
     <label className="block text-sm">
-      <span className="text-gray-400">{label}</span>
+      <span className="text-muted">{label}</span>
       <select
-        className={`mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100 ${className}`}
+        className={`mt-1 w-full rounded-sm border border-border bg-bg px-2 py-1.5 text-fg ${className}`}
         {...props}
       >
         {emptyOption && <option value={emptyOption.value}>{emptyOption.label}</option>}

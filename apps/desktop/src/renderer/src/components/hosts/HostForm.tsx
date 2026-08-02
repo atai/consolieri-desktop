@@ -188,7 +188,7 @@ export function HostForm({
         maxHeightClass={compact ? SCROLLABLE_FORM_MAX_HEIGHT_PANEL : undefined}
         title={
           !host ? (
-            <span className="text-base font-medium text-gray-200">
+            <span className="text-base font-medium text-fg">
               {isCopyMode ? 'Copy host' : 'Add host'}
             </span>
           ) : undefined
@@ -198,7 +198,7 @@ export function HostForm({
             <button
               type="button"
               onClick={onCancel}
-              className="rounded px-3 py-1.5 text-gray-400 hover:bg-[#21262d]"
+              className="rounded px-3 py-1.5 text-muted hover:bg-surface-raised"
             >
               Cancel
             </button>
@@ -206,7 +206,7 @@ export function HostForm({
               type="submit"
               form={formId}
               disabled={saving}
-              className="rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-500 disabled:opacity-50"
+              className="rounded bg-accent px-3 py-1.5 text-accent-on hover:bg-accent-hover disabled:opacity-50"
             >
               {saving ? 'Saving…' : 'Save'}
             </button>
@@ -215,35 +215,35 @@ export function HostForm({
       >
         <form id={formId} onSubmit={handleSubmit} className="space-y-3 text-sm">
         {formErrorEntries.length > 0 && (
-          <ul className="rounded border border-red-800 bg-red-950/40 px-3 py-2 text-xs text-red-400">
+          <ul className="rounded border border-red-800 bg-red-950/40 px-3 py-2 text-xs text-danger">
             {formErrorEntries.map(([field, msg]) => (
               <li key={field}>{msg}</li>
             ))}
           </ul>
         )}
         <label className="block">
-          <span className="text-gray-400">Name</span>
+          <span className="text-muted">Name</span>
           <input
-            className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
         </label>
         <label className="block">
-          <span className="text-gray-400">Hostname / IP</span>
+          <span className="text-muted">Hostname / IP</span>
           <input
-            className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
             value={hostname}
             onChange={(e) => setHostname(e.target.value)}
             required
           />
         </label>
         <label className="block">
-          <span className="text-gray-400">HTTP Endpoint</span>
+          <span className="text-muted">HTTP Endpoint</span>
           <input
             type="url"
-            className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
             value={httpEndpoint}
             onChange={(e) => {
               setHttpEndpoint(e.target.value)
@@ -251,27 +251,27 @@ export function HostForm({
             }}
             placeholder="https://alb.example/health"
           />
-          <span className="mt-1 block text-xs text-gray-500">
+          <span className="mt-1 block text-xs text-muted">
             Optional. For HTTP(S) traffic through ALB terminating on this host.
           </span>
           {httpEndpointError && (
-            <span className="mt-1 block text-xs text-red-400">{httpEndpointError}</span>
+            <span className="mt-1 block text-xs text-danger">{httpEndpointError}</span>
           )}
         </label>
         <div className="grid grid-cols-2 gap-2">
           <label className="block">
-            <span className="text-gray-400">Port</span>
+            <span className="text-muted">Port</span>
             <input
               type="number"
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
               value={port}
               onChange={(e) => setPort(Number(e.target.value))}
             />
           </label>
           <label className="block">
-            <span className="text-gray-400">OS</span>
+            <span className="text-muted">OS</span>
             <select
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
               value={osType}
               onChange={(e) => setOsType(e.target.value as OsType)}
             >
@@ -285,9 +285,9 @@ export function HostForm({
         </div>
 
         <label className="block">
-          <span className="text-gray-400">Log verbosity</span>
+          <span className="text-muted">Log verbosity</span>
           <select
-            className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
             value={logVerbosity}
             onChange={(e) => setLogVerbosity(e.target.value as HostLogVerbosity)}
           >
@@ -301,9 +301,9 @@ export function HostForm({
 
         {(host || isCopyMode) && (
           <label className="block">
-            <span className="text-gray-400">UX profile</span>
+            <span className="text-muted">UX profile</span>
             <select
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
               value={uxProfileId}
               onChange={(e) => setUxProfileId(e.target.value)}
             >
@@ -314,7 +314,7 @@ export function HostForm({
                 </option>
               ))}
             </select>
-            <span className="mt-1 block text-xs text-gray-500">
+            <span className="mt-1 block text-xs text-muted">
               Controls terminal colors and shell prompt style. Edit the profile to change Shell prompt
               (Consoleri vs server).
             </span>
@@ -324,7 +324,7 @@ export function HostForm({
         {!host && (
           <div>
             <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
+              <span className="text-xs font-medium uppercase tracking-wide text-muted">
                 Connection profiles
               </span>
               {!showAddProfile && (
@@ -332,14 +332,14 @@ export function HostForm({
                   <button
                     type="button"
                     onClick={() => setShowPickDialog(true)}
-                    className="text-xs text-blue-400 hover:underline"
+                    className="text-xs text-accent hover:underline"
                   >
                     + Pick profile
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowAddProfile(true)}
-                    className="text-xs text-blue-400 hover:underline"
+                    className="text-xs text-accent hover:underline"
                   >
                     + Add profile
                   </button>
@@ -348,7 +348,7 @@ export function HostForm({
             </div>
 
             {showAddProfile && (
-              <div className="mb-2 rounded border border-[#30363d] bg-[#0d1117]">
+              <div className="mb-2 rounded border border-border bg-bg">
                 <ProfileForm
                   compact
                   draft
@@ -361,19 +361,19 @@ export function HostForm({
             )}
 
             {pendingProfiles.length === 0 && !showAddProfile ? (
-              <p className="text-xs text-gray-500">No profiles yet</p>
+              <p className="text-xs text-muted">No profiles yet</p>
             ) : (
               <ul className="space-y-1">
                 {pendingProfiles.map((item) => (
                   <li
                     key={item.key}
-                    className="flex items-center justify-between gap-2 rounded bg-[#0d1117] px-2 py-1.5 text-xs text-gray-300"
+                    className="flex items-center justify-between gap-2 rounded bg-bg px-2 py-1.5 text-xs text-fg-2"
                   >
                     <span className="truncate">{pendingProfileLabel(item)}</span>
                     <button
                       type="button"
                       onClick={() => removePending(item.key)}
-                      className="shrink-0 text-gray-500 hover:text-red-400"
+                      className="shrink-0 text-muted hover:text-danger"
                     >
                       Remove
                     </button>
@@ -385,7 +385,7 @@ export function HostForm({
         )}
 
         <label className="block">
-          <span className="text-gray-400">Tags (comma-separated)</span>
+          <span className="text-muted">Tags (comma-separated)</span>
           <TagInput
             id="host-tags"
             value={tags}
@@ -397,10 +397,10 @@ export function HostForm({
 
         {(host || isCopyMode) && otherHosts.length > 0 && (
           <div className="block">
-            <span className="text-gray-400">Related hosts</span>
-            <div className="mt-1 max-h-28 overflow-y-auto rounded border border-[#30363d] bg-[#0d1117] p-2">
+            <span className="text-muted">Related hosts</span>
+            <div className="mt-1 max-h-28 overflow-y-auto rounded border border-border bg-bg p-2">
               {otherHosts.map((h) => (
-                <label key={h.id} className="flex cursor-pointer items-center gap-2 py-0.5 text-xs text-gray-300">
+                <label key={h.id} className="flex cursor-pointer items-center gap-2 py-0.5 text-xs text-fg-2">
                   <input
                     type="checkbox"
                     checked={relatedHostIds.includes(h.id)}
@@ -419,9 +419,9 @@ export function HostForm({
 
         {(host || isCopyMode) && (
           <label className="block">
-            <span className="text-gray-400">Gateway host</span>
+            <span className="text-muted">Gateway host</span>
             <select
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
               value={gatewayHostId}
               onChange={(e) => setGatewayHostId(e.target.value)}
             >
@@ -436,9 +436,9 @@ export function HostForm({
         )}
 
         <label className="block">
-          <span className="text-gray-400">Notes</span>
+          <span className="text-muted">Notes</span>
           <textarea
-            className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
             rows={2}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}

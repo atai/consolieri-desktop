@@ -31,23 +31,23 @@ export function UxProfileListItem({
         : 'no linked hosts'
 
   return (
-    <li className="border-b border-[#30363d] px-3 py-2.5 last:border-b-0">
+    <li className="border-b border-border px-3 py-2.5 last:border-b-0">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="truncate text-sm font-medium text-gray-200">{profile.name}</span>
+            <span className="truncate text-sm font-medium text-fg">{profile.name}</span>
             {profile.isBuiltin && (
-              <span className="rounded bg-[#21262d] px-1.5 py-0.5 text-[10px] uppercase text-gray-400">
+              <span className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] uppercase text-muted">
                 builtin
               </span>
             )}
             {isActive && (
-              <span className="rounded bg-blue-900/50 px-1.5 py-0.5 text-[10px] text-blue-300">
+              <span className="rounded bg-accent-muted px-1.5 py-0.5 text-[10px] text-accent">
                 active
               </span>
             )}
           </div>
-          <p className="mt-0.5 text-xs text-gray-500">
+          <p className="mt-0.5 text-xs text-muted">
             {hostLine} · {profile.terminal.fontSize}px · scrollback {profile.terminal.scrollback} ·
             prompt {profile.terminal.shellPrompt === 'server' ? 'server' : 'Consoleri'}
           </p>

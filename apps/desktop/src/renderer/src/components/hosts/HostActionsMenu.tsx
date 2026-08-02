@@ -53,18 +53,18 @@ export function HostActionsMenu({
 
   return (
     <div ref={rootRef} className="relative shrink-0">
-      <div className="flex overflow-hidden rounded border border-blue-600/80">
+      <div className="flex overflow-hidden rounded border border-accent/80">
         <button
           type="button"
           onClick={onAddHost}
-          className="bg-blue-600 px-2 py-1 text-[11px] text-white hover:bg-blue-500"
+          className="bg-accent px-2 py-1 text-[11px] text-accent-on hover:bg-accent-hover"
         >
           + Host
         </button>
         <button
           type="button"
           onClick={() => setOpen((value) => !value)}
-          className="border-l border-blue-500/60 bg-blue-600 px-1.5 py-1 text-[10px] text-white hover:bg-blue-500"
+          className="border-l border-accent/60 bg-accent px-1.5 py-1 text-[10px] text-accent-on hover:bg-accent-hover"
           aria-expanded={open}
           aria-haspopup="menu"
           title="More actions"
@@ -76,13 +76,13 @@ export function HostActionsMenu({
       {open && (
         <ul
           role="menu"
-          className="absolute left-0 top-full z-30 mt-1 min-w-[9rem] overflow-hidden rounded border border-[#30363d] bg-[#161b22] py-1 shadow-lg"
+          className="absolute left-0 top-full z-30 mt-1 min-w-[9rem] overflow-hidden rounded border border-border bg-surface py-1 shadow-lg"
         >
           <li role="none">
             <button
               type="button"
               role="menuitem"
-              className="block w-full px-3 py-1.5 text-left text-[11px] text-gray-300 hover:bg-[#21262d]"
+              className="block w-full px-3 py-1.5 text-left text-[11px] text-fg-2 hover:bg-surface-raised"
               onClick={() => run(onImport)}
             >
               Import JSON…
@@ -92,7 +92,7 @@ export function HostActionsMenu({
             <button
               type="button"
               role="menuitem"
-              className="block w-full px-3 py-1.5 text-left text-[11px] text-gray-300 hover:bg-[#21262d]"
+              className="block w-full px-3 py-1.5 text-left text-[11px] text-fg-2 hover:bg-surface-raised"
               onClick={() => run(onExport)}
             >
               Export JSON…
@@ -103,7 +103,7 @@ export function HostActionsMenu({
               <button
                 type="button"
                 role="menuitem"
-                className="block w-full px-3 py-1.5 text-left text-[11px] text-gray-300 hover:bg-[#21262d]"
+                className="block w-full px-3 py-1.5 text-left text-[11px] text-fg-2 hover:bg-surface-raised"
                 onClick={() => run(() => onOpenLocalShell(shell))}
               >
                 {LOCAL_SHELL_LABELS[shell]}
@@ -115,7 +115,7 @@ export function HostActionsMenu({
               <button
                 type="button"
                 role="menuitem"
-                className="block w-full px-3 py-1.5 text-left text-[11px] text-gray-300 hover:bg-[#21262d]"
+                className="block w-full px-3 py-1.5 text-left text-[11px] text-fg-2 hover:bg-surface-raised"
                 onClick={() => run(() => onOpenWsl(distro.name))}
               >
                 WSL: {distro.name}

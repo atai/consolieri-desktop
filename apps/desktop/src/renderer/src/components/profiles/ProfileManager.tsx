@@ -90,7 +90,7 @@ export function ProfileManager(): React.JSX.Element {
 
     if (editingProfileId === profile.id) {
       return (
-        <li key={profile.id} className="border-b border-[#30363d] bg-[#0d1117]">
+        <li key={profile.id} className="border-b border-border bg-bg">
           <ProfileForm
             linkHostId={hostFilter || editHost?.id}
             profile={profile}
@@ -123,26 +123,26 @@ export function ProfileManager(): React.JSX.Element {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#161b22]">
-      <div className="shrink-0 border-b border-[#30363d] p-3">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface">
+      <div className="shrink-0 border-b border-border p-3">
         <div className="mb-2 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-gray-100">Profiles</h1>
+          <h1 className="text-lg font-semibold text-fg">Profiles</h1>
           <button
             type="button"
             onClick={() => void refresh()}
-            className="rounded border border-[#30363d] px-2 py-0.5 text-xs text-gray-400 hover:bg-[#21262d]"
+            className="rounded border border-border px-2 py-0.5 text-xs text-muted hover:bg-surface-raised"
           >
             Refresh
           </button>
         </div>
-        <p className="text-xs text-gray-500">Profiles are shared across hosts</p>
+        <p className="text-xs text-muted">Profiles are shared across hosts</p>
       </div>
 
-      <div className="shrink-0 space-y-2 border-b border-[#30363d] p-2">
+      <div className="shrink-0 space-y-2 border-b border-border p-2">
         <label className="block text-sm">
-          <span className="text-gray-400">Host filter</span>
+          <span className="text-muted">Host filter</span>
           <select
-            className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
             value={hostFilter}
             onChange={(e) => setHostFilter(e.target.value)}
           >
@@ -159,7 +159,7 @@ export function ProfileManager(): React.JSX.Element {
             type="button"
             disabled={!hostFilter || showAddForm}
             onClick={() => setShowPickDialog(true)}
-            className="flex-1 rounded border border-[#30363d] px-2 py-1.5 text-xs text-gray-300 hover:bg-[#21262d] disabled:opacity-50"
+            className="flex-1 rounded border border-border px-2 py-1.5 text-xs text-fg-2 hover:bg-surface-raised disabled:opacity-50"
           >
             + Pick
           </button>
@@ -167,7 +167,7 @@ export function ProfileManager(): React.JSX.Element {
             type="button"
             disabled={showAddForm}
             onClick={() => setShowAddForm(true)}
-            className="flex-1 rounded bg-blue-600 px-2 py-1.5 text-xs text-white hover:bg-blue-500 disabled:opacity-50"
+            className="flex-1 rounded bg-accent px-2 py-1.5 text-xs text-accent-on hover:bg-accent-hover disabled:opacity-50"
           >
             + Add profile
           </button>
@@ -175,7 +175,7 @@ export function ProfileManager(): React.JSX.Element {
       </div>
 
       {showAddForm && (
-        <div className="shrink-0 border-b border-[#30363d] bg-[#0d1117]">
+        <div className="shrink-0 border-b border-border bg-bg">
           <ProfileForm
             linkHostId={hostFilter || undefined}
             host={hostFilter ? hostById.get(hostFilter) : undefined}
@@ -196,9 +196,9 @@ export function ProfileManager(): React.JSX.Element {
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {loading ? (
-          <p className="p-4 text-center text-sm text-gray-500">Loading profiles…</p>
+          <p className="p-4 text-center text-sm text-muted">Loading profiles…</p>
         ) : profiles.length === 0 ? (
-          <p className="p-4 text-center text-sm text-gray-500">No profiles yet</p>
+          <p className="p-4 text-center text-sm text-muted">No profiles yet</p>
         ) : (
           <ul>{profiles.map((p) => renderProfile(p))}</ul>
         )}

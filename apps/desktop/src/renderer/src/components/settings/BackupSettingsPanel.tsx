@@ -126,7 +126,7 @@ export function BackupSettingsPanel(): React.JSX.Element {
 
   if (loading || !settings) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-500">
+      <div className="flex h-full items-center justify-center text-sm text-muted">
         Loading…
       </div>
     )
@@ -138,12 +138,12 @@ export function BackupSettingsPanel(): React.JSX.Element {
 
         {/* Auto-backup settings */}
         <section className="space-y-4">
-          <h2 className="text-base font-semibold text-gray-100">Automatic backups</h2>
+          <h2 className="text-base font-semibold text-fg">Automatic backups</h2>
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-200">Enable automatic backups</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-sm text-fg">Enable automatic backups</p>
+              <p className="text-xs text-muted">
                 Saves a full backup on a schedule to the backups folder
               </p>
             </div>
@@ -153,7 +153,7 @@ export function BackupSettingsPanel(): React.JSX.Element {
               aria-checked={settings.enabled}
               onClick={() => void applyPatch({ enabled: !settings.enabled })}
               className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none ${
-                settings.enabled ? 'bg-blue-600' : 'bg-[#30363d]'
+                settings.enabled ? 'bg-accent' : 'bg-border'
               }`}
             >
               <span
@@ -167,7 +167,7 @@ export function BackupSettingsPanel(): React.JSX.Element {
           {settings.enabled && (
             <>
               <div>
-                <p className="mb-2 text-sm text-gray-200">Backup interval</p>
+                <p className="mb-2 text-sm text-fg">Backup interval</p>
                 <div className="flex gap-2">
                   {INTERVAL_PRESETS.map((preset) => (
                     <button
@@ -176,8 +176,8 @@ export function BackupSettingsPanel(): React.JSX.Element {
                       onClick={() => void applyPatch({ intervalMinutes: preset.value })}
                       className={`rounded border px-3 py-1 text-xs ${
                         settings.intervalMinutes === preset.value
-                          ? 'border-blue-500 bg-blue-600 text-white'
-                          : 'border-[#30363d] text-gray-400 hover:bg-[#21262d] hover:text-gray-200'
+                          ? 'border-accent bg-accent text-accent-on'
+                          : 'border-border text-muted hover:bg-surface-raised hover:text-fg'
                       }`}
                     >
                       {preset.label}
@@ -193,15 +193,15 @@ export function BackupSettingsPanel(): React.JSX.Element {
                         const v = parseInt(e.target.value, 10)
                         if (!isNaN(v) && v >= 5) void applyPatch({ intervalMinutes: v })
                       }}
-                      className="w-16 rounded border border-[#30363d] bg-[#0d1117] px-2 py-1 text-xs text-gray-100"
+                      className="w-16 rounded border border-border bg-bg px-2 py-1 text-xs text-fg"
                     />
-                    <span className="text-xs text-gray-500">min</span>
+                    <span className="text-xs text-muted">min</span>
                   </div>
                 </div>
               </div>
 
               <div>
-                <p className="mb-1 text-sm text-gray-200">Keep versions</p>
+                <p className="mb-1 text-sm text-fg">Keep versions</p>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
@@ -212,16 +212,16 @@ export function BackupSettingsPanel(): React.JSX.Element {
                       const v = parseInt(e.target.value, 10)
                       if (!isNaN(v) && v >= 1) void applyPatch({ maxCount: v })
                     }}
-                    className="w-16 rounded border border-[#30363d] bg-[#0d1117] px-2 py-1 text-xs text-gray-100"
+                    className="w-16 rounded border border-border bg-bg px-2 py-1 text-xs text-fg"
                   />
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-muted">
                     oldest backups are deleted automatically
                   </span>
                 </div>
               </div>
 
               {settings.lastBackupAt && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted">
                   Last backup: {formatDate(settings.lastBackupAt)}
                 </p>
               )}
@@ -231,46 +231,46 @@ export function BackupSettingsPanel(): React.JSX.Element {
 
         {/* Actions */}
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-gray-100">Manual actions</h2>
+          <h2 className="text-base font-semibold text-fg">Manual actions</h2>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               disabled={creating}
               onClick={() => void handleCreateNow()}
-              className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-500 disabled:opacity-50"
+              className="rounded bg-accent px-3 py-1.5 text-sm text-accent-on hover:bg-accent-hover disabled:opacity-50"
             >
               {creating ? 'Creating…' : 'Create backup now'}
             </button>
             <button
               type="button"
               onClick={() => void handleExportFull()}
-              className="rounded border border-[#30363d] px-3 py-1.5 text-sm text-gray-300 hover:bg-[#21262d]"
+              className="rounded border border-border px-3 py-1.5 text-sm text-fg-2 hover:bg-surface-raised"
             >
               Export full settings…
             </button>
             <button
               type="button"
               onClick={() => void handleImportFull()}
-              className="rounded border border-[#30363d] px-3 py-1.5 text-sm text-gray-300 hover:bg-[#21262d]"
+              className="rounded border border-border px-3 py-1.5 text-sm text-fg-2 hover:bg-surface-raised"
             >
               Import full settings…
             </button>
             <button
               type="button"
               onClick={() => void window.consoleri.backup.openFolder()}
-              className="rounded border border-[#30363d] px-3 py-1.5 text-sm text-gray-400 hover:bg-[#21262d] hover:text-gray-200"
+              className="rounded border border-border px-3 py-1.5 text-sm text-muted hover:bg-surface-raised hover:text-fg"
             >
               Open backups folder
             </button>
           </div>
           {message && (
             <p
-              className={`text-xs ${message.kind === 'ok' ? 'text-green-400' : 'text-red-400'}`}
+              className={`text-xs ${message.kind === 'ok' ? 'text-success' : 'text-danger'}`}
             >
               {message.text}
             </p>
           )}
-          <p className="text-xs text-gray-600">
+          <p className="text-xs text-muted">
             Secrets (Vault tokens, local passwords) are included in backups using OS-level
             encryption. They can only be restored on the same computer and OS user account.
           </p>
@@ -279,10 +279,10 @@ export function BackupSettingsPanel(): React.JSX.Element {
         {/* Backup list */}
         <section className="space-y-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-100">
+            <h2 className="text-base font-semibold text-fg">
               Saved backups
               {backups.length > 0 && (
-                <span className="ml-2 text-sm font-normal text-gray-500">
+                <span className="ml-2 text-sm font-normal text-muted">
                   ({backups.length})
                 </span>
               )}
@@ -290,24 +290,24 @@ export function BackupSettingsPanel(): React.JSX.Element {
             <button
               type="button"
               onClick={() => void refresh()}
-              className="rounded border border-[#30363d] px-2 py-0.5 text-xs text-gray-400 hover:bg-[#21262d]"
+              className="rounded border border-border px-2 py-0.5 text-xs text-muted hover:bg-surface-raised"
             >
               Refresh
             </button>
           </div>
 
           {backups.length === 0 ? (
-            <p className="text-sm text-gray-500">No backups yet.</p>
+            <p className="text-sm text-muted">No backups yet.</p>
           ) : (
-            <ul className="divide-y divide-[#30363d] rounded border border-[#30363d]">
+            <ul className="divide-y divide-border rounded border border-border">
               {backups.map((b) => (
                 <li
                   key={b.id}
                   className="flex items-center justify-between px-3 py-2 text-sm"
                 >
                   <div>
-                    <p className="text-gray-200">{formatDate(b.createdAt)}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-fg">{formatDate(b.createdAt)}</p>
+                    <p className="text-xs text-muted">
                       {b.filename} · {formatBytes(b.sizeBytes)}
                     </p>
                   </div>
@@ -316,14 +316,14 @@ export function BackupSettingsPanel(): React.JSX.Element {
                       type="button"
                       disabled={restoring === b.id}
                       onClick={() => void handleRestore(b.id)}
-                      className="rounded border border-[#30363d] px-2 py-0.5 text-xs text-gray-300 hover:bg-[#21262d] disabled:opacity-50"
+                      className="rounded border border-border px-2 py-0.5 text-xs text-fg-2 hover:bg-surface-raised disabled:opacity-50"
                     >
                       {restoring === b.id ? 'Restoring…' : 'Restore'}
                     </button>
                     <button
                       type="button"
                       onClick={() => void handleDelete(b.id)}
-                      className="rounded border border-[#30363d] px-2 py-0.5 text-xs text-red-400 hover:bg-[#21262d]"
+                      className="rounded border border-border px-2 py-0.5 text-xs text-danger hover:bg-surface-raised"
                     >
                       Delete
                     </button>

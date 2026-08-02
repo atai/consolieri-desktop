@@ -19,16 +19,16 @@ function HostMapNodeComponent({ data }: NodeProps): React.JSX.Element {
   return (
     <div
       className={`min-w-[120px] rounded border px-3 py-2 shadow-lg ${
-        selected ? 'border-blue-500 bg-[#1c2d41]' : 'border-[#30363d] bg-[#21262d]'
+        selected ? 'border-accent bg-accent-muted' : 'border-border bg-surface-raised'
       }`}
     >
       <Handle type="target" position={Position.Top} className="!bg-gray-500" />
       <div className="flex items-center gap-2">
         {host && <span className="text-base">{osIcon(host.osType)}</span>}
         <div className="min-w-0">
-          <div className="truncate text-sm font-medium text-gray-100">{data.label as string}</div>
+          <div className="truncate text-sm font-medium text-fg">{data.label as string}</div>
           {host && (
-            <div className="truncate text-[10px] text-gray-500">
+            <div className="truncate text-[10px] text-muted">
               {host.hostname}:{host.port}
             </div>
           )}

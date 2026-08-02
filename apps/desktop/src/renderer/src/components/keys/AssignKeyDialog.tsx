@@ -54,18 +54,18 @@ export function AssignKeyDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md rounded-lg border border-[#30363d] bg-[#161b22] p-4 shadow-xl">
-        <h3 className="mb-3 text-base font-medium text-gray-100">Assign key to host</h3>
-        <p className="mb-3 truncate text-xs text-gray-500">{keyInfo.label}</p>
+      <div className="w-full max-w-md rounded-lg border border-border bg-surface p-4 shadow-xl">
+        <h3 className="mb-3 text-base font-medium text-fg">Assign key to host</h3>
+        <p className="mb-3 truncate text-xs text-muted">{keyInfo.label}</p>
 
         {hosts.length === 0 ? (
-          <p className="mb-4 text-sm text-gray-400">No hosts with SSH profiles. Add a host first.</p>
+          <p className="mb-4 text-sm text-muted">No hosts with SSH profiles. Add a host first.</p>
         ) : (
           <div className="space-y-3">
             <label className="block text-sm">
-              <span className="text-gray-400">Host</span>
+              <span className="text-muted">Host</span>
               <select
-                className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                 value={hostId}
                 onChange={(e) => setHostId(e.target.value)}
               >
@@ -77,9 +77,9 @@ export function AssignKeyDialog({
               </select>
             </label>
             <label className="block text-sm">
-              <span className="text-gray-400">SSH profile</span>
+              <span className="text-muted">SSH profile</span>
               <select
-                className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+                className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                 value={profileId}
                 onChange={(e) => setProfileId(e.target.value)}
               >
@@ -94,13 +94,13 @@ export function AssignKeyDialog({
           </div>
         )}
 
-        {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
+        {error && <p className="mt-2 text-xs text-danger">{error}</p>}
 
         <div className="mt-4 flex justify-end gap-2">
           <button
             type="button"
             onClick={onClose}
-            className="rounded px-3 py-1.5 text-sm text-gray-400 hover:bg-[#21262d]"
+            className="rounded px-3 py-1.5 text-sm text-muted hover:bg-surface-raised"
           >
             Cancel
           </button>
@@ -108,7 +108,7 @@ export function AssignKeyDialog({
             type="button"
             disabled={saving || !profileId}
             onClick={handleAssign}
-            className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-500 disabled:opacity-50"
+            className="rounded bg-accent px-3 py-1.5 text-sm text-accent-on hover:bg-accent-hover disabled:opacity-50"
           >
             {saving ? 'Assigning…' : 'Assign'}
           </button>

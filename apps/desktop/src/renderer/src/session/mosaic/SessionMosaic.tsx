@@ -109,7 +109,7 @@ export function SessionMosaic({
             onConnect={() => void onConnectPane(paneId)}
           />
         ) : (
-          <div className="p-4 text-sm text-gray-500">Empty pane</div>
+          <div className="p-4 text-sm text-muted">Empty pane</div>
         )}
       </MosaicWindow>
     )
@@ -119,7 +119,7 @@ export function SessionMosaic({
     return (
       <>
         {emptyLayoutView ?? (
-          <div className="flex h-full flex-col items-center justify-center gap-3 text-gray-500">
+          <div className="flex h-full flex-col items-center justify-center gap-3 text-muted">
             <p className="text-lg">No active sessions</p>
             <p className="text-sm">Select a host from the sidebar or open a local shell</p>
           </div>
@@ -136,7 +136,7 @@ export function SessionMosaic({
       renderTile={renderTile}
       zeroStateView={
         zeroStateView ?? (
-          <div className="flex h-full items-center justify-center text-gray-500">
+          <div className="flex h-full items-center justify-center text-muted">
             Connect to a host to begin
           </div>
         )

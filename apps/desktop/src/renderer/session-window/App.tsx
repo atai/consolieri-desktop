@@ -130,19 +130,19 @@ export function SessionWindowApp(): React.JSX.Element {
 
   if (!sessionId) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-500">No session</div>
+      <div className="flex h-full items-center justify-center text-sm text-muted">No session</div>
     )
   }
 
   if (initError) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-red-400">{initError}</div>
+      <div className="flex h-full items-center justify-center text-sm text-danger">{initError}</div>
     )
   }
 
   if (!layout) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-500">Loading…</div>
+      <div className="flex h-full items-center justify-center text-sm text-muted">Loading…</div>
     )
   }
 
@@ -160,7 +160,7 @@ export function SessionWindowApp(): React.JSX.Element {
         onConnectPane={handleConnectPane}
         onClosePane={handleClosePane}
         emptyLayoutView={
-          <div className="flex h-full items-center justify-center text-sm text-gray-500">No session</div>
+          <div className="flex h-full items-center justify-center text-sm text-muted">No session</div>
         }
       />
     </div>

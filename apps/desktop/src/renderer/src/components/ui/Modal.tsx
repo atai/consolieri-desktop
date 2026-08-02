@@ -26,7 +26,7 @@ export function Modal({
       onClick={onClose ? () => onClose() : undefined}
     >
       <div
-        className={`flex w-full ${sizeClass[size]} flex-col overflow-hidden rounded-lg border border-[#30363d] bg-[#161b22] shadow-xl ${
+        className={`flex w-full ${sizeClass[size]} flex-col overflow-hidden rounded-lg border border-border bg-surface shadow-raised ${
           scrollable ? 'max-h-[85vh]' : ''
         }`}
         onClick={(e) => e.stopPropagation()}

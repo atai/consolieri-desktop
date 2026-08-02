@@ -45,22 +45,22 @@ export function ProfileListItem({
 
   return (
     <li
-      className={`border-b border-[#30363d] ${compact ? 'px-0 py-2' : 'px-3 py-2.5'} last:border-b-0`}
+      className={`border-b border-border ${compact ? 'px-0 py-2' : 'px-3 py-2.5'} last:border-b-0`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="truncate text-sm font-medium text-gray-200">{profile.name}</span>
-            <span className="rounded bg-[#21262d] px-1.5 py-0.5 text-[10px] uppercase text-gray-400">
+            <span className="truncate text-sm font-medium text-fg">{profile.name}</span>
+            <span className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] uppercase text-muted">
               {profile.protocol}
             </span>
             {isDefault && (
-              <span className="rounded bg-blue-900/50 px-1.5 py-0.5 text-[10px] text-blue-300">
+              <span className="rounded bg-accent-muted px-1.5 py-0.5 text-[10px] text-accent">
                 default
               </span>
             )}
           </div>
-          <p className="mt-0.5 text-xs text-gray-500">
+          <p className="mt-0.5 text-xs text-muted">
             {[hostLine, ...summary].filter(Boolean).join(' · ')}
           </p>
         </div>

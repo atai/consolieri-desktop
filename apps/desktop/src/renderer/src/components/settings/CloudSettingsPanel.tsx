@@ -158,7 +158,7 @@ export function CloudSettingsPanel(): React.JSX.Element {
 
   if (loading || !status) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-500">
+      <div className="flex h-full items-center justify-center text-sm text-muted">
         Loading…
       </div>
     )
@@ -168,12 +168,12 @@ export function CloudSettingsPanel(): React.JSX.Element {
     <div className="flex h-full min-h-0 flex-col overflow-y-auto">
       <div className="max-w-2xl space-y-8 p-6">
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-gray-100">Account</h2>
-          <p className="text-xs text-gray-500">
+          <h2 className="text-base font-semibold text-fg">Account</h2>
+          <p className="text-xs text-muted">
             Optional cloud sync. Your settings and passwords are end-to-end encrypted — the API
             never sees plaintext secrets.
           </p>
-          <div className="rounded border border-[#30363d] bg-[#0d1117] px-3 py-2 text-xs text-gray-400">
+          <div className="rounded border border-border bg-bg px-3 py-2 text-xs text-muted">
             {status.signedIn
               ? `Signed in as ${status.email ?? 'unknown'}`
               : 'Not connected'}
@@ -193,8 +193,8 @@ export function CloudSettingsPanel(): React.JSX.Element {
         </section>
 
         <section className="space-y-3">
-          <h2 className="text-base font-semibold text-gray-100">Sync key</h2>
-          <p className="text-xs text-gray-500">
+          <h2 className="text-base font-semibold text-fg">Sync key</h2>
+          <p className="text-xs text-muted">
             The recovery key decrypts cloud backups on other devices. Sign-out keeps the key on
             this machine.
           </p>
@@ -227,11 +227,11 @@ export function CloudSettingsPanel(): React.JSX.Element {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-base font-semibold text-gray-100">Cloud sync</h2>
+          <h2 className="text-base font-semibold text-fg">Cloud sync</h2>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-200">Enable automatic cloud backups</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-sm text-fg">Enable automatic cloud backups</p>
+              <p className="text-xs text-muted">
                 Uploads an encrypted backup shortly after settings change (when signed in)
               </p>
             </div>
@@ -241,7 +241,7 @@ export function CloudSettingsPanel(): React.JSX.Element {
               aria-checked={status.enabled}
               onClick={() => void handleToggleEnabled()}
               className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none ${
-                status.enabled ? 'bg-blue-600' : 'bg-[#30363d]'
+                status.enabled ? 'bg-accent' : 'bg-border'
               }`}
             >
               <span
@@ -262,19 +262,19 @@ export function CloudSettingsPanel(): React.JSX.Element {
             </Button>
           </div>
           {status.lastUploadAt && (
-            <p className="text-xs text-gray-500">Last upload: {formatDate(status.lastUploadAt)}</p>
+            <p className="text-xs text-muted">Last upload: {formatDate(status.lastUploadAt)}</p>
           )}
           {status.lastError && (
-            <p className="text-xs text-red-400">Last error: {status.lastError}</p>
+            <p className="text-xs text-danger">Last error: {status.lastError}</p>
           )}
         </section>
 
         <section className="space-y-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-100">
+            <h2 className="text-base font-semibold text-fg">
               Cloud backups
               {backups.length > 0 && (
-                <span className="ml-2 text-sm font-normal text-gray-500">({backups.length})</span>
+                <span className="ml-2 text-sm font-normal text-muted">({backups.length})</span>
               )}
             </h2>
             <Button variant="default" size="sm" onClick={() => void refresh()} disabled={!status.signedIn}>
@@ -283,16 +283,16 @@ export function CloudSettingsPanel(): React.JSX.Element {
           </div>
 
           {!status.signedIn ? (
-            <p className="text-sm text-gray-500">Sign in to view cloud backups.</p>
+            <p className="text-sm text-muted">Sign in to view cloud backups.</p>
           ) : backups.length === 0 ? (
-            <p className="text-sm text-gray-500">No cloud backups yet.</p>
+            <p className="text-sm text-muted">No cloud backups yet.</p>
           ) : (
-            <ul className="divide-y divide-[#30363d] rounded border border-[#30363d]">
+            <ul className="divide-y divide-border rounded border border-border">
               {backups.map((b) => (
                 <li key={b.id} className="flex items-center justify-between px-3 py-2 text-sm">
                   <div>
-                    <p className="text-gray-200">{formatDate(b.createdAt)}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-fg">{formatDate(b.createdAt)}</p>
+                    <p className="text-xs text-muted">
                       {formatBytes(b.byteSize)}
                       {b.label ? ` · ${b.label}` : ''}
                       {b.deviceId ? ` · device ${b.deviceId.slice(0, 8)}` : ''}
@@ -322,7 +322,7 @@ export function CloudSettingsPanel(): React.JSX.Element {
         </section>
 
         {message && (
-          <p className={`text-xs ${message.kind === 'ok' ? 'text-green-400' : 'text-red-400'}`}>
+          <p className={`text-xs ${message.kind === 'ok' ? 'text-success' : 'text-danger'}`}>
             {message.text}
           </p>
         )}

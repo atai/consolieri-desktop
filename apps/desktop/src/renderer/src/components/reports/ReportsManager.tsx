@@ -114,24 +114,24 @@ export function ReportsManager(): React.JSX.Element {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#161b22]">
-      <div className="shrink-0 border-b border-[#30363d] p-3">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface">
+      <div className="shrink-0 border-b border-border p-3">
         <div className="mb-2 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-gray-100">Reports</h1>
+          <h1 className="text-lg font-semibold text-fg">Reports</h1>
           <button
             type="button"
             onClick={() => void refresh()}
-            className="rounded border border-[#30363d] px-2 py-0.5 text-xs text-gray-400 hover:bg-[#21262d]"
+            className="rounded border border-border px-2 py-0.5 text-xs text-muted hover:bg-surface-raised"
           >
             Refresh
           </button>
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted">
           Saved host reports — connectivity tests, inventory, custom tests, and export
         </p>
       </div>
 
-      <div className="shrink-0 flex gap-2 border-b border-[#30363d] p-2">
+      <div className="shrink-0 flex gap-2 border-b border-border p-2">
         <button
           type="button"
           onClick={() => {
@@ -139,7 +139,7 @@ export function ReportsManager(): React.JSX.Element {
             setEditingReportId(null)
           }}
           disabled={creatingType !== null}
-          className="flex-1 rounded border border-dashed border-[#30363d] py-2 text-sm text-gray-400 hover:border-gray-500 hover:text-gray-200 disabled:opacity-50"
+          className="flex-1 rounded border border-dashed border-border py-2 text-sm text-muted hover:border-border-strong hover:text-fg disabled:opacity-50"
         >
           + Connectivity test
         </button>
@@ -150,7 +150,7 @@ export function ReportsManager(): React.JSX.Element {
             setEditingReportId(null)
           }}
           disabled={creatingType !== null}
-          className="flex-1 rounded border border-dashed border-[#30363d] py-2 text-sm text-gray-400 hover:border-gray-500 hover:text-gray-200 disabled:opacity-50"
+          className="flex-1 rounded border border-dashed border-border py-2 text-sm text-muted hover:border-border-strong hover:text-fg disabled:opacity-50"
         >
           + Inventory
         </button>
@@ -161,7 +161,7 @@ export function ReportsManager(): React.JSX.Element {
             setEditingReportId(null)
           }}
           disabled={creatingType !== null}
-          className="flex-1 rounded border border-dashed border-[#30363d] py-2 text-sm text-gray-400 hover:border-gray-500 hover:text-gray-200 disabled:opacity-50"
+          className="flex-1 rounded border border-dashed border-border py-2 text-sm text-muted hover:border-border-strong hover:text-fg disabled:opacity-50"
         >
           + Custom test
         </button>
@@ -172,9 +172,9 @@ export function ReportsManager(): React.JSX.Element {
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {loading ? (
-          <p className="p-4 text-sm text-gray-500">Loading reports…</p>
+          <p className="p-4 text-sm text-muted">Loading reports…</p>
         ) : reports.length === 0 ? (
-          <p className="p-4 text-sm text-gray-500">No reports yet. Create a report above.</p>
+          <p className="p-4 text-sm text-muted">No reports yet. Create a report above.</p>
         ) : (
           <ul>
             {reports.map((report) =>

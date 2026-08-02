@@ -71,7 +71,7 @@ export function HostEntriesReportForm({
             type="button"
             onClick={onCancel}
             disabled={saving}
-            className="rounded px-3 py-1.5 text-sm text-gray-400 hover:bg-[#21262d] disabled:opacity-50"
+            className="rounded px-3 py-1.5 text-sm text-muted hover:bg-surface-raised disabled:opacity-50"
           >
             Cancel
           </button>
@@ -79,7 +79,7 @@ export function HostEntriesReportForm({
             type="button"
             onClick={() => void handleSubmit()}
             disabled={saving}
-            className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-500 disabled:opacity-50"
+            className="rounded bg-accent px-3 py-1.5 text-sm text-accent-on hover:bg-accent-hover disabled:opacity-50"
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
@@ -87,13 +87,13 @@ export function HostEntriesReportForm({
       }
     >
       <label className="mb-3 block text-sm">
-        <span className="text-gray-400">Name</span>
+        <span className="text-muted">Name</span>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           disabled={saving}
-          className="mt-1 w-full rounded border border-[#30363d] bg-[#161b22] px-2 py-1.5 text-gray-100"
+          className="mt-1 w-full rounded border border-border bg-surface px-2 py-1.5 text-fg"
           placeholder="e.g. Production hosts"
         />
       </label>
@@ -104,7 +104,7 @@ export function HostEntriesReportForm({
         disabled={saving}
       />
 
-      {error && <p className="mt-3 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-3 text-xs text-danger">{error}</p>}
     </ReportFormShell>
   )
 }

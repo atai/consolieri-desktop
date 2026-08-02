@@ -123,12 +123,12 @@ export function PickHostsDialog({
             placeholder="Search…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="min-w-0 flex-1 rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-sm text-gray-100"
+            className="min-w-0 flex-1 rounded border border-border bg-bg px-2 py-1.5 text-sm text-fg"
           />
           <select
             value={tagFilter}
             onChange={(e) => setTagFilter(e.target.value)}
-            className="rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-sm text-gray-100"
+            className="rounded border border-border bg-bg px-2 py-1.5 text-sm text-fg"
           >
             <option value="">All tags</option>
             {allTags.map((tag) => (
@@ -151,17 +151,17 @@ export function PickHostsDialog({
           emptyMessage="No hosts match the filter."
           renderItem={(host) => (
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <span className="text-sm text-gray-200">{host.name}</span>
-              <span className="truncate text-xs text-gray-500">{host.hostname}</span>
+              <span className="text-sm text-fg">{host.name}</span>
+              <span className="truncate text-xs text-muted">{host.hostname}</span>
             </div>
           )}
           renderDisabledBadge={(host) => {
             const sshProfiles = profilesByHost.get(host.id) ?? []
             if (sshProfiles.length === 0) {
-              return <span className="text-xs text-yellow-500">No SSH</span>
+              return <span className="text-xs text-warn">No SSH</span>
             }
             if (existingHostIds.includes(host.id)) {
-              return <span className="text-xs text-gray-500">Added</span>
+              return <span className="text-xs text-muted">Added</span>
             }
             return null
           }}

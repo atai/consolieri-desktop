@@ -110,7 +110,7 @@ export function PickProfileDialog({
         subtitle={
           targetLabel ? (
             <>
-              Link to <span className="text-gray-400">{targetLabel}</span>
+              Link to <span className="text-muted">{targetLabel}</span>
             </>
           ) : undefined
         }
@@ -127,8 +127,8 @@ export function PickProfileDialog({
         />
 
         <div>
-          <span className="text-sm text-gray-400">Profiles</span>
-          <div className="mt-1 max-h-48 overflow-y-auto rounded border border-[#30363d] bg-[#0d1117] p-1">
+          <span className="text-sm text-muted">Profiles</span>
+          <div className="mt-1 max-h-48 overflow-y-auto rounded border border-border bg-bg p-1">
             <CheckboxPickList
               items={profiles}
               selectedIds={selectedIds}
@@ -138,10 +138,10 @@ export function PickProfileDialog({
               emptyMessage="No profiles available to link."
               renderItem={(profile) => (
                 <div className="min-w-0">
-                  <div className="text-sm text-gray-200">
+                  <div className="text-sm text-fg">
                     {profile.name} ({profile.protocol})
                   </div>
-                  <div className="truncate text-xs text-gray-500">
+                  <div className="truncate text-xs text-muted">
                     {profileSummaryLines(profile, hosts).join(' · ')}
                   </div>
                 </div>
@@ -150,7 +150,7 @@ export function PickProfileDialog({
           </div>
         </div>
 
-        {error && <p className="text-xs text-red-400">{error}</p>}
+        {error && <p className="text-xs text-danger">{error}</p>}
       </div>
 
       <DialogFooter

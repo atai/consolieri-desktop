@@ -52,21 +52,21 @@ export function HostListSection({
   }
 
   return (
-    <section className="border-b border-[#30363d]/60">
+    <section className="border-b border-border/60">
       <button
         type="button"
         onClick={onToggleCollapsed}
-        className="flex w-full items-center gap-2 border-y border-[#30363d] bg-[#1c2128] px-3 py-2 text-left hover:bg-[#21262d]"
+        className="flex w-full items-center gap-2 border-y border-border bg-surface-raised px-3 py-2 text-left hover:bg-surface-raised"
         aria-expanded={!collapsed}
         aria-controls={`host-section-${id}`}
       >
-        <span className="inline-block w-3 shrink-0 text-xs text-blue-400/80">
+        <span className="inline-block w-3 shrink-0 text-xs text-accent/80">
           {collapsed ? '▸' : '▾'}
         </span>
-        <span className="min-w-0 flex-1 truncate text-xs font-semibold uppercase tracking-wide text-gray-100">
+        <span className="min-w-0 flex-1 truncate text-xs font-semibold uppercase tracking-wide text-fg">
           {label}
         </span>
-        <span className="shrink-0 text-sm font-semibold tabular-nums text-gray-300">{hosts.length}</span>
+        <span className="shrink-0 text-sm font-semibold tabular-nums text-fg-2">{hosts.length}</span>
       </button>
       {!collapsed && (
         <ul id={`host-section-${id}`}>

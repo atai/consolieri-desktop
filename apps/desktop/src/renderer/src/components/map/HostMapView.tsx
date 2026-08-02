@@ -25,8 +25,8 @@ export function HostMapView(): React.JSX.Element {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-[#30363d] bg-[#161b22] px-3 py-2">
-        <h1 className="mr-2 text-sm font-semibold text-gray-200">Network map</h1>
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-surface px-3 py-2">
+        <h1 className="mr-2 text-sm font-semibold text-fg">Network map</h1>
         {MODE_OPTIONS.map((option) => (
           <button
             key={option.value}
@@ -34,8 +34,8 @@ export function HostMapView(): React.JSX.Element {
             onClick={() => setMapMode(option.value)}
             className={`rounded px-2 py-1 text-xs ${
               mapMode === option.value
-                ? 'bg-blue-600 text-white'
-                : 'bg-[#21262d] text-gray-400 hover:text-gray-200'
+                ? 'bg-accent text-accent-on'
+                : 'bg-surface-raised text-muted hover:text-fg'
             }`}
           >
             {option.label}
@@ -46,12 +46,12 @@ export function HostMapView(): React.JSX.Element {
           placeholder="Find host…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="ml-auto min-w-[160px] rounded border border-[#30363d] bg-[#0d1117] px-2 py-1 text-xs text-gray-100 placeholder:text-gray-600"
+          className="ml-auto min-w-[160px] rounded border border-border bg-bg px-2 py-1 text-xs text-fg placeholder:text-muted"
         />
         <button
           type="button"
           onClick={() => void refreshAllHosts()}
-          className="rounded border border-[#30363d] px-2 py-1 text-xs text-gray-400 hover:bg-[#21262d]"
+          className="rounded border border-border px-2 py-1 text-xs text-muted hover:bg-surface-raised"
         >
           Refresh
         </button>

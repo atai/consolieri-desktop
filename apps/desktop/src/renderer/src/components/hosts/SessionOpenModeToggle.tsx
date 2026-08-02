@@ -8,7 +8,7 @@ interface SessionOpenModeToggleProps {
 
 function toggleButtonClass(active: boolean): string {
   return `flex h-6 w-7 items-center justify-center rounded ${
-    active ? 'bg-blue-600 text-white' : 'text-gray-500 hover:bg-[#21262d] hover:text-gray-200'
+    active ? 'bg-accent text-accent-on' : 'text-muted hover:bg-surface-raised hover:text-fg'
   }`
 }
 
@@ -18,7 +18,7 @@ export function SessionOpenModeToggle({
 }: SessionOpenModeToggleProps): React.JSX.Element {
   return (
     <div
-      className="flex shrink-0 items-center gap-0.5 rounded border border-[#30363d] bg-[#0d1117] p-0.5"
+      className="flex shrink-0 items-center gap-0.5 rounded border border-border bg-bg p-0.5"
       role="group"
       aria-label="Session open mode"
     >

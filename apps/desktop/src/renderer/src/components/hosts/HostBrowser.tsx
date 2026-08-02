@@ -25,8 +25,8 @@ const HOST_SORT_OPTIONS: Array<{ value: HostListSortBy; label: string }> = [
 function toolbarButtonClass(active: boolean): string {
   return `shrink-0 rounded px-1.5 py-0.5 text-[11px] ${
     active
-      ? 'bg-blue-600 text-white'
-      : 'bg-[#21262d] text-gray-400 hover:text-gray-200'
+      ? 'bg-accent text-accent-on'
+      : 'bg-surface-raised text-muted hover:text-fg'
   }`
 }
 
@@ -217,18 +217,18 @@ export function HostBrowser(): React.JSX.Element {
   const selectedHost = hosts.find((h) => h.id === selectedHostId)
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#161b22]">
-      <div className="shrink-0 border-b border-[#30363d] px-2 py-1.5">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface">
+      <div className="shrink-0 border-b border-border px-2 py-1.5">
         <input
           type="search"
           placeholder="Search hosts…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1 text-xs text-gray-100 placeholder:text-gray-600"
+          className="w-full rounded border border-border bg-bg px-2 py-1 text-xs text-fg placeholder:text-muted"
         />
       </div>
 
-      <div className="shrink-0 border-b border-[#30363d]">
+      <div className="shrink-0 border-b border-border">
         <div className="flex items-center gap-2 px-2 py-1">
           <HostActionsMenu
             onAddHost={() => {
@@ -297,7 +297,7 @@ export function HostBrowser(): React.JSX.Element {
               >
                 Tags
                 {selectedTags.length > 0 && (
-                  <span className="ml-1 rounded-full bg-blue-500/30 px-1 text-[10px]">
+                  <span className="ml-1 rounded-full bg-accent/30 px-1 text-[10px]">
                     {selectedTags.length}
                   </span>
                 )}
@@ -306,7 +306,7 @@ export function HostBrowser(): React.JSX.Element {
 
             {groups.length > 0 && (
               <select
-                className="max-w-[6.5rem] shrink-0 rounded border border-[#30363d] bg-[#0d1117] px-1 py-0.5 text-[11px] text-gray-300"
+                className="max-w-[6.5rem] shrink-0 rounded border border-border bg-bg px-1 py-0.5 text-[11px] text-fg-2"
                 value={selectedGroupId === null ? '__ungrouped__' : selectedGroupId}
                 onChange={(e) => {
                   const value = e.target.value
@@ -329,7 +329,7 @@ export function HostBrowser(): React.JSX.Element {
         </div>
 
         {showTagFilters && allHostTags.length > 0 && (
-          <div className="flex flex-wrap gap-1 border-t border-[#30363d]/60 px-2 py-1">
+          <div className="flex flex-wrap gap-1 border-t border-border/60 px-2 py-1">
             {allHostTags.map((tag) => (
               <button
                 key={tag}
@@ -343,8 +343,8 @@ export function HostBrowser(): React.JSX.Element {
                 }
                 className={`rounded px-1.5 py-0.5 text-[11px] ${
                   selectedTags.includes(tag)
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-[#21262d] text-gray-400 hover:text-gray-200'
+                    ? 'bg-accent text-accent-on'
+                    : 'bg-surface-raised text-muted hover:text-fg'
                 }`}
               >
                 #{tag}
@@ -356,21 +356,21 @@ export function HostBrowser(): React.JSX.Element {
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {showImport && (
-          <div className="border-b border-[#30363d] p-2">
+          <div className="border-b border-border p-2">
             <button
               type="button"
               onClick={handleImportFromFile}
-              className="mb-1 w-full rounded border border-[#30363d] py-1 text-xs text-gray-300 hover:bg-[#21262d]"
+              className="mb-1 w-full rounded border border-border py-1 text-xs text-fg-2 hover:bg-surface-raised"
             >
               Choose file…
             </button>
-            <div className="my-1 flex items-center gap-1 text-[10px] text-gray-500">
-              <span className="flex-1 border-t border-[#30363d]" />
+            <div className="my-1 flex items-center gap-1 text-[10px] text-muted">
+              <span className="flex-1 border-t border-border" />
               or paste JSON
-              <span className="flex-1 border-t border-[#30363d]" />
+              <span className="flex-1 border-t border-border" />
             </div>
             <textarea
-              className="w-full rounded border border-[#30363d] bg-[#0d1117] p-2 text-xs text-gray-300"
+              className="w-full rounded border border-border bg-bg p-2 text-xs text-fg-2"
               rows={4}
               placeholder='{"version":1,"hosts":[{"name":"web-01","hostname":"10.0.0.1","tags":["prod"]}]}'
               value={importJson}
@@ -379,7 +379,7 @@ export function HostBrowser(): React.JSX.Element {
             <button
               type="button"
               onClick={handleImport}
-              className="mt-1 w-full rounded bg-green-700 py-1 text-xs text-white"
+              className="mt-1 w-full rounded bg-success py-1 text-xs text-accent-on"
             >
               Import JSON
             </button>
@@ -387,7 +387,7 @@ export function HostBrowser(): React.JSX.Element {
         )}
 
         {showForm && (
-          <div className="border-b border-[#30363d]">
+          <div className="border-b border-border">
             <HostForm
               copyFrom={copyFrom ?? undefined}
               initialPendingProfiles={
@@ -405,7 +405,7 @@ export function HostBrowser(): React.JSX.Element {
         )}
 
         {hosts.length === 0 ? (
-          <p className="p-4 text-center text-sm text-gray-500">No hosts yet</p>
+          <p className="p-4 text-center text-sm text-muted">No hosts yet</p>
         ) : (
           hostSections.map((section) => (
             <HostListSection

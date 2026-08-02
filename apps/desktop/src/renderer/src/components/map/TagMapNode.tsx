@@ -8,7 +8,7 @@ function TagMapNodeComponent({ data }: NodeProps): React.JSX.Element {
 
   return (
     <div
-      className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-[#30363d] text-center text-[10px] font-semibold text-white shadow-lg"
+      className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-border text-center text-[10px] font-semibold text-accent-on shadow-lg"
       style={{ backgroundColor: color }}
     >
       <Handle type="target" position={Position.Top} className="!opacity-0" />

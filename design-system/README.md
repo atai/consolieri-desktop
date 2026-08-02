@@ -28,7 +28,11 @@ The source project also includes `electron-viz-multi-screen.html`, a light-theme
 | `DESIGN.md` | Canonical design rules and component documentation |
 | `BRAND.md` | Brand guide for agents (logo lockup, voice, imagery) |
 | `brand.json` | Design System tab kit — logo, palette, type, imagery modules |
-| `colors_and_type.css` | Reusable CSS variables for color, type, spacing, radius, motion |
+| `tokens.css` | Canonical Open Design compiled tokens (`--bg`, `--accent`, …) |
+| `tokens.app-extensions.css` | App-owned C-extensions (chrome layout, terminal, `--consoleri-*` aliases) |
+| `tailwind-v4.css` | Derived Tailwind v4 `@theme` bridge — import this in the Electron app |
+| `manifest.json` / `USAGE.md` | OD package discovery + agent read-order |
+| `colors_and_type.css` | Legacy shim (`@import` tokens + extensions) |
 | `preview/` | Focused HTML review cards |
 | `logos/` | Primary mark + alternates wired into `brand.json` |
 | `imagery/` | Splash, empty states, product screenshots for the Images module |
@@ -72,7 +76,14 @@ One locked mark (orange hexagon + circular aperture) shared by every logo/icon/s
 ## Reuse
 
 ```html
-<link rel="stylesheet" href="colors_and_type.css">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="tokens.app-extensions.css">
 ```
 
-Import tokens, compose from `ui_kits/app/components/`, and reference `assets/screenshots/` for visual regression. Default new surfaces to the dark production theme unless building visualization experiments.
+Electron / Tailwind v4:
+
+```css
+@import '@consoleri/design-system/tailwind';
+```
+
+Import tokens, compose from `ui_kits/app/components/`, and reference `assets/screenshots/` for visual regression. Default new surfaces to the dark production theme unless building visualization experiments. See `USAGE.md` and `SYNC.md` for OD re-export rules.

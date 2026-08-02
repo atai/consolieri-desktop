@@ -98,7 +98,7 @@ export function TagInput({
         ref={inputRef}
         id={id}
         type="text"
-        className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+        className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
         value={value}
         onChange={(e) => {
           onChange(e.target.value)
@@ -119,7 +119,7 @@ export function TagInput({
         <ul
           id={`${id ?? 'tag-input'}-listbox`}
           role="listbox"
-          className="absolute z-20 mt-1 max-h-40 w-full overflow-y-auto rounded border border-[#30363d] bg-[#0d1117] py-1 shadow-lg"
+          className="absolute z-20 mt-1 max-h-40 w-full overflow-y-auto rounded border border-border bg-bg py-1 shadow-lg"
         >
           {suggestions.map((tag, index) => (
             <li key={tag} role="option" aria-selected={index === highlightedIndex}>
@@ -127,8 +127,8 @@ export function TagInput({
                 type="button"
                 className={`block w-full px-2 py-1.5 text-left text-sm ${
                   index === highlightedIndex
-                    ? 'bg-[#21262d] text-gray-100'
-                    : 'text-gray-300 hover:bg-[#21262d]/70'
+                    ? 'bg-surface-raised text-fg'
+                    : 'text-fg-2 hover:bg-surface-raised/70'
                 }`}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => selectSuggestion(tag)}

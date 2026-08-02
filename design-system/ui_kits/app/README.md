@@ -4,7 +4,7 @@ Applied interface kit for **Consoleri** — the dark production Electron shell f
 
 ## Source
 
-Based on Consoleri v0.4.7 production screenshots (`assets/screenshots/`) and tokens from `colors_and_type.css` / `DESIGN.md`. Density/table experiments may additionally reference `source_examples/electron-viz-multi-screen.html`.
+Based on Consoleri v0.4.7 production screenshots (`assets/screenshots/`) and tokens from `tokens.css` / `DESIGN.md`. Density/table experiments may additionally reference `source_examples/electron-viz-multi-screen.html`.
 
 ## Structure
 
@@ -27,7 +27,7 @@ Based on Consoleri v0.4.7 production screenshots (`assets/screenshots/`) and tok
 ## Usage
 
 1. Open `index.html` in the Design Files preview.
-2. Import tokens: `<link rel="stylesheet" href="../../colors_and_type.css" />`.
+2. Import tokens: `<link rel="stylesheet" href="../../tokens.css" />` and `<link rel="stylesheet" href="../../tokens.app-extensions.css" />` (or the legacy shim `colors_and_type.css`).
 3. Compose or copy `components/*.jsx` into new prototypes — each file assigns to `window` (e.g. `window.Sidebar`, `window.App`).
 4. Use relative brand paths (`../../assets/logo.svg`, empty-state PNGs) — never hot-link.
 5. Build new screens by extending `App.jsx` layout rather than inventing a second shell.
@@ -46,7 +46,7 @@ Based on Consoleri v0.4.7 production screenshots (`assets/screenshots/`) and tok
 - **Layout:** 52px sidebar, centered tabs, tag-grouped list, bottom connection panel.
 - **Colors:** dark canvas `--consoleri-bg`, accent `--consoleri-accent` (#2b7fff), brand orange for logo/tab only.
 - **Typography:** system sans for UI; mono for paths and fingerprints (`--consoleri-font-mono`).
-- **Tokens:** always load `colors_and_type.css`; do not introduce raw hex outside status/brand moments already documented.
+- **Tokens:** always load `tokens.css` (+ extensions); do not introduce raw hex outside status/brand moments already documented.
 - **Source fidelity:** match Hosts / Profiles / Network map screenshots before inventing new chrome.
 
 ## Brand assets to wire

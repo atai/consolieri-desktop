@@ -55,7 +55,7 @@ export function VncPane({ session }: VncPaneProps): React.JSX.Element {
 
   return (
     <div className="relative h-full bg-black">
-      <div className="absolute left-2 top-2 z-10 rounded bg-black/60 px-2 py-0.5 text-xs text-gray-300">
+      <div className="absolute left-2 top-2 z-10 rounded bg-black/60 px-2 py-0.5 text-xs text-fg-2">
         VNC — {status}
       </div>
       <div ref={containerRef} className="h-full w-full" />

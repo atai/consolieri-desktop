@@ -55,13 +55,13 @@ export function CloudRecoveryKeyModal({
         />
         <div className="space-y-3 p-4">
           <textarea
-            className="h-28 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 font-mono text-xs text-gray-100"
+            className="h-28 w-full rounded border border-border bg-bg px-2 py-1.5 font-mono text-xs text-fg"
             value={importValue}
             onChange={(e) => setImportValue(e.target.value)}
             placeholder="Base64 sync key"
             spellCheck={false}
           />
-          {error && <p className="text-xs text-red-400">{error}</p>}
+          {error && <p className="text-xs text-danger">{error}</p>}
         </div>
         <DialogFooter
           onCancel={onClose}
@@ -82,7 +82,7 @@ export function CloudRecoveryKeyModal({
         bordered
       />
       <div className="space-y-3 p-4">
-        <pre className="overflow-x-auto rounded border border-[#30363d] bg-[#0d1117] p-3 font-mono text-xs text-gray-100 break-all whitespace-pre-wrap">
+        <pre className="overflow-x-auto rounded border border-border bg-bg p-3 font-mono text-xs text-fg break-all whitespace-pre-wrap">
           {recoveryKey}
         </pre>
         <div className="flex items-center gap-2">
@@ -90,7 +90,7 @@ export function CloudRecoveryKeyModal({
             {copied ? 'Copied' : 'Copy'}
           </Button>
         </div>
-        <label className="flex items-start gap-2 text-xs text-gray-300">
+        <label className="flex items-start gap-2 text-xs text-fg-2">
           <input
             type="checkbox"
             className="mt-0.5"

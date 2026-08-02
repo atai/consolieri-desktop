@@ -52,7 +52,7 @@ export function HostProfilesSection({
   return (
     <div className="mb-2">
       <div className="mb-1.5 flex items-center justify-between">
-        <span className="text-xs font-medium uppercase tracking-wide text-gray-500">
+        <span className="text-xs font-medium uppercase tracking-wide text-muted">
           Connection profiles
         </span>
         {!showAddForm && !editingProfileId && (
@@ -60,14 +60,14 @@ export function HostProfilesSection({
             <button
               type="button"
               onClick={() => setShowPickDialog(true)}
-              className="text-xs text-blue-400 hover:underline"
+              className="text-xs text-accent hover:underline"
             >
               + Pick
             </button>
             <button
               type="button"
               onClick={() => setShowAddForm(true)}
-              className="text-xs text-blue-400 hover:underline"
+              className="text-xs text-accent hover:underline"
             >
               + Add
             </button>
@@ -76,7 +76,7 @@ export function HostProfilesSection({
       </div>
 
       {showAddForm && (
-        <div className="mb-2 rounded border border-[#30363d] bg-[#0d1117]">
+        <div className="mb-2 rounded border border-border bg-bg">
           <ProfileForm
             compact
             linkHostId={host.id}
@@ -89,12 +89,12 @@ export function HostProfilesSection({
       )}
 
       {profiles.length === 0 && !showAddForm ? (
-        <p className="text-xs text-gray-500">No profiles yet</p>
+        <p className="text-xs text-muted">No profiles yet</p>
       ) : (
         <ul>
           {profiles.map((profile) =>
             editingProfileId === profile.id ? (
-              <li key={profile.id} className="rounded border border-[#30363d] bg-[#0d1117]">
+              <li key={profile.id} className="rounded border border-border bg-bg">
                 <ProfileForm
                   compact
                   linkHostId={host.id}

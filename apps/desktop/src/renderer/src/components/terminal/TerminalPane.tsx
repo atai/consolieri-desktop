@@ -65,15 +65,15 @@ export function TerminalPane({
   }, [sessionId, hostId])
 
   return (
-    <div className="flex h-full flex-col bg-[#0d1117]">
+    <div className="flex h-full flex-col bg-bg">
       {disconnected && (
-        <div className="flex items-center justify-between border-b border-[#30363d] bg-[#161b22] px-3 py-1.5 text-sm">
-          <span className="text-amber-400">Session disconnected</span>
+        <div className="flex items-center justify-between border-b border-border bg-surface px-3 py-1.5 text-sm">
+          <span className="text-brand">Session disconnected</span>
           {onReconnect && (
             <button
               type="button"
               onClick={onReconnect}
-              className="rounded bg-blue-600 px-2 py-0.5 text-xs text-white hover:bg-blue-500"
+              className="rounded bg-accent px-2 py-0.5 text-xs text-accent-on hover:bg-accent-hover"
             >
               Reconnect
             </button>

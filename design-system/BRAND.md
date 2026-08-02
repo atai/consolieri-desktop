@@ -36,7 +36,7 @@ Rebuild all rasters from the SVG master: `node assets/_brand/rebuild-rasters.cjs
 | Accent | `#2b7fff` | Primary actions |
 | Brand amber | `#f59e0b` | Logo + active tab |
 
-Full tokens live in `colors_and_type.css` and `brand.json`.
+Full tokens live in `tokens.css` (+ `tokens.app-extensions.css`) and `brand.json`.
 
 ## Typography
 
@@ -55,7 +55,7 @@ Registered samples: `imagery/` (splash, lockups, empty states, product screensho
 
 ## Agent prompt guide
 
-1. Read `DESIGN.md`, `brand.json`, and `colors_and_type.css` before generating UI.
+1. Read `USAGE.md`, `DESIGN.md`, `brand.json`, and `tokens.css` before generating UI.
 2. Bind Consoleri tokens — do not invent a new palette.
 3. Use `logos/primary.svg` (or `assets/logo.svg`) for any brand mark.
 4. Compose product UI from `ui_kits/app/` patterns.

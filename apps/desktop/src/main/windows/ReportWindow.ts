@@ -5,6 +5,7 @@ import { appIconPath } from '../appBranding'
 import { reportRepository } from '../reports/ReportRepository'
 import { formatReportWindowTitle, pinBrowserWindowTitle } from '../windowTitles'
 import { registerReportWindow } from '../reports/ReportRunner'
+import { CHROME_BG_HEX } from '../../shared/chromeHex'
 
 const reportWindows = new Map<string, BrowserWindow>()
 
@@ -29,7 +30,7 @@ export function openReportWindow(
     minHeight: 320,
     title,
     icon: appIconPath(),
-    backgroundColor: '#0d1117',
+    backgroundColor: CHROME_BG_HEX,
     parent: parent ?? undefined,
     autoHideMenuBar: true,
     webPreferences: {

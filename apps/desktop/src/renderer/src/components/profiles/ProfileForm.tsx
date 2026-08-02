@@ -90,14 +90,14 @@ export function ProfileForm({
         maxHeightClass={compact ? SCROLLABLE_FORM_MAX_HEIGHT_COMPACT : undefined}
         header={
           <div className="flex items-center justify-between gap-2">
-            <h4 className="text-sm font-medium text-gray-200">
+            <h4 className="text-sm font-medium text-fg">
               {isEdit ? 'Edit profile' : 'Add profile'}
             </h4>
             {!isEdit && (linkHostId || draft) && (
               <button
                 type="button"
                 onClick={() => setShowPickDialog(true)}
-                className="shrink-0 text-xs text-blue-400 hover:underline"
+                className="shrink-0 text-xs text-accent hover:underline"
               >
                 + Pick
               </button>
@@ -109,7 +109,7 @@ export function ProfileForm({
             <button
               type="button"
               onClick={onCancel}
-              className="rounded px-3 py-1.5 text-gray-400 hover:bg-[#21262d]"
+              className="rounded px-3 py-1.5 text-muted hover:bg-surface-raised"
             >
               Cancel
             </button>
@@ -117,7 +117,7 @@ export function ProfileForm({
               type="submit"
               form={formId}
               disabled={saving}
-              className="rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-500 disabled:opacity-50"
+              className="rounded bg-accent px-3 py-1.5 text-accent-on hover:bg-accent-hover disabled:opacity-50"
             >
               {saving ? 'Saving…' : 'Save'}
             </button>
@@ -126,7 +126,7 @@ export function ProfileForm({
       >
         <form id={formId} onSubmit={handleSubmit} className="space-y-3 text-sm">
           {errorEntries.length > 0 && (
-            <ul className="rounded border border-red-800 bg-red-950/40 px-3 py-2 text-xs text-red-400">
+            <ul className="rounded border border-red-800 bg-red-950/40 px-3 py-2 text-xs text-danger">
               {errorEntries.map(([field, msg]) => (
                 <li key={field}>{msg}</li>
               ))}
@@ -134,7 +134,7 @@ export function ProfileForm({
           )}
 
           {cloneFromProfileId && !isEdit && (
-            <p className="text-xs text-gray-500">Settings copied from an existing profile</p>
+            <p className="text-xs text-muted">Settings copied from an existing profile</p>
           )}
 
           <FormField label="Name">
@@ -147,7 +147,7 @@ export function ProfileForm({
 
           <FormField label="Protocol">
             {isEdit ? (
-              <div className="mt-1 uppercase text-gray-300">{protocol}</div>
+              <div className="mt-1 uppercase text-fg-2">{protocol}</div>
             ) : (
               <select
                 className={INPUT_CLASS}
@@ -223,7 +223,7 @@ export function ProfileForm({
           )}
 
           {isEdit && linkHostId && host && (
-            <label className="flex cursor-pointer items-center gap-2 text-gray-400">
+            <label className="flex cursor-pointer items-center gap-2 text-muted">
               <input
                 type="checkbox"
                 checked={isDefault}

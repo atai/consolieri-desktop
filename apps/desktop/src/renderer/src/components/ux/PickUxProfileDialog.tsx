@@ -33,20 +33,20 @@ export function PickUxProfileDialog({
       />
       <div className="max-h-64 overflow-y-auto">
         {loading ? (
-          <p className="p-4 text-center text-sm text-gray-500">Loading…</p>
+          <p className="p-4 text-center text-sm text-muted">Loading…</p>
         ) : profiles.length === 0 ? (
-          <p className="p-4 text-center text-sm text-gray-500">No profiles available</p>
+          <p className="p-4 text-center text-sm text-muted">No profiles available</p>
         ) : (
           <ul>
             {profiles.map((profile) => (
-              <li key={profile.id} className="border-b border-[#30363d] last:border-b-0">
+              <li key={profile.id} className="border-b border-border last:border-b-0">
                 <button
                   type="button"
                   onClick={() => onPick(profile)}
-                  className="w-full px-4 py-2.5 text-left hover:bg-[#21262d]"
+                  className="w-full px-4 py-2.5 text-left hover:bg-surface-raised"
                 >
-                  <div className="text-sm text-gray-200">{profile.name}</div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-sm text-fg">{profile.name}</div>
+                  <div className="text-xs text-muted">
                     {profile.terminal.fontSize}px · sidebar {profile.chrome.sidebarWidth}px
                   </div>
                 </button>

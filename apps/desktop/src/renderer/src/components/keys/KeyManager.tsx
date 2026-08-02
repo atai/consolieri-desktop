@@ -52,26 +52,26 @@ export function KeyManager(): React.JSX.Element {
   const customKeys = keys.filter((k) => k.source === 'custom')
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[#161b22]">
-      <div className="shrink-0 border-b border-[#30363d] p-3">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface">
+      <div className="shrink-0 border-b border-border p-3">
         <div className="mb-2 flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-gray-100">SSH Keys</h1>
+          <h1 className="text-lg font-semibold text-fg">SSH Keys</h1>
           <button
             type="button"
             onClick={() => void refresh()}
-            className="rounded border border-[#30363d] px-2 py-0.5 text-xs text-gray-400 hover:bg-[#21262d]"
+            className="rounded border border-border px-2 py-0.5 text-xs text-muted hover:bg-surface-raised"
           >
             Refresh
           </button>
         </div>
-        <p className="text-xs text-gray-500">Profile keys from ~/.ssh and custom paths</p>
+        <p className="text-xs text-muted">Profile keys from ~/.ssh and custom paths</p>
       </div>
 
-      <div className="shrink-0 border-b border-[#30363d] p-2">
+      <div className="shrink-0 border-b border-border p-2">
         <button
           type="button"
           onClick={() => void handleAdd()}
-          className="w-full rounded bg-blue-600 px-2 py-1.5 text-xs text-white hover:bg-blue-500"
+          className="w-full rounded bg-accent px-2 py-1.5 text-xs text-accent-on hover:bg-accent-hover"
         >
           + Add key from file
         </button>
@@ -79,14 +79,14 @@ export function KeyManager(): React.JSX.Element {
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {loading ? (
-          <p className="p-4 text-center text-sm text-gray-500">Loading keys…</p>
+          <p className="p-4 text-center text-sm text-muted">Loading keys…</p>
         ) : keys.length === 0 ? (
-          <p className="p-4 text-center text-sm text-gray-500">No SSH keys found</p>
+          <p className="p-4 text-center text-sm text-muted">No SSH keys found</p>
         ) : (
           <>
             {sshDirKeys.length > 0 && (
               <>
-                <div className="border-b border-[#30363d] px-3 py-2 text-xs font-medium uppercase tracking-wide text-gray-500">
+                <div className="border-b border-border px-3 py-2 text-xs font-medium uppercase tracking-wide text-muted">
                   Profile (~/.ssh)
                 </div>
                 <ul>
@@ -104,7 +104,7 @@ export function KeyManager(): React.JSX.Element {
             )}
             {customKeys.length > 0 && (
               <>
-                <div className="border-b border-[#30363d] px-3 py-2 text-xs font-medium uppercase tracking-wide text-gray-500">
+                <div className="border-b border-border px-3 py-2 text-xs font-medium uppercase tracking-wide text-muted">
                   Added keys
                 </div>
                 <ul>

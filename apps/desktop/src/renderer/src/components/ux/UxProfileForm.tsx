@@ -91,7 +91,7 @@ export function UxProfileForm({ profile, onSave, onCancel }: UxProfileFormProps)
           <button
             type="button"
             onClick={onCancel}
-            className="rounded px-3 py-1.5 text-gray-400 hover:bg-[#21262d]"
+            className="rounded px-3 py-1.5 text-muted hover:bg-surface-raised"
           >
             Cancel
           </button>
@@ -99,7 +99,7 @@ export function UxProfileForm({ profile, onSave, onCancel }: UxProfileFormProps)
             type="submit"
             form={formId}
             disabled={saving}
-            className="rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-500 disabled:opacity-50"
+            className="rounded bg-accent px-3 py-1.5 text-accent-on hover:bg-accent-hover disabled:opacity-50"
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
@@ -108,9 +108,9 @@ export function UxProfileForm({ profile, onSave, onCancel }: UxProfileFormProps)
     >
       <form id={formId} onSubmit={handleSubmit} className="space-y-3 text-sm">
         <label className="block">
-          <span className="text-gray-400">Name</span>
+          <span className="text-muted">Name</span>
           <input
-            className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -121,23 +121,23 @@ export function UxProfileForm({ profile, onSave, onCancel }: UxProfileFormProps)
 
         <div className="grid grid-cols-2 gap-2">
           <label className="block">
-            <span className="text-gray-400">Font size</span>
+            <span className="text-muted">Font size</span>
             <input
               type="number"
               min={8}
               max={32}
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
               value={fontSize}
               onChange={(e) => setFontSize(Number(e.target.value))}
             />
           </label>
           <label className="block">
-            <span className="text-gray-400">Scrollback</span>
+            <span className="text-muted">Scrollback</span>
             <input
               type="number"
               min={100}
               max={50000}
-              className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
               value={scrollback}
               onChange={(e) => setScrollback(Number(e.target.value))}
             />
@@ -145,30 +145,30 @@ export function UxProfileForm({ profile, onSave, onCancel }: UxProfileFormProps)
         </div>
 
         <label className="block">
-          <span className="text-gray-400">Shell prompt</span>
+          <span className="text-muted">Shell prompt</span>
           <select
-            className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
             value={shellPrompt}
             onChange={(e) => setShellPrompt(e.target.value as ShellPromptMode)}
           >
             <option value="consoleri">Consoleri (user@host:path)</option>
             <option value="server">Server only</option>
           </select>
-          <span className="mt-1 block text-xs text-gray-500">
+          <span className="mt-1 block text-xs text-muted">
             Consoleri supplies a colored prompt when the server has no PS1 configured.
           </span>
         </label>
 
         <label className="block">
-          <span className="text-gray-400">Font family</span>
+          <span className="text-muted">Font family</span>
           <input
-            className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
             value={fontFamily}
             onChange={(e) => setFontFamily(e.target.value)}
           />
         </label>
 
-        <label className="flex items-center gap-2 text-gray-300">
+        <label className="flex items-center gap-2 text-fg-2">
           <input
             type="checkbox"
             checked={cursorBlink}
@@ -178,27 +178,27 @@ export function UxProfileForm({ profile, onSave, onCancel }: UxProfileFormProps)
         </label>
 
         <label className="block">
-          <span className="text-gray-400">Sidebar width</span>
+          <span className="text-muted">Sidebar width</span>
           <input
             type="number"
             min={MIN_SIDEBAR_WIDTH}
             max={MAX_SIDEBAR_WIDTH}
-            className="mt-1 w-full rounded border border-[#30363d] bg-[#0d1117] px-2 py-1.5 text-gray-100"
+            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
             value={sidebarWidth}
             onChange={(e) => setSidebarWidth(Number(e.target.value))}
           />
         </label>
 
         <div className="space-y-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-gray-500">Theme colors</span>
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">Theme colors</span>
           <div className="grid grid-cols-2 gap-2">
             {PRIMARY_THEME_KEYS.map((key) => (
-              <label key={key} className="flex items-center gap-2 text-xs text-gray-400">
+              <label key={key} className="flex items-center gap-2 text-xs text-muted">
                 <input
                   type="color"
                   value={theme[key]}
                   onChange={(e) => updateThemeColor(key, e.target.value)}
-                  className="h-7 w-10 cursor-pointer rounded border border-[#30363d] bg-transparent"
+                  className="h-7 w-10 cursor-pointer rounded border border-border bg-transparent"
                 />
                 <span>{key}</span>
               </label>
@@ -207,19 +207,19 @@ export function UxProfileForm({ profile, onSave, onCancel }: UxProfileFormProps)
           <button
             type="button"
             onClick={() => setShowAnsiColors((v) => !v)}
-            className="text-xs text-blue-400 hover:underline"
+            className="text-xs text-accent hover:underline"
           >
             {showAnsiColors ? 'Hide ANSI colors' : 'Show ANSI colors'}
           </button>
           {showAnsiColors && (
             <div className="grid max-h-40 grid-cols-2 gap-2 overflow-y-auto">
               {TERMINAL_THEME_KEYS.filter((key) => !PRIMARY_THEME_KEYS.includes(key)).map((key) => (
-                <label key={key} className="flex items-center gap-2 text-xs text-gray-400">
+                <label key={key} className="flex items-center gap-2 text-xs text-muted">
                   <input
                     type="color"
                     value={theme[key]}
                     onChange={(e) => updateThemeColor(key, e.target.value)}
-                    className="h-7 w-10 cursor-pointer rounded border border-[#30363d] bg-transparent"
+                    className="h-7 w-10 cursor-pointer rounded border border-border bg-transparent"
                   />
                   <span>{key}</span>
                 </label>

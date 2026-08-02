@@ -28,11 +28,11 @@ export function CheckboxPickList<T extends CheckboxPickListItem>({
   loadingMessage = 'Loading…'
 }: CheckboxPickListProps<T>): React.JSX.Element {
   if (loading) {
-    return <p className="p-4 text-sm text-gray-500">{loadingMessage}</p>
+    return <p className="p-4 text-sm text-muted">{loadingMessage}</p>
   }
 
   if (items.length === 0) {
-    return <p className="p-4 text-sm text-gray-500">{emptyMessage}</p>
+    return <p className="p-4 text-sm text-muted">{emptyMessage}</p>
   }
 
   return (
@@ -45,7 +45,7 @@ export function CheckboxPickList<T extends CheckboxPickListItem>({
           <li key={item.id}>
             <label
               className={`flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 ${
-                disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-[#21262d]'
+                disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-surface-raised'
               }`}
             >
               <input
@@ -53,7 +53,7 @@ export function CheckboxPickList<T extends CheckboxPickListItem>({
                 checked={checked}
                 disabled={disabled}
                 onChange={() => onToggle(item.id)}
-                className="rounded border-[#30363d]"
+                className="rounded border-border"
               />
               <span className="min-w-0 flex-1">{renderItem(item)}</span>
               {disabled && renderDisabledBadge?.(item)}

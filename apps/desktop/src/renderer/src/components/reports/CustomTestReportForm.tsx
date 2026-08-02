@@ -122,7 +122,7 @@ export function CustomTestReportForm({
             type="button"
             onClick={onCancel}
             disabled={saving}
-            className="rounded px-3 py-1.5 text-sm text-gray-400 hover:bg-[#21262d] disabled:opacity-50"
+            className="rounded px-3 py-1.5 text-sm text-muted hover:bg-surface-raised disabled:opacity-50"
           >
             Cancel
           </button>
@@ -130,7 +130,7 @@ export function CustomTestReportForm({
             type="button"
             onClick={() => void handleSubmit()}
             disabled={saving}
-            className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-500 disabled:opacity-50"
+            className="rounded bg-accent px-3 py-1.5 text-sm text-accent-on hover:bg-accent-hover disabled:opacity-50"
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
@@ -138,13 +138,13 @@ export function CustomTestReportForm({
       }
     >
       <label className="mb-3 block text-sm">
-        <span className="text-gray-400">Name</span>
+        <span className="text-muted">Name</span>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           disabled={saving}
-          className="mt-1 w-full rounded border border-[#30363d] bg-[#161b22] px-2 py-1.5 text-gray-100"
+          className="mt-1 w-full rounded border border-border bg-surface px-2 py-1.5 text-fg"
           placeholder="e.g. Post-deploy smoke test"
         />
       </label>
@@ -158,12 +158,12 @@ export function CustomTestReportForm({
 
       <div className="mb-4">
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-sm text-gray-400">Commands (executed in order on each host)</span>
+          <span className="text-sm text-muted">Commands (executed in order on each host)</span>
           <button
             type="button"
             onClick={handleAddCommand}
             disabled={saving}
-            className="rounded border border-[#30363d] px-2 py-0.5 text-xs text-gray-300 hover:bg-[#21262d]"
+            className="rounded border border-border px-2 py-0.5 text-xs text-fg-2 hover:bg-surface-raised"
           >
             + Add command
           </button>
@@ -172,21 +172,21 @@ export function CustomTestReportForm({
         <div className="space-y-2">
           {commands.map((cmd, index) => (
             <div key={index} className="flex items-start gap-2">
-              <span className="mt-2 w-6 shrink-0 text-right text-xs text-gray-500">{index + 1}</span>
+              <span className="mt-2 w-6 shrink-0 text-right text-xs text-muted">{index + 1}</span>
               <textarea
                 value={cmd.command}
                 onChange={(e) => handleCommandChange(index, e.target.value)}
                 disabled={saving}
                 rows={1}
                 placeholder="e.g. systemctl status nginx"
-                className="min-h-[2rem] flex-1 resize-y rounded border border-[#30363d] bg-[#161b22] px-2 py-1.5 font-mono text-sm text-gray-100"
+                className="min-h-[2rem] flex-1 resize-y rounded border border-border bg-surface px-2 py-1.5 font-mono text-sm text-fg"
               />
               <div className="flex shrink-0 flex-col gap-0.5">
                 <button
                   type="button"
                   onClick={() => handleMoveCommand(index, -1)}
                   disabled={saving || index === 0}
-                  className="rounded border border-[#30363d] px-1.5 py-0.5 text-xs text-gray-400 hover:bg-[#21262d] disabled:opacity-40"
+                  className="rounded border border-border px-1.5 py-0.5 text-xs text-muted hover:bg-surface-raised disabled:opacity-40"
                   title="Move up"
                 >
                   ↑
@@ -195,7 +195,7 @@ export function CustomTestReportForm({
                   type="button"
                   onClick={() => handleMoveCommand(index, 1)}
                   disabled={saving || index === commands.length - 1}
-                  className="rounded border border-[#30363d] px-1.5 py-0.5 text-xs text-gray-400 hover:bg-[#21262d] disabled:opacity-40"
+                  className="rounded border border-border px-1.5 py-0.5 text-xs text-muted hover:bg-surface-raised disabled:opacity-40"
                   title="Move down"
                 >
                   ↓
@@ -204,7 +204,7 @@ export function CustomTestReportForm({
                   type="button"
                   onClick={() => handleRemoveCommand(index)}
                   disabled={saving}
-                  className="rounded border border-[#30363d] px-1.5 py-0.5 text-xs text-red-400 hover:bg-[#21262d]"
+                  className="rounded border border-border px-1.5 py-0.5 text-xs text-danger hover:bg-surface-raised"
                   title="Remove"
                 >
                   ✕
@@ -224,14 +224,14 @@ export function CustomTestReportForm({
           className="mt-0.5"
         />
         <span>
-          <span className="text-gray-300">Continue on error</span>
-          <span className="mt-0.5 block text-xs text-gray-500">
+          <span className="text-fg-2">Continue on error</span>
+          <span className="mt-0.5 block text-xs text-muted">
             When unchecked, remaining commands are skipped after a non-zero exit code.
           </span>
         </span>
       </label>
 
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
     </ReportFormShell>
   )
 }

@@ -40,10 +40,10 @@ export function ReportListItem({
   const summary = summarizeResult(report)
 
   return (
-    <li className="flex items-center gap-2 border-b border-[#30363d] px-3 py-2 hover:bg-[#21262d]">
+    <li className="flex items-center gap-2 border-b border-border px-3 py-2 hover:bg-surface-raised">
       <button type="button" onClick={onOpen} className="min-w-0 flex-1 text-left">
-        <div className="truncate text-sm font-medium text-gray-100">{report.name}</div>
-        <div className="mt-0.5 text-xs text-gray-500">
+        <div className="truncate text-sm font-medium text-fg">{report.name}</div>
+        <div className="mt-0.5 text-xs text-muted">
           {reportTypeLabel(report.type)} · {hosts} host{hosts === 1 ? '' : 's'}
           {report.lastRunAt && <> · {new Date(report.lastRunAt).toLocaleString()}</>}
           {summary && <> · {summary}</>}
@@ -52,14 +52,14 @@ export function ReportListItem({
       <button
         type="button"
         onClick={onEdit}
-        className="shrink-0 rounded px-2 py-0.5 text-xs text-gray-400 hover:bg-[#30363d] hover:text-gray-200"
+        className="shrink-0 rounded px-2 py-0.5 text-xs text-muted hover:bg-border hover:text-fg"
       >
         Edit
       </button>
       <button
         type="button"
         onClick={onDelete}
-        className="shrink-0 rounded px-2 py-0.5 text-xs text-red-400 hover:bg-[#30363d]"
+        className="shrink-0 rounded px-2 py-0.5 text-xs text-danger hover:bg-border"
       >
         Delete
       </button>

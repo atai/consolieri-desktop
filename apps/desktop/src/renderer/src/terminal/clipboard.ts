@@ -94,7 +94,7 @@ export function attachClipboardHandlers(
     removeMenu()
     menuEl = document.createElement('div')
     menuEl.className =
-      'fixed z-50 min-w-[120px] rounded border border-[#30363d] bg-[#161b22] py-1 text-sm shadow-lg'
+      'fixed z-50 min-w-[120px] rounded border border-border bg-surface py-1 text-sm shadow-lg'
     menuEl.style.left = `${x}px`
     menuEl.style.top = `${y}px`
 
@@ -102,7 +102,7 @@ export function attachClipboardHandlers(
       const btn = document.createElement('button')
       btn.type = 'button'
       btn.textContent = label
-      btn.className = 'block w-full px-3 py-1.5 text-left text-gray-200 hover:bg-[#21262d]'
+      btn.className = 'block w-full px-3 py-1.5 text-left text-fg hover:bg-surface-raised'
       btn.addEventListener('click', () => {
         action()
         removeMenu()

@@ -24,6 +24,7 @@ import { TagMapNode } from './TagMapNode'
 import { GatewayMapNode } from './GatewayMapNode'
 import { useAppStore } from '../../stores/appStore'
 import { connectHostInWindow } from '../../session/connectHost'
+import { HEX } from '../../theme/hex'
 
 const nodeTypes = {
   host: HostMapNode,
@@ -33,15 +34,15 @@ const nodeTypes = {
 
 function edgeStyle(kind: MapGraphEdge['kind']): Partial<Edge> {
   if (kind === 'membership') {
-    return { style: { stroke: '#484f58', strokeDasharray: '4 4' }, animated: false }
+    return { style: { stroke: HEX.terminalBlack, strokeDasharray: '4 4' }, animated: false }
   }
   if (kind === 'related-reverse') {
-    return { style: { stroke: '#58a6ff', strokeDasharray: '6 4', opacity: 0.5 } }
+    return { style: { stroke: HEX.accent, strokeDasharray: '6 4', opacity: 0.5 } }
   }
   if (kind === 'gateway') {
-    return { style: { stroke: '#d29922' }, animated: true }
+    return { style: { stroke: HEX.brand }, animated: true }
   }
-  return { style: { stroke: '#58a6ff' } }
+  return { style: { stroke: HEX.accent } }
 }
 
 interface HostMapCanvasProps {
@@ -105,7 +106,7 @@ export function HostMapCanvas({ hosts }: HostMapCanvasProps): React.JSX.Element 
 
   if (hosts.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-500">
+      <div className="flex h-full items-center justify-center text-sm text-muted">
         No hosts to display
       </div>
     )
@@ -123,13 +124,13 @@ export function HostMapCanvas({ hosts }: HostMapCanvasProps): React.JSX.Element 
       minZoom={0.2}
       maxZoom={2}
       proOptions={{ hideAttribution: true }}
-      className="bg-[#0f1117]"
+      className="bg-bg"
     >
-      <Background gap={20} size={1} color="#21262d" />
-      <Controls className="!border-[#30363d] !bg-[#161b22] !shadow-lg [&>button]:!border-[#30363d] [&>button]:!bg-[#21262d] [&>button]:!text-gray-300" />
+      <Background gap={20} size={1} color={HEX.surfaceRaised} />
+      <Controls className="!border-border !bg-surface !shadow-lg [&>button]:!border-border [&>button]:!bg-surface-raised [&>button]:!text-fg-2" />
       <MiniMap
-        className="!border-[#30363d] !bg-[#161b22]"
-        nodeColor={(node) => (node.type === 'tag' ? '#388bfd' : '#21262d')}
+        className="!border-border !bg-surface"
+        nodeColor={(node) => (node.type === 'tag' ? HEX.accent : HEX.surfaceRaised)}
         maskColor="rgba(0,0,0,0.6)"
       />
     </ReactFlow>

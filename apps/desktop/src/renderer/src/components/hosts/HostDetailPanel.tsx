@@ -5,7 +5,7 @@ import { HostForm } from './HostForm'
 import { HostProfilesSection } from '../profiles/HostProfilesSection'
 
 const PANEL_CLASS =
-  'min-h-0 shrink border-t-2 border-blue-500/40 bg-[#0d1117] shadow-[0_-4px_16px_rgba(0,0,0,0.35)]'
+  'min-h-0 shrink border-t-2 border-accent/40 bg-bg shadow-[0_-4px_16px_rgba(0,0,0,0.35)]'
 
 const PANEL_BODY_CLASS = 'max-h-[min(50vh,28rem)] overflow-y-auto p-3'
 
@@ -41,7 +41,7 @@ export function HostDetailPanel({
   if (editing) {
     return (
       <div className={PANEL_CLASS}>
-        <div className="px-3 pt-3 text-[10px] font-medium uppercase tracking-wide text-blue-400/80">
+        <div className="px-3 pt-3 text-[10px] font-medium uppercase tracking-wide text-accent/80">
           Edit host
         </div>
         <HostForm
@@ -63,17 +63,17 @@ export function HostDetailPanel({
   return (
     <div className={PANEL_CLASS}>
       <div className={PANEL_BODY_CLASS}>
-        <div className="mb-2 text-[10px] font-medium uppercase tracking-wide text-blue-400/80">
+        <div className="mb-2 text-[10px] font-medium uppercase tracking-wide text-accent/80">
           Connect
         </div>
         <div className="mb-2 flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium text-gray-200">{host.name}</div>
-          <div className="truncate text-xs text-gray-500">
+          <div className="truncate text-sm font-medium text-fg">{host.name}</div>
+          <div className="truncate text-xs text-muted">
             {host.hostname}:{host.port}
           </div>
           {host.httpEndpoint && (
-            <div className="truncate text-xs text-gray-500">{host.httpEndpoint}</div>
+            <div className="truncate text-xs text-muted">{host.httpEndpoint}</div>
           )}
         </div>
         <EditDeleteActions
@@ -95,13 +95,13 @@ export function HostDetailPanel({
           <button
             type="button"
             onClick={() => onConnect(host)}
-            className="mb-2 rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-500"
+            className="mb-2 rounded bg-accent px-2 py-1 text-xs text-accent-on hover:bg-accent-hover"
           >
             Connect
           </button>
         )}
 
-        <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-400">
+        <label className="flex cursor-pointer items-center gap-2 text-xs text-muted">
           <input
             type="checkbox"
             checked={autoOpenConnectionLog}
@@ -110,13 +110,13 @@ export function HostDetailPanel({
           Open log on connect
         </label>
 
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="mt-2 text-xs text-muted">
           Log verbosity:{' '}
           {HOST_LOG_VERBOSITY_OPTIONS.find((option) => option.value === host.logVerbosity)?.label ??
             host.logVerbosity}
         </p>
 
-        {host.notes && <p className="mt-2 text-xs text-gray-500">{host.notes}</p>}
+        {host.notes && <p className="mt-2 text-xs text-muted">{host.notes}</p>}
       </div>
     </div>
   )

@@ -1,32 +1,33 @@
 import type { ChromeAppearance, TerminalAppearance, TerminalTheme, UxProfile } from './types'
 import { BUILTIN_UX_PROFILE_ID } from './types'
 
+/** Aligned with design-system/hex.json terminal* keys. */
 export const DEFAULT_TERMINAL_THEME: TerminalTheme = {
-  background: '#0d1117',
+  background: '#0a1018',
   foreground: '#c9d1d9',
-  cursor: '#58a6ff',
+  cursor: '#2b7fff',
   selectionBackground: '#264f78',
   black: '#484f58',
-  red: '#ff7b72',
-  green: '#3fb950',
-  yellow: '#d29922',
-  blue: '#58a6ff',
-  magenta: '#bc8cff',
-  cyan: '#39c5cf',
+  red: '#ef4444',
+  green: '#10b981',
+  yellow: '#eab308',
+  blue: '#2b7fff',
+  magenta: '#a78bfa',
+  cyan: '#22d3ee',
   white: '#b1bac4',
   brightBlack: '#6e7681',
-  brightRed: '#ffa198',
-  brightGreen: '#56d364',
-  brightYellow: '#e3b341',
-  brightBlue: '#79c0ff',
-  brightMagenta: '#d2a8ff',
-  brightCyan: '#56d4dd',
-  brightWhite: '#f0f6fc'
+  brightRed: '#f87171',
+  brightGreen: '#34d399',
+  brightYellow: '#fbbf24',
+  brightBlue: '#60a5fa',
+  brightMagenta: '#c4b5fd',
+  brightCyan: '#67e8f9',
+  brightWhite: '#f1f5f9'
 }
 
 export const DEFAULT_TERMINAL_APPEARANCE: TerminalAppearance = {
   fontSize: 13,
-  fontFamily: 'Consolas, "Cascadia Mono", "Courier New", monospace',
+  fontFamily: '"JetBrains Mono", "IBM Plex Mono", Consolas, "Cascadia Mono", monospace',
   cursorBlink: true,
   scrollback: 10000,
   theme: DEFAULT_TERMINAL_THEME,
@@ -43,7 +44,7 @@ export const DEFAULT_CHROME_APPEARANCE: ChromeAppearance = {
 export function createBuiltinUxProfile(now = new Date().toISOString()): UxProfile {
   return {
     id: BUILTIN_UX_PROFILE_ID,
-    name: 'GitHub Dark',
+    name: 'Consoleri Dark',
     terminal: DEFAULT_TERMINAL_APPEARANCE,
     chrome: DEFAULT_CHROME_APPEARANCE,
     isBuiltin: true,

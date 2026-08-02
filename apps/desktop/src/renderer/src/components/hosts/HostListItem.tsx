@@ -34,7 +34,7 @@ export function HostListItem({
   return (
     <li
       className={`group flex items-start gap-1 px-2 py-1.5 ${
-        selected ? 'bg-[#21262d]' : 'hover:bg-[#21262d]/70'
+        selected ? 'bg-surface-raised' : 'hover:bg-surface-raised/70'
       }`}
     >
       <button
@@ -45,14 +45,14 @@ export function HostListItem({
       >
         <span className="mt-0.5 text-base">{osIcon(host.osType)}</span>
         <div className="min-w-0 flex-1">
-          <div className="truncate font-medium text-gray-200">{host.name}</div>
-          <div className="truncate text-xs text-gray-500">
+          <div className="truncate font-medium text-fg">{host.name}</div>
+          <div className="truncate text-xs text-muted">
             {host.hostname}:{host.port}
           </div>
           {host.tags.length > 0 && (
             <div className="mt-0.5 flex flex-wrap gap-1">
               {host.tags.map((t) => (
-                <span key={t} className="text-[10px] text-blue-400">
+                <span key={t} className="text-[10px] text-accent">
                   #{t}
                 </span>
               ))}

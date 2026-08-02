@@ -5,15 +5,15 @@ export type ButtonSize = 'sm' | 'md'
 
 const variantClass: Record<ButtonVariant, string> = {
   default:
-    'border border-[#30363d] bg-[#21262d] text-gray-300 hover:bg-[#30363d] hover:text-gray-100',
-  primary: 'bg-blue-600 text-white hover:bg-blue-500',
-  danger: 'bg-red-900/80 text-red-200 hover:bg-red-800',
-  ghost: 'text-gray-400 hover:bg-[#21262d] hover:text-gray-200'
+    'border border-border bg-surface-raised text-fg-2 hover:bg-border hover:text-fg',
+  primary: 'bg-accent text-accent-on hover:bg-accent-hover',
+  danger: 'bg-danger/20 text-danger hover:bg-danger/30',
+  ghost: 'text-muted hover:bg-surface-raised hover:text-fg'
 }
 
 const sizeClass: Record<ButtonSize, string> = {
-  sm: 'rounded px-2 py-1 text-xs',
-  md: 'rounded px-3 py-1.5 text-sm'
+  sm: 'rounded-sm px-2 py-1 text-xs',
+  md: 'rounded-sm px-3 py-1.5 text-sm'
 }
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

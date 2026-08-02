@@ -4,12 +4,12 @@ description: Use this skill when creating Open Design artifacts that match the C
 user-invocable: true
 ---
 
-Read README.md, DESIGN.md, BRAND.md, brand.json, colors_and_type.css, the preview cards, preserved assets, source examples, and the modular UI kit before generating any new interface.
+Read USAGE.md, README.md, DESIGN.md, BRAND.md, brand.json, tokens.css, the preview cards, preserved assets, source examples, and the modular UI kit before generating any new interface.
 
 **What is inside:**
 - Source-backed visual foundations for Consoleri's dark production UI and light density prototype
 - `brand.json` + `BRAND.md` — Design System tab kit (logo, palette, imagery)
-- CSS design tokens in `colors_and_type.css`
+- CSS design tokens in `tokens.css` (OD charter) + `tokens.app-extensions.css`
 - Preserved production screenshots under `assets/screenshots/`
 - Brand logo system — locked hexagon+aperture mark (`logos/primary.svg` / `assets/logo.svg`); rebuild PNGs via `assets/_brand/rebuild-rasters.cjs`
 - Kit mirrors under `logos/` and `imagery/` for the Design System Logo / Images modules
@@ -28,7 +28,7 @@ This design system is based on Consoleri v0.4.7 screenshots and an electron visu
 - Building density/table visualization experiments grounded in the electron-viz prototype
 
 **How to use:**
-Load `colors_and_type.css`, inspect `preview/`, reuse `ui_kits/app/` components, and preserve dark-theme density. Reference `assets/screenshots/` for visual fidelity. Read `DESIGN.md` before introducing new component patterns.
+Load `tokens.css` (or `tailwind-v4.css` in Tailwind apps), inspect `preview/`, reuse `ui_kits/app/` components, and preserve dark-theme density. Reference `assets/screenshots/` for visual fidelity. Read `DESIGN.md` before introducing new component patterns.
 
 **Design system highlights:**
 - Colors: near-black canvas, electric-blue primary (`--consoleri-accent`), orange tab indicator (`--consoleri-tab-active`), green/red semantic status

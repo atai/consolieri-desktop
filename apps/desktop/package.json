@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@consoleri/core": "workspace:*",
+    "@consoleri/design-system": "workspace:*",
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@novnc/novnc": "^1.7.0",

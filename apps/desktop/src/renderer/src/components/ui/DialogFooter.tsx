@@ -25,7 +25,7 @@ export function DialogFooter({
   const label = loading ? (loadingLabel ?? confirmLabel) : `${confirmLabel}${countSuffix}`
 
   return (
-    <div className="flex shrink-0 justify-end gap-2 border-t border-[#30363d] p-4">
+    <div className="flex shrink-0 justify-end gap-2 border-t border-border p-4">
       <Button variant="ghost" size="md" onClick={onCancel} disabled={loading}>
         {cancelLabel}
       </Button>

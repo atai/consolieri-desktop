@@ -27,13 +27,13 @@ export function formatHttpStatusLabel(
 export function httpStatusTailwindClass(tone: HttpStatusTone): string {
   switch (tone) {
     case 'success':
-      return 'text-green-400'
+      return 'text-success'
     case 'error':
-      return 'text-red-400'
+      return 'text-danger'
     case 'warning':
-      return 'text-yellow-400'
+      return 'text-warn'
     default:
-      return 'text-gray-500'
+      return 'text-muted'
   }
 }
 

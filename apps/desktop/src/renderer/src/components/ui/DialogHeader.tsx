@@ -14,19 +14,17 @@ export function DialogHeader({
   bordered = false
 }: DialogHeaderProps): React.JSX.Element {
   return (
-    <div
-      className={`shrink-0 p-4 ${bordered ? 'border-b border-[#30363d]' : ''}`}
-    >
+    <div className={`shrink-0 p-4 ${bordered ? 'border-b border-border' : ''}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <h3 className="text-base font-medium text-gray-100">{title}</h3>
-          {subtitle && <div className="mt-1 text-xs text-gray-500">{subtitle}</div>}
+          <h3 className="text-base font-medium text-fg">{title}</h3>
+          {subtitle && <div className="mt-1 text-xs text-muted">{subtitle}</div>}
         </div>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="shrink-0 text-gray-400 hover:text-gray-200"
+            className="shrink-0 text-muted hover:text-fg"
             aria-label="Close"
           >
             ✕

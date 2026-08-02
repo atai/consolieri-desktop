@@ -56,7 +56,7 @@ export function HostConnectControl({
     <div className={`mt-2 space-y-1.5 ${className}`}>
       {profiles.length > 1 && (
         <select
-          className="w-full rounded border border-[#30363d] bg-[#0d1117] px-1.5 py-1 text-[10px] text-gray-200"
+          className="w-full rounded border border-border bg-bg px-1.5 py-1 text-[10px] text-fg"
           value={selectedProfileId}
           onClick={(e) => e.stopPropagation()}
           onChange={(e) => {
@@ -74,7 +74,7 @@ export function HostConnectControl({
       <button
         type="button"
         onClick={handleConnect}
-        className="w-full rounded bg-blue-600 px-2 py-1 text-[10px] text-white hover:bg-blue-500"
+        className="w-full rounded bg-accent px-2 py-1 text-[10px] text-accent-on hover:bg-accent-hover"
       >
         Connect
       </button>

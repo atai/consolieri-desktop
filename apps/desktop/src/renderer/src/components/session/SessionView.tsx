@@ -24,12 +24,12 @@ function DisconnectedPane({
   onConnect: () => void
 }): React.JSX.Element {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 p-4 text-sm text-gray-400">
-      <p className="text-gray-300">{label}</p>
+    <div className="flex h-full flex-col items-center justify-center gap-3 p-4 text-sm text-muted">
+      <p className="text-fg-2">{label}</p>
       <button
         type="button"
         onClick={onConnect}
-        className="rounded bg-blue-600 px-4 py-1.5 text-xs text-white hover:bg-blue-500"
+        className="rounded bg-accent px-4 py-1.5 text-xs text-accent-on hover:bg-accent-hover"
       >
         Connect
       </button>
@@ -47,42 +47,42 @@ function ErrorPane({
   onConnect: () => void
 }): React.JSX.Element {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-sm text-red-400">
+    <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-sm text-danger">
       <p className="text-center">{session.error ?? 'Connection failed'}</p>
 
       <div className="flex gap-2">
         <button
           type="button"
           onClick={() => window.consoleri.sessions.openLogWindow(session.id)}
-          className="rounded border border-[#30363d] px-3 py-1 text-xs text-gray-300 hover:bg-[#21262d]"
+          className="rounded border border-border px-3 py-1 text-xs text-fg-2 hover:bg-surface-raised"
         >
           View log
         </button>
         <button
           type="button"
           onClick={onConnect}
-          className="rounded bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-500"
+          className="rounded bg-accent px-3 py-1 text-xs text-accent-on hover:bg-accent-hover"
         >
           Connect
         </button>
       </div>
 
       {/* Auto-reconnect panel */}
-      <div className="mt-1 w-full max-w-xs rounded border border-[#30363d] text-xs">
+      <div className="mt-1 w-full max-w-xs rounded border border-border text-xs">
         {/* Collapsible header */}
         <button
           type="button"
-          className="flex w-full items-center justify-between px-3 py-1.5 text-gray-400 hover:bg-[#21262d]"
+          className="flex w-full items-center justify-between px-3 py-1.5 text-muted hover:bg-surface-raised"
           onClick={() => ar.setPanelOpen(!ar.panelOpen)}
         >
           <span>Auto-reconnect</span>
-          <span className="text-gray-600">{ar.panelOpen ? '▲' : '▼'}</span>
+          <span className="text-muted">{ar.panelOpen ? '▲' : '▼'}</span>
         </button>
 
         {ar.panelOpen && (
-          <div className="flex flex-col gap-2 border-t border-[#30363d] px-3 py-2">
+          <div className="flex flex-col gap-2 border-t border-border px-3 py-2">
             {/* Enable + interval + max attempts */}
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-gray-300">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-fg-2">
               <label className="flex cursor-pointer items-center gap-1.5">
                 <input
                   type="checkbox"
@@ -92,7 +92,7 @@ function ErrorPane({
                 />
                 Enable
               </label>
-              <span className="text-gray-500">every</span>
+              <span className="text-muted">every</span>
               <input
                 type="number"
                 min={1}
@@ -101,9 +101,9 @@ function ErrorPane({
                 onChange={(e) =>
                   ar.setIntervalSec(Math.max(1, parseInt(e.target.value, 10) || 1))
                 }
-                className="w-14 rounded border border-[#30363d] bg-[#0d1117] px-1.5 py-0.5 text-center"
+                className="w-14 rounded border border-border bg-bg px-1.5 py-0.5 text-center"
               />
-              <span className="text-gray-500">s, stop after</span>
+              <span className="text-muted">s, stop after</span>
               <input
                 type="number"
                 min={0}
@@ -111,13 +111,13 @@ function ErrorPane({
                 onChange={(e) =>
                   ar.setMaxAttempts(Math.max(0, parseInt(e.target.value, 10) || 0))
                 }
-                className="w-14 rounded border border-[#30363d] bg-[#0d1117] px-1.5 py-0.5 text-center"
+                className="w-14 rounded border border-border bg-bg px-1.5 py-0.5 text-center"
               />
-              <span className="text-gray-500">tries (0=∞)</span>
+              <span className="text-muted">tries (0=∞)</span>
             </div>
 
             {/* Sound on success */}
-            <label className="flex cursor-pointer items-center gap-1.5 text-gray-300">
+            <label className="flex cursor-pointer items-center gap-1.5 text-fg-2">
               <input
                 type="checkbox"
                 checked={ar.soundEnabled}
@@ -131,11 +131,11 @@ function ErrorPane({
 
         {/* Countdown status bar — visible when auto-reconnect is active */}
         {ar.autoEnabled && (
-          <div className="flex items-center justify-between border-t border-[#30363d] px-3 py-1.5 text-gray-400">
+          <div className="flex items-center justify-between border-t border-border px-3 py-1.5 text-muted">
             <span>
               Reconnecting in {ar.countdown} s
               {ar.attemptsDone > 0 && (
-                <span className="ml-1.5 text-gray-500">
+                <span className="ml-1.5 text-muted">
                   · attempt {ar.attemptsDone}
                   {ar.maxAttempts > 0 ? `/${ar.maxAttempts}` : ''}
                 </span>
@@ -144,7 +144,7 @@ function ErrorPane({
             <button
               type="button"
               onClick={ar.disable}
-              className="ml-2 text-red-400 hover:text-red-300"
+              className="ml-2 text-danger hover:text-danger"
             >
               Stop
             </button>
@@ -174,14 +174,14 @@ export function SessionView({
 
   if (session.status === 'connecting') {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-2 text-sm text-gray-400">
+      <div className="flex h-full flex-col items-center justify-center gap-2 text-sm text-muted">
         <span className="animate-pulse">
           {ar.autoEnabled ? `Auto-reconnect attempt ${ar.attemptsDone}…` : 'Connecting…'}
         </span>
         <button
           type="button"
           onClick={() => window.consoleri.sessions.openLogWindow(session.id)}
-          className="rounded border border-[#30363d] px-3 py-1 text-xs text-gray-300 hover:bg-[#21262d]"
+          className="rounded border border-border px-3 py-1 text-xs text-fg-2 hover:bg-surface-raised"
         >
           View log
         </button>
@@ -215,7 +215,7 @@ export function SessionView({
   }
 
   return (
-    <div className="flex h-full items-center justify-center text-sm text-gray-500">
+    <div className="flex h-full items-center justify-center text-sm text-muted">
       Unknown protocol: {session.protocol}
     </div>
   )

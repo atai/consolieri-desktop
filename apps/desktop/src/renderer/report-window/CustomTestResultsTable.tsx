@@ -9,18 +9,18 @@ function formatDuration(ms: number): string {
 function statusBadge(status: string): string {
   switch (status) {
     case 'ok':
-      return 'text-green-400'
+      return 'text-success'
     case 'skipped':
-      return 'text-yellow-400'
+      return 'text-warn'
     default:
-      return 'text-red-400'
+      return 'text-danger'
   }
 }
 
 function exitCodeClass(code: number | null, status: string): string {
-  if (status === 'skipped' || code === null) return 'text-yellow-400'
-  if (code === 0) return 'text-green-400'
-  return 'text-red-400'
+  if (status === 'skipped' || code === null) return 'text-warn'
+  if (code === 0) return 'text-success'
+  return 'text-danger'
 }
 
 function commandSummary(entry: CustomTestResult['entries'][number]): string {
@@ -61,7 +61,7 @@ export function CustomTestResultsTable({
   return (
     <table className="w-full border-collapse text-left">
       <thead>
-        <tr className="border-b border-[#30363d] text-xs uppercase text-gray-500">
+        <tr className="border-b border-border text-xs uppercase text-muted">
           <th className="px-3 py-2 font-medium">Host</th>
           <th className="px-3 py-2 font-medium">Profile</th>
           <th className="px-3 py-2 font-medium">Status</th>
@@ -78,16 +78,16 @@ export function CustomTestResultsTable({
             entry.commands.length > 0 || entry.error || (entry.log && entry.log.length > 0)
           return (
             <Fragment key={rowKey}>
-              <tr className="border-b border-[#30363d]">
-                <td className="px-3 py-2 text-sm text-gray-200">{hostName(entry.hostId)}</td>
-                <td className="px-3 py-2 text-sm text-gray-400">{profileName(entry.profileId)}</td>
+              <tr className="border-b border-border">
+                <td className="px-3 py-2 text-sm text-fg">{hostName(entry.hostId)}</td>
+                <td className="px-3 py-2 text-sm text-muted">{profileName(entry.profileId)}</td>
                 <td
                   className={`px-3 py-2 text-sm font-medium uppercase ${statusBadge(entry.status)}`}
                 >
                   {entry.status}
                 </td>
-                <td className="px-3 py-2 text-sm text-gray-300">{commandSummary(entry)}</td>
-                <td className="px-3 py-2 text-sm text-gray-400">
+                <td className="px-3 py-2 text-sm text-fg-2">{commandSummary(entry)}</td>
+                <td className="px-3 py-2 text-sm text-muted">
                   {formatDuration(entry.durationMs)}
                 </td>
                 <td className="px-3 py-2 text-sm">
@@ -95,7 +95,7 @@ export function CustomTestResultsTable({
                     <button
                       type="button"
                       onClick={() => setExpandedHostId(expanded ? null : rowKey)}
-                      className="text-xs text-blue-400 hover:underline"
+                      className="text-xs text-accent hover:underline"
                     >
                       {expanded ? 'Hide' : 'Show'}
                     </button>
@@ -103,20 +103,20 @@ export function CustomTestResultsTable({
                 </td>
               </tr>
               {expanded && hasDetails && (
-                <tr className="bg-[#161b22]">
+                <tr className="bg-surface">
                   <td colSpan={6} className="px-3 py-2">
                     {entry.error && (
-                      <p className="mb-2 text-xs text-red-400">ERROR: {entry.error}</p>
+                      <p className="mb-2 text-xs text-danger">ERROR: {entry.error}</p>
                     )}
                     {entry.log && entry.log.length > 0 && (
-                      <pre className="mb-3 overflow-x-auto whitespace-pre-wrap font-mono text-xs text-gray-400">
+                      <pre className="mb-3 overflow-x-auto whitespace-pre-wrap font-mono text-xs text-muted">
                         {entry.log.join('\n')}
                       </pre>
                     )}
                     {entry.commands.length > 0 && (
                       <table className="w-full border-collapse text-left">
                         <thead>
-                          <tr className="border-b border-[#30363d] text-xs text-gray-500">
+                          <tr className="border-b border-border text-xs text-muted">
                             <th className="px-2 py-1 font-medium">#</th>
                             <th className="px-2 py-1 font-medium">Command</th>
                             <th className="px-2 py-1 font-medium">Exit</th>
@@ -133,9 +133,9 @@ export function CustomTestResultsTable({
                             const fullOutput = formatOutputPreview(cmd.stdout, cmd.stderr, Infinity)
                             const hasOutput = preview !== '—'
                             return (
-                              <tr key={cmd.index} className="border-b border-[#30363d] last:border-0">
-                                <td className="px-2 py-1.5 text-xs text-gray-500">{cmd.index + 1}</td>
-                                <td className="max-w-[240px] truncate px-2 py-1.5 font-mono text-xs text-gray-300">
+                              <tr key={cmd.index} className="border-b border-border last:border-0">
+                                <td className="px-2 py-1.5 text-xs text-muted">{cmd.index + 1}</td>
+                                <td className="max-w-[240px] truncate px-2 py-1.5 font-mono text-xs text-fg-2">
                                   {cmd.command}
                                 </td>
                                 <td
@@ -148,17 +148,17 @@ export function CustomTestResultsTable({
                                 >
                                   {cmd.status}
                                 </td>
-                                <td className="px-2 py-1.5 text-xs text-gray-400">
+                                <td className="px-2 py-1.5 text-xs text-muted">
                                   {cmd.status === 'skipped' ? '—' : formatDuration(cmd.durationMs)}
                                 </td>
                                 <td className="px-2 py-1.5 text-xs">
                                   {hasOutput ? (
                                     <div>
                                       {!outputExpanded && (
-                                        <span className="font-mono text-gray-400">{preview}</span>
+                                        <span className="font-mono text-muted">{preview}</span>
                                       )}
                                       {outputExpanded && (
-                                        <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-gray-400">
+                                        <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-muted">
                                           {fullOutput}
                                         </pre>
                                       )}
@@ -168,14 +168,14 @@ export function CustomTestResultsTable({
                                           onClick={() =>
                                             setExpandedOutputKey(outputExpanded ? null : outputKey)
                                           }
-                                          className="ml-1 text-blue-400 hover:underline"
+                                          className="ml-1 text-accent hover:underline"
                                         >
                                           {outputExpanded ? 'Hide' : 'Show'}
                                         </button>
                                       )}
                                     </div>
                                   ) : (
-                                    <span className="text-gray-500">—</span>
+                                    <span className="text-muted">—</span>
                                   )}
                                 </td>
                               </tr>
