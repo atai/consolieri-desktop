@@ -1,9 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useState } from 'react'
 import type { MosaicNode } from 'react-mosaic-component'
 import { nanoid } from 'nanoid'
 import type { OpenSessionRequest, PaneBinding, SessionInfo } from '@shared/types'
-import { SessionMosaic, closeMosaicPane } from '../src/session/mosaic/SessionMosaic'
-import { reconnectMosaicPane, splitMosaicPane } from '../src/session/mosaic/sessionMosaicOps'
+import { SessionMosaic } from '../src/session/mosaic/SessionMosaic'
+import {
+  closeMosaicPane,
+  reconnectMosaicPane,
+  splitMosaicPane
+} from '../src/session/mosaic/sessionMosaicOps'
 import { applySessionStatusUpdate } from '../src/session/applySessionStatus'
 import { useUxProfileStore } from '../src/stores/uxProfileStore'
 import { releaseTerminal } from '../src/terminal/TerminalPool'
@@ -18,9 +22,8 @@ export function SessionWindowApp(): React.JSX.Element {
   const [layout, setLayout] = useState<MosaicNode<string> | null>(null)
   const [panes, setPanes] = useState<PaneBinding[]>([])
   const [sessions, setSessions] = useState<SessionInfo[]>([])
-  const sessionsRef = useRef(sessions)
-  sessionsRef.current = sessions
   const [initError, setInitError] = useState<string | null>(null)
+  const getSessions = useEffectEvent(() => sessions)
 
   const upsertSession = useCallback((session: SessionInfo): void => {
     setSessions((prev) => {
@@ -79,7 +82,7 @@ export function SessionWindowApp(): React.JSX.Element {
         id,
         status as SessionInfo['status'],
         error,
-        () => sessionsRef.current,
+        () => getSessions(),
         upsertSession
       )
     })

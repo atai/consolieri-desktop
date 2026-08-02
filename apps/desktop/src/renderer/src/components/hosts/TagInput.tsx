@@ -23,6 +23,7 @@ export function TagInput({
 }: TagInputProps): React.JSX.Element {
   const [open, setOpen] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(0)
+  const [highlightFor, setHighlightFor] = useState<string[]>([])
   const blurTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -32,9 +33,10 @@ export function TagInput({
     [existingTags, activeToken, value]
   )
 
-  useEffect(() => {
+  if (suggestions !== highlightFor) {
+    setHighlightFor(suggestions)
     setHighlightedIndex(0)
-  }, [suggestions])
+  }
 
   useEffect(() => {
     return () => {

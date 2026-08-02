@@ -13,7 +13,7 @@ import { registerCloudIpc } from './registerCloudIpc'
 
 export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void {
   registerHostIpc(getWindow)
-  registerVaultIpc(getWindow)
+  registerVaultIpc()
   registerSessionIpc(getWindow)
   registerKeysIpc(getWindow)
   registerLocalShellsIpc()

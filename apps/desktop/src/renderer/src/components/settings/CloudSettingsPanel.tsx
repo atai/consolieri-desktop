@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { CloudBackupInfo, CloudStatus } from '@shared/types'
+import { useIpcQuery } from '../../hooks/useIpcQuery'
 import { Button } from '../ui/Button'
 import { InlineConfirmButton } from '../ui/InlineConfirmButton'
 import { CloudRecoveryKeyModal, type CloudRecoveryKeyMode } from './CloudRecoveryKeyModal'
@@ -21,10 +22,34 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
+interface CloudPanelData {
+  status: CloudStatus | null
+  backups: CloudBackupInfo[]
+}
+
+async function loadCloudPanelData(): Promise<CloudPanelData> {
+  const status = await window.consoleri.cloud.getStatus()
+  if (!status.signedIn) {
+    return { status, backups: [] }
+  }
+  try {
+    const backups = await window.consoleri.cloud.listBackups()
+    return { status, backups }
+  } catch {
+    return { status, backups: [] }
+  }
+}
+
 export function CloudSettingsPanel(): React.JSX.Element {
-  const [status, setStatus] = useState<CloudStatus | null>(null)
-  const [backups, setBackups] = useState<CloudBackupInfo[]>([])
-  const [loading, setLoading] = useState(true)
+  const {
+    data: { status, backups },
+    loading,
+    refresh,
+    setData
+  } = useIpcQuery(loadCloudPanelData, 'cloud-settings', {
+    status: null,
+    backups: []
+  } satisfies CloudPanelData)
   const [busy, setBusy] = useState(false)
   const [restoring, setRestoring] = useState<string | null>(null)
   const [message, setMessage] = useState<{ text: string; kind: 'ok' | 'err' } | null>(null)
@@ -33,29 +58,18 @@ export function CloudSettingsPanel(): React.JSX.Element {
     key?: string
   } | null>(null)
 
-  const refresh = useCallback(async () => {
-    setLoading(true)
-    try {
-      const next = await window.consoleri.cloud.getStatus()
-      setStatus(next)
-      if (next.signedIn) {
-        try {
-          const list = await window.consoleri.cloud.listBackups()
-          setBackups(list)
-        } catch {
-          setBackups([])
-        }
-      } else {
-        setBackups([])
-      }
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const setStatus = (next: CloudStatus): void => {
+    setData((prev) => ({ ...prev, status: next }))
+  }
 
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
+  const setBackups = (
+    updater: CloudBackupInfo[] | ((prev: CloudBackupInfo[]) => CloudBackupInfo[])
+  ): void => {
+    setData((prev) => ({
+      ...prev,
+      backups: typeof updater === 'function' ? updater(prev.backups) : updater
+    }))
+  }
 
   const handleLogin = async (): Promise<void> => {
     setBusy(true)

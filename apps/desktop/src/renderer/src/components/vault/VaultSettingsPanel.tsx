@@ -1,28 +1,35 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { VaultAuthMethod } from '@consoleri/core'
 import type { VaultSettings, VaultStatus } from '@shared/types'
+import { useIpcQuery } from '../../hooks/useIpcQuery'
+
+interface VaultPanelData {
+  settings: VaultSettings | null
+  status: VaultStatus | null
+}
+
+async function loadVaultPanelData(): Promise<VaultPanelData> {
+  const [settings, status] = await Promise.all([
+    window.consoleri.vault.getSettings(),
+    window.consoleri.vault.getStatus()
+  ])
+  return { settings, status }
+}
 
 export function VaultSettingsPanel(): React.JSX.Element {
-  const [settings, setSettings] = useState<VaultSettings | null>(null)
-  const [status, setStatus] = useState<VaultStatus | null>(null)
+  const {
+    data: { settings, status },
+    refresh,
+    setData
+  } = useIpcQuery(loadVaultPanelData, 'vault-settings', {
+    settings: null,
+    status: null
+  } satisfies VaultPanelData)
   const [tokenInput, setTokenInput] = useState('')
   const [secretIdInput, setSecretIdInput] = useState('')
   const [saving, setSaving] = useState(false)
   const [testing, setTesting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
-
-  const refresh = useCallback(async () => {
-    const [nextSettings, nextStatus] = await Promise.all([
-      window.consoleri.vault.getSettings(),
-      window.consoleri.vault.getStatus()
-    ])
-    setSettings(nextSettings)
-    setStatus(nextStatus)
-  }, [])
-
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
 
   if (!settings) {
     return (
@@ -32,7 +39,17 @@ export function VaultSettingsPanel(): React.JSX.Element {
     )
   }
 
-  const savePatch = async (patch: Parameters<typeof window.consoleri.vault.updateSettings>[0]) => {
+  const setSettings = (next: VaultSettings): void => {
+    setData((prev) => ({ ...prev, settings: next }))
+  }
+
+  const setStatus = (next: VaultStatus): void => {
+    setData((prev) => ({ ...prev, status: next }))
+  }
+
+  const savePatch = async (
+    patch: Parameters<typeof window.consoleri.vault.updateSettings>[0]
+  ): Promise<void> => {
     setSaving(true)
     setMessage(null)
     try {

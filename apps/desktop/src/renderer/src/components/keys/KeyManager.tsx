@@ -1,28 +1,18 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { SshKeyInfo } from '@shared/types'
+import { useIpcQuery } from '../../hooks/useIpcQuery'
 import { KeyListItem } from './KeyListItem'
 import { AssignKeyDialog } from './AssignKeyDialog'
 import { DeployKeyDialog } from './DeployKeyDialog'
 
 export function KeyManager(): React.JSX.Element {
-  const [keys, setKeys] = useState<SshKeyInfo[]>([])
-  const [loading, setLoading] = useState(true)
+  const {
+    data: keys,
+    loading,
+    refresh
+  } = useIpcQuery(() => window.consoleri.keys.list(), 'keys', [] as SshKeyInfo[])
   const [assignKey, setAssignKey] = useState<SshKeyInfo | null>(null)
   const [deployKey, setDeployKey] = useState<SshKeyInfo | null>(null)
-
-  const refresh = useCallback(async () => {
-    setLoading(true)
-    try {
-      const list = await window.consoleri.keys.list()
-      setKeys(list)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
 
   const handleAdd = async (): Promise<void> => {
     const path = await window.consoleri.keys.pickFile()

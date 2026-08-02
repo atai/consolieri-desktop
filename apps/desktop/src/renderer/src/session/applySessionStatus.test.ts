@@ -29,7 +29,7 @@ describe('applySessionStatusUpdate', () => {
 
   it('patches an existing session in local state', async () => {
     const upsert = vi.fn()
-    const getSessions = () => [baseSession]
+    const getSessions = (): SessionInfo[] => [baseSession]
 
     await applySessionStatusUpdate('sess-1', 'connected', undefined, getSessions, upsert)
 
@@ -39,7 +39,7 @@ describe('applySessionStatusUpdate', () => {
 
   it('fetches from sessions.list when the session is missing locally', async () => {
     const upsert = vi.fn()
-    const getSessions = () => [] as SessionInfo[]
+    const getSessions = (): SessionInfo[] => []
     vi.mocked(mockSessionsList).mockResolvedValue([baseSession])
 
     await applySessionStatusUpdate('sess-1', 'connected', undefined, getSessions, upsert)

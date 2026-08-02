@@ -34,12 +34,15 @@ export function PickProfileDialog({
   const { selectedIds, toggle, pruneTo } = usePickSelection()
 
   const excludeKey = excludeProfileIds.join('\0')
+  const excludeIds = useMemo(
+    () => (excludeKey.length === 0 ? EMPTY_EXCLUDE_IDS : excludeKey.split('\0')),
+    [excludeKey]
+  )
 
   useEffect(() => {
     let cancelled = false
 
     void (async () => {
-      setLoading(true)
       try {
         const hostList = await window.consoleri.hosts.list()
         if (cancelled) return
@@ -59,7 +62,7 @@ export function PickProfileDialog({
           list = list.filter((p) => !linkedIds.has(p.id))
         }
 
-        const exclude = new Set(excludeProfileIds)
+        const exclude = new Set(excludeIds)
         list = list.filter((p) => !exclude.has(p.id))
 
         setProfiles(list)
@@ -71,7 +74,7 @@ export function PickProfileDialog({
     return () => {
       cancelled = true
     }
-  }, [hostFilter, targetHostId, excludeKey])
+  }, [hostFilter, targetHostId, excludeIds])
 
   useEffect(() => {
     pruneTo(profiles.map((p) => p.id))

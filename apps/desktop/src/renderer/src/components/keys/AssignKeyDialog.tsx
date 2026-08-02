@@ -19,30 +19,38 @@ export function AssignKeyDialog({
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    window.consoleri.keys.listAssignableHosts().then((list) => {
+    let cancelled = false
+    void window.consoleri.keys.listAssignableHosts().then((list) => {
+      if (cancelled) return
       setHosts(list)
       if (list.length > 0) {
         setHostId(list[0].hostId)
         setProfileId(list[0].profiles[0]?.profileId ?? '')
       }
     })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const selectedHost = hosts.find((h) => h.hostId === hostId)
-  const profiles = selectedHost?.profiles ?? []
+  const profiles = selectedHost?.profiles
+  const effectiveProfileId = profiles?.some((p) => p.profileId === profileId)
+    ? profileId
+    : (profiles?.[0]?.profileId ?? '')
 
-  useEffect(() => {
-    if (profiles.length > 0 && !profiles.some((p) => p.profileId === profileId)) {
-      setProfileId(profiles[0].profileId)
-    }
-  }, [hostId, profiles, profileId])
+  const handleHostChange = (nextHostId: string): void => {
+    setHostId(nextHostId)
+    const host = hosts.find((h) => h.hostId === nextHostId)
+    setProfileId(host?.profiles[0]?.profileId ?? '')
+  }
 
   const handleAssign = async (): Promise<void> => {
-    if (!profileId) return
+    if (!effectiveProfileId) return
     setSaving(true)
     setError(null)
     try {
-      await window.consoleri.keys.assign(profileId, keyInfo.privateKeyPath)
+      await window.consoleri.keys.assign(effectiveProfileId, keyInfo.privateKeyPath)
       onAssigned()
       onClose()
     } catch (e) {
@@ -67,7 +75,7 @@ export function AssignKeyDialog({
               <select
                 className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                 value={hostId}
-                onChange={(e) => setHostId(e.target.value)}
+                onChange={(e) => handleHostChange(e.target.value)}
               >
                 {hosts.map((h) => (
                   <option key={h.hostId} value={h.hostId}>
@@ -80,10 +88,10 @@ export function AssignKeyDialog({
               <span className="text-muted">SSH profile</span>
               <select
                 className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-                value={profileId}
+                value={effectiveProfileId}
                 onChange={(e) => setProfileId(e.target.value)}
               >
-                {profiles.map((p) => (
+                {(profiles ?? []).map((p) => (
                   <option key={p.profileId} value={p.profileId}>
                     {p.profileName}
                     {p.username ? ` (${p.username})` : ''}
@@ -106,8 +114,8 @@ export function AssignKeyDialog({
           </button>
           <button
             type="button"
-            disabled={saving || !profileId}
-            onClick={handleAssign}
+            disabled={saving || !effectiveProfileId}
+            onClick={() => void handleAssign()}
             className="rounded bg-accent px-3 py-1.5 text-sm text-accent-on hover:bg-accent-hover disabled:opacity-50"
           >
             {saving ? 'Assigning…' : 'Assign'}

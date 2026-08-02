@@ -65,7 +65,12 @@ function makeSessionInfo(overrides: Partial<SessionInfo> = {}): SessionInfo {
 const mockPersistWorkspace = vi.fn()
 const mockRemoveSession = vi.fn()
 
-function makeWorkspaceState(overrides: object = {}) {
+function makeWorkspaceState(overrides: object = {}): {
+  addSession: typeof mockAddSession
+  workspace: { layout: null; panes: unknown[] }
+  persistWorkspace: typeof mockPersistWorkspace
+  removeSession: typeof mockRemoveSession
+} {
   return {
     addSession: mockAddSession,
     workspace: { layout: null, panes: [] },
@@ -75,7 +80,9 @@ function makeWorkspaceState(overrides: object = {}) {
   }
 }
 
-function makePrefsState(overrides: object = {}) {
+function makePrefsState(overrides: object = {}): {
+  settings: { autoOpenConnectionLog: boolean; sessionOpenMode: string }
+} {
   return {
     settings: { autoOpenConnectionLog: false, sessionOpenMode: 'workspace' },
     ...overrides
@@ -95,7 +102,7 @@ afterEach(() => {
 // ── openSession ───────────────────────────────────────────────────────────────
 import { openSession } from './openSession'
 
-function stubConsoleri(api: MockConsoleri) {
+function stubConsoleri(api: MockConsoleri): void {
   vi.stubGlobal('alert', vi.fn())
   Object.defineProperty(window, 'consoleri', { value: api, writable: true, configurable: true })
 }

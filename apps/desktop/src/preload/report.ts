@@ -12,7 +12,9 @@ const reportApi = {
   run: (reportId: string): Promise<ReportResult> =>
     ipcRenderer.invoke(IPC_CHANNELS.reportsRun, reportId),
   onProgress: (cb: (event: ReportProgressEvent) => void): (() => void) => {
-    const listener = (_: unknown, event: ReportProgressEvent) => cb(event)
+    const listener = (_: unknown, event: ReportProgressEvent): void => {
+      cb(event)
+    }
     ipcRenderer.on(IPC_CHANNELS.reportProgress, listener)
     return () => ipcRenderer.removeListener(IPC_CHANNELS.reportProgress, listener)
   },

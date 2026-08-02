@@ -17,11 +17,12 @@ export abstract class BaseTransport extends EventEmitter implements ITransport {
   abstract readonly protocol: string
 
   write(_data: string): void {
-    /* subclass */
+    void _data
   }
 
   resize(_cols: number, _rows: number): void {
-    /* subclass */
+    void _cols
+    void _rows
   }
 
   disconnect(): void {

@@ -6,7 +6,7 @@ import { useAutoReconnect } from './useAutoReconnect'
 // ── window.consoleri stub ─────────────────────────────────────────────────────
 const mockAppendLog = vi.fn().mockResolvedValue(undefined)
 
-function installConsoleri() {
+function installConsoleri(): void {
   Object.defineProperty(window, 'consoleri', {
     value: {
       sessions: {

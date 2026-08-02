@@ -7,9 +7,12 @@ export interface HostConnectControlProps {
   className?: string
 }
 
-function defaultProfileId(host: Host, profiles: ConnectionProfile[]): string {
-  if (host.defaultProfileId && profiles.some((p) => p.id === host.defaultProfileId)) {
-    return host.defaultProfileId
+function defaultProfileId(
+  defaultId: string | null | undefined,
+  profiles: ConnectionProfile[]
+): string {
+  if (defaultId && profiles.some((p) => p.id === defaultId)) {
+    return defaultId
   }
   return profiles[0]?.id ?? ''
 }
@@ -24,10 +27,12 @@ export function HostConnectControl({
 
   useEffect(() => {
     let cancelled = false
-    void window.consoleri.profiles.list(host.id).then((list) => {
+    const hostId = host.id
+    const hostDefaultProfileId = host.defaultProfileId
+    void window.consoleri.profiles.list(hostId).then((list) => {
       if (cancelled) return
       setProfiles(list)
-      setSelectedProfileId(defaultProfileId(host, list))
+      setSelectedProfileId(defaultProfileId(hostDefaultProfileId, list))
     })
     return () => {
       cancelled = true

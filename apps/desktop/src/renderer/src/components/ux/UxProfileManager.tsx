@@ -1,51 +1,62 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { Host, UxProfile } from '@shared/types'
+import { useIpcQuery } from '../../hooks/useIpcQuery'
 import { useUxProfileStore } from '../../stores/uxProfileStore'
 import { UxProfileForm } from './UxProfileForm'
 import { UxProfileListItem } from './UxProfileListItem'
 import { PickUxProfileDialog } from './PickUxProfileDialog'
+
+interface UxProfileManagerData {
+  hosts: Host[]
+  profiles: UxProfile[]
+  profileHosts: Map<string, Host[]>
+}
+
+const EMPTY_UX_DATA: UxProfileManagerData = {
+  hosts: [],
+  profiles: [],
+  profileHosts: new Map()
+}
+
+async function loadUxProfileManagerData(
+  hostFilter: string,
+  refreshUxProfiles: () => Promise<void>
+): Promise<UxProfileManagerData> {
+  const hostList = await window.consoleri.hosts.list()
+  const profileList = hostFilter
+    ? await window.consoleri.uxProfiles.list(hostFilter)
+    : await window.consoleri.uxProfiles.list()
+
+  const hostMap = new Map<string, Host[]>()
+  const allProfiles = await window.consoleri.uxProfiles.list()
+  await Promise.all(
+    allProfiles.map(async (profile) => {
+      hostMap.set(profile.id, await window.consoleri.uxProfiles.listHosts(profile.id))
+    })
+  )
+  await refreshUxProfiles()
+  return { hosts: hostList, profiles: profileList, profileHosts: hostMap }
+}
 
 export function UxProfileManager(): React.JSX.Element {
   const activeId = useUxProfileStore((s) => s.activeId)
   const setActive = useUxProfileStore((s) => s.setActive)
   const refreshUxProfiles = useUxProfileStore((s) => s.refresh)
 
-  const [hosts, setHosts] = useState<Host[]>([])
-  const [profiles, setProfiles] = useState<UxProfile[]>([])
-  const [profileHosts, setProfileHosts] = useState<Map<string, Host[]>>(new Map())
   const [hostFilter, setHostFilter] = useState('')
-  const [loading, setLoading] = useState(true)
   const [showAddForm, setShowAddForm] = useState(false)
   const [showPickDialog, setShowPickDialog] = useState(false)
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null)
 
-  const refresh = useCallback(async () => {
-    setLoading(true)
-    try {
-      const hostList = await window.consoleri.hosts.list()
-      setHosts(hostList)
-      const profileList = hostFilter
-        ? await window.consoleri.uxProfiles.list(hostFilter)
-        : await window.consoleri.uxProfiles.list()
-      setProfiles(profileList)
-
-      const hostMap = new Map<string, Host[]>()
-      const allProfiles = await window.consoleri.uxProfiles.list()
-      await Promise.all(
-        allProfiles.map(async (profile) => {
-          hostMap.set(profile.id, await window.consoleri.uxProfiles.listHosts(profile.id))
-        })
-      )
-      setProfileHosts(hostMap)
-      await refreshUxProfiles()
-    } finally {
-      setLoading(false)
-    }
-  }, [hostFilter, refreshUxProfiles])
-
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
+  const {
+    data: { hosts, profiles, profileHosts },
+    loading,
+    refresh
+  } = useIpcQuery(
+    () => loadUxProfileManagerData(hostFilter, refreshUxProfiles),
+    hostFilter || '__all__',
+    EMPTY_UX_DATA
+  )
 
   const hostById = new Map(hosts.map((h) => [h.id, h]))
 

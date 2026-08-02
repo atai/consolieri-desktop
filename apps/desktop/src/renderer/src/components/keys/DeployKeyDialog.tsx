@@ -15,7 +15,6 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
   const [hostId, setHostId] = useState('')
   const [profileId, setProfileId] = useState('')
   const [deployPassword, setDeployPassword] = useState('')
-  const [needsPassword, setNeedsPassword] = useState(false)
   const [openLog, setOpenLog] = useState(true)
   const [deploying, setDeploying] = useState(false)
   const [result, setResult] = useState<{
@@ -25,33 +24,34 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
   } | null>(null)
 
   useEffect(() => {
-    window.consoleri.keys.listAssignableHosts().then((list) => {
+    let cancelled = false
+    void window.consoleri.keys.listAssignableHosts().then((list) => {
+      if (cancelled) return
       setHosts(list)
       if (list.length > 0) {
         setHostId(list[0].hostId)
         setProfileId(list[0].profiles[0]?.profileId ?? '')
       }
     })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const selectedHost = hosts.find((h) => h.hostId === hostId)
-  const profiles = selectedHost?.profiles ?? []
-  const selectedProfile = profiles.find((p) => p.profileId === profileId)
+  const profiles = selectedHost?.profiles
+  const effectiveProfileId = profiles?.some((p) => p.profileId === profileId)
+    ? profileId
+    : (profiles?.[0]?.profileId ?? '')
+  const selectedProfile = profiles?.find((p) => p.profileId === effectiveProfileId)
+  const needsPassword = !selectedProfile?.credentialRef
 
-  useEffect(() => {
-    if (profiles.length > 0 && !profiles.some((p) => p.profileId === profileId)) {
-      setProfileId(profiles[0].profileId)
-    }
-  }, [hostId, profiles, profileId])
-
-  useEffect(() => {
-    if (!selectedProfile) {
-      setNeedsPassword(true)
-      return
-    }
-    const hasAuth = Boolean(selectedProfile.credentialRef)
-    setNeedsPassword(!hasAuth)
-  }, [selectedProfile])
+  const handleHostChange = (nextHostId: string): void => {
+    setHostId(nextHostId)
+    const host = hosts.find((h) => h.hostId === nextHostId)
+    setProfileId(host?.profiles[0]?.profileId ?? '')
+    setDeployPassword('')
+  }
 
   const handleDeploy = async (): Promise<void> => {
     setDeploying(true)
@@ -61,7 +61,7 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
     try {
       const res = await window.consoleri.keys.deploy({
         hostId,
-        profileId: profileId || undefined,
+        profileId: effectiveProfileId || undefined,
         keyPath: keyInfo.privateKeyPath,
         deployPassword: deployPassword || undefined,
         logId,
@@ -100,7 +100,7 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
               <select
                 className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                 value={hostId}
-                onChange={(e) => setHostId(e.target.value)}
+                onChange={(e) => handleHostChange(e.target.value)}
                 disabled={deploying}
               >
                 {hosts.map((h) => (
@@ -114,11 +114,14 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
               <span className="text-muted">SSH profile (for connection)</span>
               <select
                 className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-                value={profileId}
-                onChange={(e) => setProfileId(e.target.value)}
+                value={effectiveProfileId}
+                onChange={(e) => {
+                  setProfileId(e.target.value)
+                  setDeployPassword('')
+                }}
                 disabled={deploying}
               >
-                {profiles.map((p) => (
+                {(profiles ?? []).map((p) => (
                   <option key={p.profileId} value={p.profileId}>
                     {p.profileName}
                     {p.username ? ` (${p.username})` : ''}
@@ -181,7 +184,7 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
             <button
               type="button"
               disabled={deploying || !hostId || (needsPassword && !deployPassword)}
-              onClick={handleDeploy}
+              onClick={() => void handleDeploy()}
               className="rounded bg-accent px-3 py-1.5 text-sm text-accent-on hover:bg-accent-hover disabled:opacity-50"
             >
               {deploying ? 'Deploying…' : 'Deploy'}

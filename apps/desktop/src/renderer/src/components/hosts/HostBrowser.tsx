@@ -65,6 +65,7 @@ export function HostBrowser(): React.JSX.Element {
   const [copyProfiles, setCopyProfiles] = useState<ConnectionProfile[]>([])
   const [editingHostId, setEditingHostId] = useState<string | null>(null)
   const [profiles, setProfiles] = useState<ConnectionProfile[]>([])
+  const [profilesForHostId, setProfilesForHostId] = useState<string | null>(null)
   const [importJson, setImportJson] = useState('')
   const [showImport, setShowImport] = useState(false)
   const [showTagFilters, setShowTagFilters] = useState(false)
@@ -105,19 +106,23 @@ export function HostBrowser(): React.JSX.Element {
     selectedGroupId
   ])
 
+  if (selectedHostId !== profilesForHostId) {
+    setProfilesForHostId(selectedHostId)
+    setProfiles([])
+  }
+
   useEffect(() => {
-    if (selectedHostId) {
-      window.consoleri.profiles.list(selectedHostId).then(setProfiles)
-    } else {
-      setProfiles([])
+    if (!selectedHostId) return
+    let cancelled = false
+    void window.consoleri.profiles.list(selectedHostId).then((list) => {
+      if (!cancelled) setProfiles(list)
+    })
+    return () => {
+      cancelled = true
     }
   }, [selectedHostId])
 
-  useEffect(() => {
-    if (selectedTags.length > 0) {
-      setShowTagFilters(true)
-    }
-  }, [selectedTags.length])
+  const tagFiltersVisible = showTagFilters || selectedTags.length > 0
 
   const hostSections = useMemo(
     () => buildHostListSections(hosts, groupBy, sortBy, sortDir),
@@ -293,7 +298,7 @@ export function HostBrowser(): React.JSX.Element {
               <button
                 type="button"
                 onClick={() => setShowTagFilters((open) => !open)}
-                className={toolbarButtonClass(showTagFilters || selectedTags.length > 0)}
+                className={toolbarButtonClass(tagFiltersVisible)}
               >
                 Tags
                 {selectedTags.length > 0 && (
@@ -328,7 +333,7 @@ export function HostBrowser(): React.JSX.Element {
           </div>
         </div>
 
-        {showTagFilters && allHostTags.length > 0 && (
+        {tagFiltersVisible && allHostTags.length > 0 && (
           <div className="flex flex-wrap gap-1 border-t border-border/60 px-2 py-1">
             {allHostTags.map((tag) => (
               <button

@@ -63,6 +63,18 @@ export function ReportWindowApp(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null)
 
+  const applyLoaded = useCallback(
+    (reportData: Report | null, hostList: Host[], profileList: ConnectionProfile[]): void => {
+      setReport(reportData)
+      setHosts(hostList)
+      setProfiles(profileList)
+      if (reportData?.lastResult) {
+        setResult(reportData.lastResult)
+      }
+    },
+    []
+  )
+
   const load = useCallback(async (): Promise<void> => {
     if (!reportId) return
     const [reportData, hostList, profileList] = await Promise.all([
@@ -70,17 +82,24 @@ export function ReportWindowApp(): React.JSX.Element {
       window.reportApi.listHosts(),
       window.reportApi.listProfiles()
     ])
-    setReport(reportData)
-    setHosts(hostList)
-    setProfiles(profileList)
-    if (reportData?.lastResult) {
-      setResult(reportData.lastResult)
-    }
-  }, [reportId])
+    applyLoaded(reportData, hostList, profileList)
+  }, [reportId, applyLoaded])
 
   useEffect(() => {
-    void load()
-  }, [load])
+    if (!reportId) return
+    let cancelled = false
+    void Promise.all([
+      window.reportApi.getReport(reportId),
+      window.reportApi.listHosts(),
+      window.reportApi.listProfiles()
+    ]).then(([reportData, hostList, profileList]) => {
+      if (cancelled) return
+      applyLoaded(reportData, hostList, profileList)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [reportId, applyLoaded])
 
   useEffect(() => {
     if (!reportId) return

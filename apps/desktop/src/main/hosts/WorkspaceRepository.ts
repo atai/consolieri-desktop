@@ -118,7 +118,18 @@ export class WorkspaceRepository {
       )
   }
 
-  getSessionSnapshot(id: string) {
+  getSessionSnapshot(id: string): {
+    id: string
+    hostId: string | null
+    profileId: string | null
+    protocol: string
+    title: string
+    cwd: string | null
+    cols: number
+    rows: number
+    scrollbackSerialized: string | null
+    disconnectedAt: string | null
+  } | null {
     const row = getDatabase().prepare('SELECT * FROM session_snapshots WHERE id = ?').get(id)
     if (!row) return null
     const r = row as Record<string, unknown>

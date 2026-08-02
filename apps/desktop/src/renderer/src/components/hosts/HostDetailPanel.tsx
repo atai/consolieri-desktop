@@ -77,7 +77,7 @@ export function HostDetailPanel({
             )}
           </div>
           <EditDeleteActions
-            resetKey={host.id}
+            key={host.id}
             onEdit={onEdit}
             onCopy={onCopy}
             onDelete={() => onDelete(host.id)}

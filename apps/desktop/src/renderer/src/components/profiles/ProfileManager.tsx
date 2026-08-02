@@ -1,44 +1,51 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { ConnectionProfile, Host } from '@shared/types'
+import { useIpcQuery } from '../../hooks/useIpcQuery'
 import { ProfileForm } from './ProfileForm'
 import { ProfileListItem } from './ProfileListItem'
 import { PickProfileDialog } from './PickProfileDialog'
 
+interface ProfileManagerData {
+  hosts: Host[]
+  profiles: ConnectionProfile[]
+  profileHosts: Map<string, Host[]>
+}
+
+const EMPTY_PROFILE_DATA: ProfileManagerData = {
+  hosts: [],
+  profiles: [],
+  profileHosts: new Map()
+}
+
+async function loadProfileManagerData(hostFilter: string): Promise<ProfileManagerData> {
+  const hostList = await window.consoleri.hosts.list()
+  const profileList = hostFilter
+    ? await window.consoleri.profiles.list(hostFilter)
+    : await window.consoleri.profiles.list()
+  const hostMap = new Map<string, Host[]>()
+  await Promise.all(
+    profileList.map(async (profile) => {
+      hostMap.set(profile.id, await window.consoleri.profiles.listHosts(profile.id))
+    })
+  )
+  return { hosts: hostList, profiles: profileList, profileHosts: hostMap }
+}
+
 export function ProfileManager(): React.JSX.Element {
-  const [hosts, setHosts] = useState<Host[]>([])
-  const [profiles, setProfiles] = useState<ConnectionProfile[]>([])
-  const [profileHosts, setProfileHosts] = useState<Map<string, Host[]>>(new Map())
   const [hostFilter, setHostFilter] = useState('')
-  const [loading, setLoading] = useState(true)
   const [showAddForm, setShowAddForm] = useState(false)
   const [showPickDialog, setShowPickDialog] = useState(false)
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null)
 
-  const refresh = useCallback(async () => {
-    setLoading(true)
-    try {
-      const hostList = await window.consoleri.hosts.list()
-      setHosts(hostList)
-      const profileList = hostFilter
-        ? await window.consoleri.profiles.list(hostFilter)
-        : await window.consoleri.profiles.list()
-      setProfiles(profileList)
-
-      const hostMap = new Map<string, Host[]>()
-      await Promise.all(
-        profileList.map(async (profile) => {
-          hostMap.set(profile.id, await window.consoleri.profiles.listHosts(profile.id))
-        })
-      )
-      setProfileHosts(hostMap)
-    } finally {
-      setLoading(false)
-    }
-  }, [hostFilter])
-
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
+  const {
+    data: { hosts, profiles, profileHosts },
+    loading,
+    refresh
+  } = useIpcQuery(
+    () => loadProfileManagerData(hostFilter),
+    hostFilter || '__all__',
+    EMPTY_PROFILE_DATA
+  )
 
   const hostById = new Map(hosts.map((h) => [h.id, h]))
 

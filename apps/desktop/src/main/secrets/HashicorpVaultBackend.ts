@@ -1,4 +1,4 @@
-import { isVaultRef, parseVaultRef } from '@consoleri/core'
+import { isVaultRef, parseVaultRef, type VaultSettings } from '@consoleri/core'
 import type { SecretBackend } from './SecretBackend'
 import { vaultAuthManager } from '../vault/VaultAuthManager'
 import { vaultSettingsRepository } from '../vault/VaultSettingsRepository'
@@ -105,7 +105,7 @@ export class HashicorpVaultBackend implements SecretBackend {
     })
   }
 
-  private requireEnabledSettings() {
+  private requireEnabledSettings(): VaultSettings {
     const settings = vaultSettingsRepository.getSettings()
     if (!settings.enabled) {
       throw new Error('HashiCorp Vault backend is not enabled')

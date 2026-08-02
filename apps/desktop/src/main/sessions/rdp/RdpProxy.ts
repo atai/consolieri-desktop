@@ -72,11 +72,12 @@ export class RdpSession extends BaseTransport {
   }
 
   write(_data: string): void {
-    /* input handled in renderer via ironrdp */
+    void _data
   }
 
   resize(_cols: number, _rows: number): void {
-    /* handled in renderer */
+    void _cols
+    void _rows
   }
 
   disconnect(): void {

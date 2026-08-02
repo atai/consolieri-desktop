@@ -57,22 +57,21 @@ if (!gotSingleInstanceLock) {
     })
 
     let shown = false
-    let showFallbackTimer: ReturnType<typeof setTimeout> | undefined
 
-    const reveal = (): void => {
-      if (shown || !isMainWindowAlive()) return
-      shown = true
-      if (showFallbackTimer !== undefined) clearTimeout(showFallbackTimer)
-      mainWindow!.show()
-      mainWindow!.focus()
-    }
-
-    showFallbackTimer = setTimeout(() => {
+    const showFallbackTimer = setTimeout(() => {
       if (!shown) {
         console.warn('[main] Window ready-to-show timed out; forcing show')
         reveal()
       }
     }, SHOW_FALLBACK_MS)
+
+    function reveal(): void {
+      if (shown || !isMainWindowAlive()) return
+      shown = true
+      clearTimeout(showFallbackTimer)
+      mainWindow!.show()
+      mainWindow!.focus()
+    }
 
     mainWindow.on('ready-to-show', reveal)
 

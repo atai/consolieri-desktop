@@ -1,7 +1,13 @@
 import { nanoid } from 'nanoid'
 import type { BrowserWindow } from 'electron'
 import { isTerminalProtocol } from '@consoleri/core'
-import type { OpenSessionRequest, Protocol, SessionInfo, SessionStatus } from '../../shared/types'
+import type {
+  LogEntry,
+  OpenSessionRequest,
+  Protocol,
+  SessionInfo,
+  SessionStatus
+} from '../../shared/types'
 import { IPC_CHANNELS } from '../../shared/types'
 import { hostRepository } from '../hosts/HostRepository'
 import { profileRepository } from '../hosts/ProfileRepository'
@@ -61,7 +67,7 @@ export class SessionManager {
   getConnectRequest(sessionId: string): OpenSessionRequest | null {
     const existing = this.sessions.get(sessionId)
     if (!existing?.reconnectMeta) return null
-    const { cols: _cols, rows: _rows, ...request } = existing.reconnectMeta
+    const { cols, rows, ...request } = existing.reconnectMeta
     return request
   }
 
@@ -294,7 +300,7 @@ export class SessionManager {
     }
   }
 
-  getLogEntries(sessionId: string) {
+  getLogEntries(sessionId: string): LogEntry[] {
     return this._connectionLog.getEntries(sessionId)
   }
 

@@ -10,7 +10,9 @@ const logApi = {
   getEntries: (sessionId: string): Promise<LogEntry[]> =>
     ipcRenderer.invoke(IPC_CHANNELS.sessionsLogGet, sessionId),
   onLog: (cb: (entry: LogEntry) => void): (() => void) => {
-    const listener = (_: unknown, entry: LogEntry) => cb(entry)
+    const listener = (_: unknown, entry: LogEntry): void => {
+      cb(entry)
+    }
     ipcRenderer.on(IPC_CHANNELS.sessionLog, listener)
     return () => ipcRenderer.removeListener(IPC_CHANNELS.sessionLog, listener)
   }

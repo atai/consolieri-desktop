@@ -10,7 +10,7 @@ import { render, screen, act, cleanup } from '@testing-library/react'
 import type { ConnectionProfile, Host } from '@shared/types'
 
 // ── window.consoleri stub ─────────────────────────────────────────────────────
-function installConsoleri(vaultEnabled = false) {
+function installConsoleri(vaultEnabled = false): void {
   Object.defineProperty(window, 'consoleri', {
     value: {
       hosts: {

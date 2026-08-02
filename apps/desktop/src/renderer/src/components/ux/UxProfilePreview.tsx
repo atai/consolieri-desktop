@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useEffectEvent, useRef } from 'react'
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import type { TerminalAppearance } from '@consoleri/core'
@@ -17,10 +17,7 @@ export function UxProfilePreview({ appearance }: UxProfilePreviewProps): React.J
   const termRef = useRef<Terminal | null>(null)
   const fitRef = useRef<FitAddon | null>(null)
 
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
+  const setupTerminal = useEffectEvent((container: HTMLDivElement): (() => void) => {
     const term = new Terminal(
       buildTerminalOptions(appearance, {
         fontSize: Math.min(appearance.fontSize, PREVIEW_FONT_SIZE_CAP),
@@ -43,6 +40,12 @@ export function UxProfilePreview({ appearance }: UxProfilePreviewProps): React.J
       termRef.current = null
       fitRef.current = null
     }
+  })
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    return setupTerminal(container)
   }, [])
 
   useEffect(() => {

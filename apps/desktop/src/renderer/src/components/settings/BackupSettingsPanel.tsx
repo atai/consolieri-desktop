@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { BackupInfo, BackupSettings } from '@shared/types'
+import { useIpcQuery } from '../../hooks/useIpcQuery'
 
 const INTERVAL_PRESETS = [
   { label: '15 min', value: 15 },
@@ -25,31 +26,43 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
+interface BackupPanelData {
+  settings: BackupSettings | null
+  backups: BackupInfo[]
+}
+
+async function loadBackupPanelData(): Promise<BackupPanelData> {
+  const [settings, backups] = await Promise.all([
+    window.consoleri.backup.getSettings(),
+    window.consoleri.backup.list()
+  ])
+  return { settings, backups }
+}
+
 export function BackupSettingsPanel(): React.JSX.Element {
-  const [settings, setSettings] = useState<BackupSettings | null>(null)
-  const [backups, setBackups] = useState<BackupInfo[]>([])
-  const [loading, setLoading] = useState(true)
+  const {
+    data: { settings, backups },
+    loading,
+    refresh,
+    setData
+  } = useIpcQuery(loadBackupPanelData, 'backup-settings', {
+    settings: null,
+    backups: []
+  } satisfies BackupPanelData)
   const [creating, setCreating] = useState(false)
   const [restoring, setRestoring] = useState<string | null>(null)
   const [message, setMessage] = useState<{ text: string; kind: 'ok' | 'err' } | null>(null)
 
-  const refresh = useCallback(async () => {
-    setLoading(true)
-    try {
-      const [s, b] = await Promise.all([
-        window.consoleri.backup.getSettings(),
-        window.consoleri.backup.list()
-      ])
-      setSettings(s)
-      setBackups(b)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const setSettings = (next: BackupSettings): void => {
+    setData((prev) => ({ ...prev, settings: next }))
+  }
 
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
+  const setBackups = (updater: BackupInfo[] | ((prev: BackupInfo[]) => BackupInfo[])): void => {
+    setData((prev) => ({
+      ...prev,
+      backups: typeof updater === 'function' ? updater(prev.backups) : updater
+    }))
+  }
 
   const applyPatch = async (patch: Partial<BackupSettings>): Promise<void> => {
     const next = await window.consoleri.backup.updateSettings(patch)

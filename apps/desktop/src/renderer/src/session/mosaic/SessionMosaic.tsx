@@ -1,17 +1,14 @@
 import { useCallback, type ReactElement, type ReactNode } from 'react'
 import { Mosaic, MosaicWindow, MosaicNode, MosaicPath } from 'react-mosaic-component'
-import { removeFromLayout } from '@consoleri/core'
-import type { MosaicNode as CoreMosaicNode } from '@consoleri/core'
 import type { PaneBinding, SessionInfo } from '@shared/types'
 import { SessionView } from '../../components/session/SessionView'
-import { releaseTerminal } from '../../terminal/TerminalPool'
 import {
   closeToolbarButton,
   connectToolbarButton,
   logToolbarButton,
   splitSideBySideButton,
   splitStackedButton
-} from '../../components/workspace/MosaicToolbarButton'
+} from '../../components/workspace/mosaicToolbarButtons'
 
 function paneTitle(
   session: SessionInfo | undefined,
@@ -142,25 +139,4 @@ export function SessionMosaic({
       }
     />
   )
-}
-
-export function closeMosaicPane(
-  layout: MosaicNode<string> | null,
-  panes: PaneBinding[],
-  paneId: string
-): { layout: MosaicNode<string> | null; panes: PaneBinding[]; closedSessionId: string | null } {
-  const binding = panes.find((p) => p.paneId === paneId)
-  const closedSessionId = binding?.sessionId ?? null
-
-  if (binding?.sessionId) {
-    window.consoleri.sessions.close(binding.sessionId)
-    releaseTerminal(binding.sessionId)
-  }
-
-  const newPanes = panes.filter((p) => p.paneId !== paneId)
-  const newLayout = layout
-    ? (removeFromLayout(layout as CoreMosaicNode<string>, paneId) as MosaicNode<string> | null)
-    : null
-
-  return { layout: newLayout, panes: newPanes, closedSessionId }
 }

@@ -1,29 +1,20 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Report, ReportType } from '@shared/types'
+import { useIpcQuery } from '../../hooks/useIpcQuery'
 import { ConnectivityReportForm } from './ConnectivityReportForm'
 import { CustomTestReportForm } from './CustomTestReportForm'
 import { InventoryReportForm } from './InventoryReportForm'
 import { ReportListItem } from './ReportListItem'
 
 export function ReportsManager(): React.JSX.Element {
-  const [reports, setReports] = useState<Report[]>([])
-  const [loading, setLoading] = useState(true)
+  const {
+    data: reports,
+    loading,
+    refresh,
+    setData: setReports
+  } = useIpcQuery(() => window.consoleri.reports.list(), 'reports', [] as Report[])
   const [creatingType, setCreatingType] = useState<ReportType | null>(null)
   const [editingReportId, setEditingReportId] = useState<string | null>(null)
-
-  const refresh = useCallback(async () => {
-    setLoading(true)
-    try {
-      const list = await window.consoleri.reports.list()
-      setReports(list)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void refresh()
-  }, [refresh])
 
   useEffect(() => {
     const unsub = window.consoleri.reports.onUpdated((report) => {
@@ -36,7 +27,7 @@ export function ReportsManager(): React.JSX.Element {
       })
     })
     return unsub
-  }, [])
+  }, [setReports])
 
   const handleOpen = (report: Report): void => {
     void window.consoleri.reports.openWindow(report.id)

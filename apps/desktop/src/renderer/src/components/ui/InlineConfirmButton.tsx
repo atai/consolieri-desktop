@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Button, type ButtonSize, type ButtonVariant } from './Button'
 
 export interface InlineConfirmButtonProps {
@@ -11,9 +11,12 @@ export interface InlineConfirmButtonProps {
   size?: ButtonSize
   disabled?: boolean
   className?: string
-  resetKey?: string | number
 }
 
+/**
+ * Two-step confirm control. Remount via React `key` when the bound entity
+ * changes so confirming/busy state resets with identity — do not sync via effects.
+ */
 export function InlineConfirmButton({
   label,
   confirmLabel = 'Confirm',
@@ -23,16 +26,10 @@ export function InlineConfirmButton({
   confirmVariant = 'danger',
   size = 'sm',
   disabled = false,
-  className = '',
-  resetKey
+  className = ''
 }: InlineConfirmButtonProps): React.JSX.Element {
   const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
-
-  useEffect(() => {
-    setConfirming(false)
-    setBusy(false)
-  }, [resetKey])
 
   const handleConfirm = async (): Promise<void> => {
     setBusy(true)

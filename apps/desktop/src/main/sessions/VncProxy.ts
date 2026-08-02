@@ -70,11 +70,12 @@ export class VncSession extends BaseTransport {
   }
 
   write(_data: string): void {
-    /* handled in renderer via noVNC */
+    void _data
   }
 
   resize(_cols: number, _rows: number): void {
-    /* handled in renderer */
+    void _cols
+    void _rows
   }
 
   disconnect(): void {

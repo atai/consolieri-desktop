@@ -85,9 +85,9 @@ export function ProfileListItem({
           )}
           <IconButton variant="default" size="sm" icon={Pencil} label="Edit" onClick={onEdit} />
           <ConfirmDeleteButton
+            key={profile.id}
             label={<Trash2 className="h-3.5 w-3.5" aria-hidden />}
             confirmLabel={onUnlink ? 'Remove' : confirmDeleteLabel}
-            resetKey={profile.id}
             onConfirm={onUnlink ?? onDelete}
             variant="default"
           />

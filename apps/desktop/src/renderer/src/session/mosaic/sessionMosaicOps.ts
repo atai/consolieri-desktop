@@ -1,10 +1,11 @@
 import { nanoid } from 'nanoid'
 import type { MosaicNode } from 'react-mosaic-component'
-import { insertPaneIntoLayout, splitPaneInLayout } from '@consoleri/core'
+import { insertPaneIntoLayout, removeFromLayout, splitPaneInLayout } from '@consoleri/core'
 import type { MosaicNode as CoreMosaicNode } from '@consoleri/core'
 import type { OpenSessionRequest, PaneBinding, SessionInfo } from '@shared/types'
 import { usePreferencesStore } from '../../stores/preferencesStore'
 import { getConsoleriApi } from '../../api'
+import { releaseTerminal } from '../../terminal/TerminalPool'
 
 export function createPaneBinding(
   session: SessionInfo,
@@ -104,4 +105,25 @@ export async function reconnectMosaicPane(
   )
 
   return { panes: nextPanes, session }
+}
+
+export function closeMosaicPane(
+  layout: MosaicNode<string> | null,
+  panes: PaneBinding[],
+  paneId: string
+): { layout: MosaicNode<string> | null; panes: PaneBinding[]; closedSessionId: string | null } {
+  const binding = panes.find((p) => p.paneId === paneId)
+  const closedSessionId = binding?.sessionId ?? null
+
+  if (binding?.sessionId) {
+    window.consoleri.sessions.close(binding.sessionId)
+    releaseTerminal(binding.sessionId)
+  }
+
+  const newPanes = panes.filter((p) => p.paneId !== paneId)
+  const newLayout = layout
+    ? (removeFromLayout(layout as CoreMosaicNode<string>, paneId) as MosaicNode<string> | null)
+    : null
+
+  return { layout: newLayout, panes: newPanes, closedSessionId }
 }

@@ -66,7 +66,7 @@ export function HostListItem({
         onClick={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}
       >
-        <EditDeleteActions resetKey={host.id} onEdit={onEdit} onCopy={onCopy} onDelete={onDelete} />
+        <EditDeleteActions key={host.id} onEdit={onEdit} onCopy={onCopy} onDelete={onDelete} />
       </div>
     </li>
   )

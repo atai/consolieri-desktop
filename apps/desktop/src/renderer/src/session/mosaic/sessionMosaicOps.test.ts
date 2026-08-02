@@ -18,7 +18,15 @@ vi.mock('../../terminal/TerminalPool', () => ({ releaseTerminal: vi.fn() }))
 // ── window.consoleri stub ─────────────────────────────────────────────────────
 function makeConsoleri(
   overrides?: Partial<{ sessions: Record<string, ReturnType<typeof vi.fn>> }>
-) {
+): {
+  sessions: {
+    open: ReturnType<typeof vi.fn>
+    openLogWindow: ReturnType<typeof vi.fn>
+    close: ReturnType<typeof vi.fn>
+    reconnect: ReturnType<typeof vi.fn>
+  }
+  workspace: { save: ReturnType<typeof vi.fn> }
+} {
   return {
     sessions: {
       open: vi.fn(),
@@ -43,7 +51,9 @@ function makeSession(overrides: Partial<SessionInfo> = {}): SessionInfo {
   }
 }
 
-function makePreferencesState(overrides: object = {}) {
+function makePreferencesState(overrides: object = {}): {
+  settings: { autoOpenConnectionLog: boolean; sessionOpenMode: string }
+} {
   return {
     settings: { autoOpenConnectionLog: false, sessionOpenMode: 'workspace' },
     ...overrides

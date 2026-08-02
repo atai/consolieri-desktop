@@ -268,23 +268,33 @@ const consoleri: ConsoleriAPI = {
     openSessionWindow: (sessionId: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.sessionsOpenSessionWindow, sessionId),
     onData: (cb) => {
-      const listener = (_: unknown, payload: { id: string; data: string }) => cb(payload)
+      const listener = (_: unknown, payload: { id: string; data: string }): void => {
+        cb(payload)
+      }
       ipcRenderer.on(IPC_CHANNELS.sessionData, listener)
       return () => ipcRenderer.removeListener(IPC_CHANNELS.sessionData, listener)
     },
     onExit: (cb) => {
-      const listener = (_: unknown, payload: { id: string; code: number }) => cb(payload)
+      const listener = (_: unknown, payload: { id: string; code: number }): void => {
+        cb(payload)
+      }
       ipcRenderer.on(IPC_CHANNELS.sessionExit, listener)
       return () => ipcRenderer.removeListener(IPC_CHANNELS.sessionExit, listener)
     },
     onStatus: (cb) => {
-      const listener = (_: unknown, payload: { id: string; status: string; error?: string }) =>
+      const listener = (
+        _: unknown,
+        payload: { id: string; status: string; error?: string }
+      ): void => {
         cb(payload)
+      }
       ipcRenderer.on(IPC_CHANNELS.sessionStatus, listener)
       return () => ipcRenderer.removeListener(IPC_CHANNELS.sessionStatus, listener)
     },
     onLog: (cb) => {
-      const listener = (_: unknown, entry: LogEntry) => cb(entry)
+      const listener = (_: unknown, entry: LogEntry): void => {
+        cb(entry)
+      }
       ipcRenderer.on(IPC_CHANNELS.sessionLog, listener)
       return () => ipcRenderer.removeListener(IPC_CHANNELS.sessionLog, listener)
     }
@@ -347,12 +357,16 @@ const consoleri: ConsoleriAPI = {
     run: (reportId) => ipcRenderer.invoke(IPC_CHANNELS.reportsRun, reportId),
     openWindow: (reportId) => ipcRenderer.invoke(IPC_CHANNELS.reportsOpenWindow, reportId),
     onProgress: (cb) => {
-      const listener = (_: unknown, event: ReportProgressEvent) => cb(event)
+      const listener = (_: unknown, event: ReportProgressEvent): void => {
+        cb(event)
+      }
       ipcRenderer.on(IPC_CHANNELS.reportProgress, listener)
       return () => ipcRenderer.removeListener(IPC_CHANNELS.reportProgress, listener)
     },
     onUpdated: (cb) => {
-      const listener = (_: unknown, report: Report) => cb(report)
+      const listener = (_: unknown, report: Report): void => {
+        cb(report)
+      }
       ipcRenderer.on(IPC_CHANNELS.reportUpdated, listener)
       return () => ipcRenderer.removeListener(IPC_CHANNELS.reportUpdated, listener)
     }

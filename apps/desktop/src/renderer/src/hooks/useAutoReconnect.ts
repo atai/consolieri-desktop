@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 import type { SessionInfo } from '@shared/types'
 
 export interface AutoReconnectHook {
@@ -39,21 +39,45 @@ export function useAutoReconnect(
   session: SessionInfo | undefined,
   onConnect: () => void
 ): AutoReconnectHook {
+  const sessionId = session?.id
+  const status = session?.status
+
   const [panelOpen, setPanelOpen] = useState(false)
   const [autoEnabled, setAutoEnabled] = useState(false)
-  const [intervalSec, setIntervalSec] = useState(30)
-  const [maxAttempts, setMaxAttempts] = useState(0)
+  const [intervalSec, setIntervalSecState] = useState(30)
+  const [maxAttempts, setMaxAttemptsState] = useState(0)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [countdown, setCountdown] = useState(30)
   const [attemptsDone, setAttemptsDone] = useState(0)
+  const [trackedSessionId, setTrackedSessionId] = useState(sessionId)
 
-  // Refs for values read inside timer callbacks to avoid stale closures
   const countdownRef = useRef(30)
   const attemptsDoneRef = useRef(0)
+  const intervalSecRef = useRef(intervalSec)
+  const maxAttemptsRef = useRef(maxAttempts)
   const lastConnectWasAutoRef = useRef(false)
-  const prevStatusRef = useRef(session?.status)
+  const prevStatusRef = useRef(status)
   const onConnectRef = useRef(onConnect)
   const soundEnabledRef = useRef(soundEnabled)
+
+  // Reset React state when the bound session identity changes (adjust during render).
+  if (sessionId !== trackedSessionId) {
+    setTrackedSessionId(sessionId)
+    setAutoEnabled(false)
+    setAttemptsDone(0)
+    setCountdown(intervalSec)
+  }
+
+  const resetSessionRefs = useEffectEvent((): void => {
+    attemptsDoneRef.current = 0
+    countdownRef.current = intervalSecRef.current
+    lastConnectWasAutoRef.current = false
+    prevStatusRef.current = status
+  })
+
+  useEffect(() => {
+    resetSessionRefs()
+  }, [sessionId])
 
   useEffect(() => {
     onConnectRef.current = onConnect
@@ -63,57 +87,33 @@ export function useAutoReconnect(
     soundEnabledRef.current = soundEnabled
   }, [soundEnabled])
 
-  // Keep attemptsDoneRef in sync (readable inside timer without stale closure)
-  attemptsDoneRef.current = attemptsDone
-
-  // Reset counters when the session itself changes
-  useEffect(() => {
-    setAutoEnabled(false)
-    setAttemptsDone(0)
-    attemptsDoneRef.current = 0
-    countdownRef.current = intervalSec
-    setCountdown(intervalSec)
-    lastConnectWasAutoRef.current = false
-    prevStatusRef.current = session?.status
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.id])
-
-  // Detect status transitions: play sound + log success/failure
   useEffect(() => {
     const prev = prevStatusRef.current
-    const current = session?.status
-    prevStatusRef.current = current
+    prevStatusRef.current = status
 
-    if (!session || !lastConnectWasAutoRef.current) return
+    if (!sessionId || !lastConnectWasAutoRef.current) return
 
-    if (prev === 'connecting' && current === 'connected') {
+    if (prev === 'connecting' && status === 'connected') {
       if (soundEnabledRef.current) playSuccessBeep()
       void window.consoleri.sessions.appendLog(
-        session.id,
+        sessionId,
         'info',
         `Auto-reconnect succeeded after ${attemptsDoneRef.current} attempt(s)`
       )
       lastConnectWasAutoRef.current = false
     }
 
-    if (prev === 'connecting' && current === 'error') {
+    if (prev === 'connecting' && status === 'error') {
       void window.consoleri.sessions.appendLog(
-        session.id,
+        sessionId,
         'warn',
         `Auto-reconnect attempt ${attemptsDoneRef.current} failed`
       )
     }
-  }, [session?.status, session?.id])
+  }, [status, sessionId])
 
-  // Reset countdown display when interval changes
   useEffect(() => {
-    countdownRef.current = intervalSec
-    setCountdown(intervalSec)
-  }, [intervalSec])
-
-  // Countdown timer — runs only while auto-reconnect is active and session is in error state
-  useEffect(() => {
-    if (!autoEnabled || session?.status !== 'error') return
+    if (!autoEnabled || status !== 'error' || !sessionId) return
 
     const id = window.setInterval(() => {
       countdownRef.current -= 1
@@ -121,29 +121,28 @@ export function useAutoReconnect(
 
       if (countdownRef.current > 0) return
 
-      // Reset countdown for the next cycle
-      countdownRef.current = intervalSec
+      const sec = intervalSecRef.current
+      const max = maxAttemptsRef.current
+      countdownRef.current = sec
 
       const nextAttempt = attemptsDoneRef.current + 1
 
-      // Check attempt limit before firing
-      if (maxAttempts > 0 && nextAttempt > maxAttempts) {
+      if (max > 0 && nextAttempt > max) {
         setAutoEnabled(false)
         void window.consoleri.sessions.appendLog(
-          session.id,
+          sessionId,
           'warn',
-          `Auto-reconnect stopped: reached limit of ${maxAttempts} attempt(s)`
+          `Auto-reconnect stopped: reached limit of ${max} attempt(s)`
         )
         return
       }
 
-      // Fire the reconnect attempt
       attemptsDoneRef.current = nextAttempt
       setAttemptsDone(nextAttempt)
       lastConnectWasAutoRef.current = true
-      const maxLabel = maxAttempts > 0 ? ` / ${maxAttempts}` : ''
+      const maxLabel = max > 0 ? ` / ${max}` : ''
       void window.consoleri.sessions.appendLog(
-        session.id,
+        sessionId,
         'info',
         `Auto-reconnect attempt ${nextAttempt}${maxLabel}…`
       )
@@ -151,31 +150,45 @@ export function useAutoReconnect(
     }, 1000)
 
     return () => window.clearInterval(id)
-  }, [autoEnabled, session?.status, session?.id, maxAttempts, intervalSec])
+  }, [autoEnabled, status, sessionId])
 
   const enable = useCallback(() => {
-    countdownRef.current = intervalSec
-    setCountdown(intervalSec)
+    const sec = intervalSecRef.current
+    const max = maxAttemptsRef.current
+    countdownRef.current = sec
+    setCountdown(sec)
     setAttemptsDone(0)
     attemptsDoneRef.current = 0
     setAutoEnabled(true)
 
-    if (session) {
-      const maxDesc = maxAttempts > 0 ? `, max ${maxAttempts} attempt(s)` : ', unlimited attempts'
+    if (sessionId) {
+      const maxDesc = max > 0 ? `, max ${max} attempt(s)` : ', unlimited attempts'
       void window.consoleri.sessions.appendLog(
-        session.id,
+        sessionId,
         'info',
-        `Auto-reconnect enabled: every ${intervalSec} s${maxDesc}`
+        `Auto-reconnect enabled: every ${sec} s${maxDesc}`
       )
     }
-  }, [session, intervalSec, maxAttempts])
+  }, [sessionId])
 
   const disable = useCallback(() => {
     setAutoEnabled(false)
-    if (session) {
-      void window.consoleri.sessions.appendLog(session.id, 'info', 'Auto-reconnect stopped by user')
+    if (sessionId) {
+      void window.consoleri.sessions.appendLog(sessionId, 'info', 'Auto-reconnect stopped by user')
     }
-  }, [session])
+  }, [sessionId])
+
+  const setIntervalSec = useCallback((v: number): void => {
+    intervalSecRef.current = v
+    setIntervalSecState(v)
+    countdownRef.current = v
+    setCountdown(v)
+  }, [])
+
+  const setMaxAttempts = useCallback((v: number): void => {
+    maxAttemptsRef.current = v
+    setMaxAttemptsState(v)
+  }, [])
 
   return {
     panelOpen,

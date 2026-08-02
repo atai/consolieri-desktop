@@ -19,7 +19,7 @@ const mockGroupsList = vi.fn().mockResolvedValue([])
 const mockUxProfilesGetActive = vi.fn()
 const mockUxProfilesUpdate = vi.fn().mockResolvedValue(undefined)
 
-function installConsoleriGlobal() {
+function installConsoleriGlobal(): void {
   Object.defineProperty(window, 'consoleri', {
     value: {
       preferences: {
@@ -72,19 +72,19 @@ afterEach(() => {
 })
 
 // ── Fresh store helpers ───────────────────────────────────────────────────────
-async function freshAppStore() {
+async function freshAppStore(): Promise<typeof import('./appStore')> {
   vi.resetModules()
   const mod = await import('./appStore')
   return mod
 }
 
-async function freshSessionWorkspaceStore() {
+async function freshSessionWorkspaceStore(): Promise<typeof import('./sessionWorkspaceStore')> {
   vi.resetModules()
   const mod = await import('./sessionWorkspaceStore')
   return mod
 }
 
-async function freshPreferencesStore() {
+async function freshPreferencesStore(): Promise<typeof import('./preferencesStore')> {
   vi.resetModules()
   const mod = await import('./preferencesStore')
   return mod

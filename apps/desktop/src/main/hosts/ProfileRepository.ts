@@ -22,7 +22,7 @@ import type { HostProfileLinkExport } from '@consoleri/core'
 export class ProfileRepository {
   // ── Private credential helpers ─────────────────────────────────────────────
 
-  private vaultOptions() {
+  private vaultOptions(): { mount: string; prefix: string } {
     const settings = vaultSettingsRepository.getSettings()
     return { mount: settings.defaultKvMount, prefix: settings.secretPathPrefix }
   }

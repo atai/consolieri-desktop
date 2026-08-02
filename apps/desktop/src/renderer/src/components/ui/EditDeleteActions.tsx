@@ -10,7 +10,6 @@ export interface EditDeleteActionsProps {
   deleteLabel?: string
   confirmDeleteLabel?: string
   disabled?: boolean
-  resetKey?: string | number
   className?: string
 }
 
@@ -23,7 +22,6 @@ export function EditDeleteActions({
   deleteLabel = 'Delete',
   confirmDeleteLabel = 'Delete',
   disabled = false,
-  resetKey,
   className = ''
 }: EditDeleteActionsProps): React.JSX.Element {
   return (
@@ -40,7 +38,6 @@ export function EditDeleteActions({
         label={deleteLabel}
         confirmLabel={confirmDeleteLabel}
         disabled={disabled}
-        resetKey={resetKey}
         onConfirm={onDelete}
         variant="default"
       />

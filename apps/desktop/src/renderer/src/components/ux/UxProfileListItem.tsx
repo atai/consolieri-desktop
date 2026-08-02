@@ -63,9 +63,9 @@ export function UxProfileListItem({
           </Button>
           {(onUnlink || !profile.isBuiltin) && (
             <ConfirmDeleteButton
+              key={profile.id}
               label={onUnlink ? 'Unlink' : 'Delete'}
               confirmLabel={onUnlink ? 'Unlink' : 'Delete'}
-              resetKey={profile.id}
               onConfirm={onUnlink ?? onDelete}
               variant="default"
             />

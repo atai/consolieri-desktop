@@ -36,7 +36,7 @@ function makeIronRdpApi(): IronRdpInputApi {
   }
 }
 
-function makeCanvas() {
+function makeCanvas(): HTMLCanvasElement & { _listeners: Map<string, EventListener[]> } {
   const listeners = new Map<string, EventListener[]>()
   const canvas = {
     tabIndex: 0,
@@ -65,7 +65,7 @@ describe('attachInputHandlers: event registration', () => {
   it('registers all expected event types on the canvas', () => {
     const canvas = makeCanvas()
     const api = makeIronRdpApi()
-    const getSession = () => null
+    const getSession = (): null => null
 
     attachInputHandlers(canvas, getSession, api)
 
@@ -110,7 +110,8 @@ describe('attachInputHandlers: input event forwarding', () => {
     const canvas = makeCanvas()
     const api = makeIronRdpApi()
     const fakeSession = { applyInputs: vi.fn() }
-    const getSession = () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession
+    const getSession = (): import('ironrdp-wasm').IronRdpSession =>
+      fakeSession as unknown as import('ironrdp-wasm').IronRdpSession
 
     attachInputHandlers(canvas, getSession, api)
 
@@ -342,7 +343,7 @@ vi.mock('./rdpErrors', () => ({
 
 const mockGetRdpCredentials = vi.fn()
 
-function installConsoleriRdp() {
+function installConsoleriRdp(): void {
   Object.defineProperty(window, 'consoleri', {
     value: {
       sessions: {

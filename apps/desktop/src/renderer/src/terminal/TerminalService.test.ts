@@ -42,7 +42,9 @@ vi.mock('@xterm/xterm', () => ({
     cols = 80
     rows = 24
 
-    open(): void {}
+    open(): void {
+      void 0
+    }
 
     write = termWrite
     reset = termReset

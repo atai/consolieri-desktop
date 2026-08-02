@@ -97,7 +97,14 @@ function makeTransportResult(
   }
 }
 
-function makeFakeWindow() {
+function makeFakeWindow(): {
+  isDestroyed: () => boolean
+  removeAllListeners: ReturnType<typeof vi.fn>
+  close: ReturnType<typeof vi.fn>
+  webContents: { send: ReturnType<typeof vi.fn> }
+  setTitle: ReturnType<typeof vi.fn>
+  _sent: Array<[string, unknown]>
+} {
   const sent: Array<[string, unknown]> = []
   return {
     isDestroyed: () => false,
