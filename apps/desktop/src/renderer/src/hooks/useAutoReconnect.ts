@@ -161,8 +161,7 @@ export function useAutoReconnect(
     setAutoEnabled(true)
 
     if (session) {
-      const maxDesc =
-        maxAttempts > 0 ? `, max ${maxAttempts} attempt(s)` : ', unlimited attempts'
+      const maxDesc = maxAttempts > 0 ? `, max ${maxAttempts} attempt(s)` : ', unlimited attempts'
       void window.consoleri.sessions.appendLog(
         session.id,
         'info',
@@ -174,11 +173,7 @@ export function useAutoReconnect(
   const disable = useCallback(() => {
     setAutoEnabled(false)
     if (session) {
-      void window.consoleri.sessions.appendLog(
-        session.id,
-        'info',
-        'Auto-reconnect stopped by user'
-      )
+      void window.consoleri.sessions.appendLog(session.id, 'info', 'Auto-reconnect stopped by user')
     }
   }, [session])
 

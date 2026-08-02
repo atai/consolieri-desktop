@@ -7,7 +7,9 @@ const ALLOWED_PREFIXES = ['profile:', 'keyfile:', 'vault:'] as const
 
 export function validateCredentialRef(ref: unknown): asserts ref is string {
   if (typeof ref !== 'string' || ref.length === 0) {
-    throw new Error(`Invalid credential ref: expected a non-empty string, got ${JSON.stringify(ref)}`)
+    throw new Error(
+      `Invalid credential ref: expected a non-empty string, got ${JSON.stringify(ref)}`
+    )
   }
   const allowed = ALLOWED_PREFIXES.some((prefix) => ref.startsWith(prefix))
   if (!allowed) {

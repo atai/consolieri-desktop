@@ -108,11 +108,7 @@ export function BackupSettingsPanel(): React.JSX.Element {
   }
 
   const handleImportFull = async (): Promise<void> => {
-    if (
-      !confirm(
-        'Import a full settings file? All current settings and hosts will be replaced.'
-      )
-    )
+    if (!confirm('Import a full settings file? All current settings and hosts will be replaced.'))
       return
     setMessage(null)
     try {
@@ -126,16 +122,13 @@ export function BackupSettingsPanel(): React.JSX.Element {
 
   if (loading || !settings) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-muted">
-        Loading…
-      </div>
+      <div className="flex h-full items-center justify-center text-sm text-muted">Loading…</div>
     )
   }
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-y-auto">
       <div className="max-w-2xl space-y-8 p-6">
-
         {/* Auto-backup settings */}
         <section className="space-y-4">
           <h2 className="text-base font-semibold text-fg">Automatic backups</h2>
@@ -264,9 +257,7 @@ export function BackupSettingsPanel(): React.JSX.Element {
             </button>
           </div>
           {message && (
-            <p
-              className={`text-xs ${message.kind === 'ok' ? 'text-success' : 'text-danger'}`}
-            >
+            <p className={`text-xs ${message.kind === 'ok' ? 'text-success' : 'text-danger'}`}>
               {message.text}
             </p>
           )}
@@ -282,9 +273,7 @@ export function BackupSettingsPanel(): React.JSX.Element {
             <h2 className="text-base font-semibold text-fg">
               Saved backups
               {backups.length > 0 && (
-                <span className="ml-2 text-sm font-normal text-muted">
-                  ({backups.length})
-                </span>
+                <span className="ml-2 text-sm font-normal text-muted">({backups.length})</span>
               )}
             </h2>
             <button
@@ -301,10 +290,7 @@ export function BackupSettingsPanel(): React.JSX.Element {
           ) : (
             <ul className="divide-y divide-border rounded border border-border">
               {backups.map((b) => (
-                <li
-                  key={b.id}
-                  className="flex items-center justify-between px-3 py-2 text-sm"
-                >
+                <li key={b.id} className="flex items-center justify-between px-3 py-2 text-sm">
                   <div>
                     <p className="text-fg">{formatDate(b.createdAt)}</p>
                     <p className="text-xs text-muted">

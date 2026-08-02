@@ -103,8 +103,12 @@ const {
     setHostListView: vi.fn(),
     getMapView: vi.fn(),
     setMapView: vi.fn(),
-    getAppSettings: vi.fn().mockReturnValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace' }),
-    setAppSettings: vi.fn().mockReturnValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace' }),
+    getAppSettings: vi
+      .fn()
+      .mockReturnValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace' }),
+    setAppSettings: vi
+      .fn()
+      .mockReturnValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace' }),
     getScpRecent: vi.fn(),
     setScpRecent: vi.fn()
   },
@@ -172,7 +176,16 @@ vi.mock('../vault/VaultOidcLogin', () => ({
 vi.mock('../sessions/SessionManager', () => ({ sessionManager: mockSessionManager }))
 vi.mock('../sessions/shellUtils', () => ({ listWslDistros: vi.fn(() => []) }))
 vi.mock('../sessions/localShellsService', () => ({
-  localShellsService: { available: vi.fn(() => ({ powershell: false, pwsh: false, cmd: false, bash: false, zsh: false, sh: false })) }
+  localShellsService: {
+    available: vi.fn(() => ({
+      powershell: false,
+      pwsh: false,
+      cmd: false,
+      bash: false,
+      zsh: false,
+      sh: false
+    }))
+  }
 }))
 vi.mock('../sessions/ScpTransferService', () => ({
   scpTransferService: {
@@ -346,10 +359,7 @@ describe('IPC channel inventory', () => {
     IPC_CHANNELS.scpSetRecent
   ] as const
 
-  const EXPECTED_ON_CHANNELS = [
-    IPC_CHANNELS.sessionsWrite,
-    IPC_CHANNELS.sessionsResize
-  ] as const
+  const EXPECTED_ON_CHANNELS = [IPC_CHANNELS.sessionsWrite, IPC_CHANNELS.sessionsResize] as const
 
   it('registers all expected ipcMain.handle channels', () => {
     for (const ch of EXPECTED_HANDLE_CHANNELS) {
@@ -595,7 +605,17 @@ describe('sessions routing', () => {
   })
 
   it('sessions:snapshot → hostRepository.saveSessionSnapshot', async () => {
-    const snap = { id: 's1', hostId: null, profileId: null, protocol: 'ssh', title: 't', cwd: null, cols: 80, rows: 24, scrollbackSerialized: null }
+    const snap = {
+      id: 's1',
+      hostId: null,
+      profileId: null,
+      protocol: 'ssh',
+      title: 't',
+      cwd: null,
+      cols: 80,
+      rows: 24,
+      scrollbackSerialized: null
+    }
     await handleMap.get(IPC_CHANNELS.sessionsSnapshot)!(FAKE_EVENT, snap)
     expect(mockHostRepo.saveSessionSnapshot).toHaveBeenCalledWith(snap)
   })

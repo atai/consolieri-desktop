@@ -24,10 +24,16 @@ const PRIMARY_THEME_KEYS: Array<keyof TerminalTheme> = [
   'selectionBackground'
 ]
 
-export function UxProfileForm({ profile, onSave, onCancel }: UxProfileFormProps): React.JSX.Element {
+export function UxProfileForm({
+  profile,
+  onSave,
+  onCancel
+}: UxProfileFormProps): React.JSX.Element {
   const formId = useId()
   const [name, setName] = useState(profile?.name ?? '')
-  const [fontSize, setFontSize] = useState(profile?.terminal.fontSize ?? DEFAULT_TERMINAL_APPEARANCE.fontSize)
+  const [fontSize, setFontSize] = useState(
+    profile?.terminal.fontSize ?? DEFAULT_TERMINAL_APPEARANCE.fontSize
+  )
   const [fontFamily, setFontFamily] = useState(
     profile?.terminal.fontFamily ?? DEFAULT_TERMINAL_APPEARANCE.fontFamily
   )
@@ -190,7 +196,9 @@ export function UxProfileForm({ profile, onSave, onCancel }: UxProfileFormProps)
         </label>
 
         <div className="space-y-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-muted">Theme colors</span>
+          <span className="text-xs font-medium uppercase tracking-wide text-muted">
+            Theme colors
+          </span>
           <div className="grid grid-cols-2 gap-2">
             {PRIMARY_THEME_KEYS.map((key) => (
               <label key={key} className="flex items-center gap-2 text-xs text-muted">

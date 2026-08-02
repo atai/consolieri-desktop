@@ -4,8 +4,7 @@ export type ButtonVariant = 'default' | 'primary' | 'danger' | 'ghost'
 export type ButtonSize = 'sm' | 'md'
 
 const variantClass: Record<ButtonVariant, string> = {
-  default:
-    'border border-border bg-surface-raised text-fg-2 hover:bg-border hover:text-fg',
+  default: 'border border-border bg-surface-raised text-fg-2 hover:bg-border hover:text-fg',
   primary: 'bg-accent text-accent-on hover:bg-accent-hover',
   danger: 'bg-danger/20 text-danger hover:bg-danger/30',
   ghost: 'text-muted hover:bg-surface-raised hover:text-fg'

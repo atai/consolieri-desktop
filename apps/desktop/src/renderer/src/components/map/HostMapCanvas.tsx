@@ -66,9 +66,7 @@ export function HostMapCanvas({ hosts }: HostMapCanvasProps): React.JSX.Element 
     const height = 800
     const graph = mapMode === 'logical' ? buildLogicalGraph(hosts) : buildNetworkGraph(hosts)
     const positioned =
-      mapMode === 'logical'
-        ? layoutLogicalGraph(graph, width, height)
-        : layoutDagreGraph(graph)
+      mapMode === 'logical' ? layoutLogicalGraph(graph, width, height) : layoutDagreGraph(graph)
 
     const flowNodes: Node[] = positioned.map((n) => {
       const host = n.hostId ? hostById.get(n.hostId) : undefined

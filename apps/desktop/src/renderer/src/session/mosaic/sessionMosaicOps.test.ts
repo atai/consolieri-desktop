@@ -16,7 +16,9 @@ vi.mock('../../stores/appStore', () => ({
 vi.mock('../../terminal/TerminalPool', () => ({ releaseTerminal: vi.fn() }))
 
 // ── window.consoleri stub ─────────────────────────────────────────────────────
-function makeConsoleri(overrides?: Partial<{ sessions: Record<string, ReturnType<typeof vi.fn>> }>) {
+function makeConsoleri(
+  overrides?: Partial<{ sessions: Record<string, ReturnType<typeof vi.fn>> }>
+) {
   return {
     sessions: {
       open: vi.fn(),
@@ -139,7 +141,11 @@ describe('insertPane', () => {
 describe('splitMosaicPane', () => {
   it('returns null when sourcePaneId not found', async () => {
     const consoleri = makeConsoleri()
-    Object.defineProperty(window, 'consoleri', { value: consoleri, writable: true, configurable: true })
+    Object.defineProperty(window, 'consoleri', {
+      value: consoleri,
+      writable: true,
+      configurable: true
+    })
 
     const result = await splitMosaicPane('pane-1', [], 'missing-pane', 'row')
     expect(result).toBeNull()
@@ -147,7 +153,11 @@ describe('splitMosaicPane', () => {
 
   it('returns null when layout is null', async () => {
     const consoleri = makeConsoleri()
-    Object.defineProperty(window, 'consoleri', { value: consoleri, writable: true, configurable: true })
+    Object.defineProperty(window, 'consoleri', {
+      value: consoleri,
+      writable: true,
+      configurable: true
+    })
 
     const session = makeSession()
     const binding = createPaneBinding(session, { protocol: 'ssh' as const })
@@ -157,8 +167,14 @@ describe('splitMosaicPane', () => {
 
   it('opens a new session and returns split layout on success', async () => {
     const newSession = makeSession({ id: 'sess-new', status: 'connecting' })
-    const consoleri = makeConsoleri({ sessions: { open: vi.fn().mockResolvedValue(newSession) } as never })
-    Object.defineProperty(window, 'consoleri', { value: consoleri, writable: true, configurable: true })
+    const consoleri = makeConsoleri({
+      sessions: { open: vi.fn().mockResolvedValue(newSession) } as never
+    })
+    Object.defineProperty(window, 'consoleri', {
+      value: consoleri,
+      writable: true,
+      configurable: true
+    })
 
     const existingSession = makeSession({ id: 'sess-1' })
     const binding = createPaneBinding(existingSession, { hostId: 'h1', protocol: 'ssh' as const })
@@ -174,9 +190,19 @@ describe('splitMosaicPane', () => {
   })
 
   it('returns null when the new session fails', async () => {
-    const errorSession = makeSession({ id: 'sess-err', status: 'error', error: 'Connection refused' })
-    const consoleri = makeConsoleri({ sessions: { open: vi.fn().mockResolvedValue(errorSession) } as never })
-    Object.defineProperty(window, 'consoleri', { value: consoleri, writable: true, configurable: true })
+    const errorSession = makeSession({
+      id: 'sess-err',
+      status: 'error',
+      error: 'Connection refused'
+    })
+    const consoleri = makeConsoleri({
+      sessions: { open: vi.fn().mockResolvedValue(errorSession) } as never
+    })
+    Object.defineProperty(window, 'consoleri', {
+      value: consoleri,
+      writable: true,
+      configurable: true
+    })
 
     const existingSession = makeSession({ id: 'sess-1' })
     const binding = createPaneBinding(existingSession, { protocol: 'ssh' as const })
@@ -190,7 +216,11 @@ describe('splitMosaicPane', () => {
     const newSession = makeSession({ id: 'sess-new', status: 'connecting' })
     const mockOpen = vi.fn().mockResolvedValue(newSession)
     const consoleri = makeConsoleri({ sessions: { open: mockOpen } as never })
-    Object.defineProperty(window, 'consoleri', { value: consoleri, writable: true, configurable: true })
+    Object.defineProperty(window, 'consoleri', {
+      value: consoleri,
+      writable: true,
+      configurable: true
+    })
 
     const existingSession = makeSession()
     const connectRequest = { hostId: 'h1', profileId: 'p1', protocol: 'ssh' as const }
@@ -198,7 +228,9 @@ describe('splitMosaicPane', () => {
     const { layout, panes } = insertPane(null, [], binding)
 
     await splitMosaicPane(layout, panes, binding.paneId, 'row')
-    expect(mockOpen).toHaveBeenCalledWith(expect.objectContaining({ hostId: 'h1', profileId: 'p1' }))
+    expect(mockOpen).toHaveBeenCalledWith(
+      expect.objectContaining({ hostId: 'h1', profileId: 'p1' })
+    )
   })
 })
 
@@ -211,8 +243,14 @@ describe('reconnectMosaicPane', () => {
 
   it('calls sessions.reconnect when binding has a sessionId', async () => {
     const reconSession = makeSession({ id: 'sess-1', status: 'connected' })
-    const consoleri = makeConsoleri({ sessions: { reconnect: vi.fn().mockResolvedValue(reconSession) } as never })
-    Object.defineProperty(window, 'consoleri', { value: consoleri, writable: true, configurable: true })
+    const consoleri = makeConsoleri({
+      sessions: { reconnect: vi.fn().mockResolvedValue(reconSession) } as never
+    })
+    Object.defineProperty(window, 'consoleri', {
+      value: consoleri,
+      writable: true,
+      configurable: true
+    })
 
     const binding: PaneBinding = {
       paneId: 'pane-1',
@@ -230,8 +268,14 @@ describe('reconnectMosaicPane', () => {
 
   it('calls sessions.open when binding has no sessionId', async () => {
     const newSession = makeSession({ id: 'sess-fresh', status: 'connecting' })
-    const consoleri = makeConsoleri({ sessions: { open: vi.fn().mockResolvedValue(newSession) } as never })
-    Object.defineProperty(window, 'consoleri', { value: consoleri, writable: true, configurable: true })
+    const consoleri = makeConsoleri({
+      sessions: { open: vi.fn().mockResolvedValue(newSession) } as never
+    })
+    Object.defineProperty(window, 'consoleri', {
+      value: consoleri,
+      writable: true,
+      configurable: true
+    })
 
     const binding: PaneBinding = {
       paneId: 'pane-1',
@@ -248,12 +292,29 @@ describe('reconnectMosaicPane', () => {
   })
 
   it('updates paneId entry with new sessionId, title, protocol', async () => {
-    const updatedSession = makeSession({ id: 'sess-2', title: 'db01', protocol: 'rdp', status: 'connected' })
-    const consoleri = makeConsoleri({ sessions: { reconnect: vi.fn().mockResolvedValue(updatedSession) } as never })
-    Object.defineProperty(window, 'consoleri', { value: consoleri, writable: true, configurable: true })
+    const updatedSession = makeSession({
+      id: 'sess-2',
+      title: 'db01',
+      protocol: 'rdp',
+      status: 'connected'
+    })
+    const consoleri = makeConsoleri({
+      sessions: { reconnect: vi.fn().mockResolvedValue(updatedSession) } as never
+    })
+    Object.defineProperty(window, 'consoleri', {
+      value: consoleri,
+      writable: true,
+      configurable: true
+    })
 
     const panes: PaneBinding[] = [
-      { paneId: 'pane-1', sessionId: 'sess-old', protocol: 'ssh', title: 'old', connectRequest: {} },
+      {
+        paneId: 'pane-1',
+        sessionId: 'sess-old',
+        protocol: 'ssh',
+        title: 'old',
+        connectRequest: {}
+      },
       { paneId: 'pane-2', sessionId: 'sess-2', protocol: 'rdp', title: 'db01', connectRequest: {} }
     ]
 
@@ -268,8 +329,14 @@ describe('reconnectMosaicPane', () => {
   })
 
   it('returns null when reconnect returns null', async () => {
-    const consoleri = makeConsoleri({ sessions: { reconnect: vi.fn().mockResolvedValue(null) } as never })
-    Object.defineProperty(window, 'consoleri', { value: consoleri, writable: true, configurable: true })
+    const consoleri = makeConsoleri({
+      sessions: { reconnect: vi.fn().mockResolvedValue(null) } as never
+    })
+    Object.defineProperty(window, 'consoleri', {
+      value: consoleri,
+      writable: true,
+      configurable: true
+    })
 
     const binding: PaneBinding = {
       paneId: 'pane-1',
@@ -285,11 +352,23 @@ describe('reconnectMosaicPane', () => {
 
   it('does not mutate original panes array', async () => {
     const reconSession = makeSession({ id: 'sess-new', status: 'connected' })
-    const consoleri = makeConsoleri({ sessions: { reconnect: vi.fn().mockResolvedValue(reconSession) } as never })
-    Object.defineProperty(window, 'consoleri', { value: consoleri, writable: true, configurable: true })
+    const consoleri = makeConsoleri({
+      sessions: { reconnect: vi.fn().mockResolvedValue(reconSession) } as never
+    })
+    Object.defineProperty(window, 'consoleri', {
+      value: consoleri,
+      writable: true,
+      configurable: true
+    })
 
     const original: PaneBinding[] = [
-      { paneId: 'pane-1', sessionId: 'sess-old', protocol: 'ssh', title: 'web01', connectRequest: {} }
+      {
+        paneId: 'pane-1',
+        sessionId: 'sess-old',
+        protocol: 'ssh',
+        title: 'web01',
+        connectRequest: {}
+      }
     ]
     const originalSnapshot = [...original]
 

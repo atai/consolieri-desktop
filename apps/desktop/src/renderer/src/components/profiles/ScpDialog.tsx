@@ -88,10 +88,7 @@ export function ScpDialog({ host, profile, onClose }: ScpDialogProps): React.JSX
   }
 
   const handleBrowseSource = async (): Promise<void> => {
-    const path =
-      direction === 'upload'
-        ? await window.consoleri.scp.pickFile()
-        : null
+    const path = direction === 'upload' ? await window.consoleri.scp.pickFile() : null
     if (path) {
       setSourcePath(path)
       setResult(null)
@@ -99,10 +96,7 @@ export function ScpDialog({ host, profile, onClose }: ScpDialogProps): React.JSX
   }
 
   const handleBrowseDest = async (): Promise<void> => {
-    const path =
-      direction === 'download'
-        ? await window.consoleri.scp.pickDir()
-        : null
+    const path = direction === 'download' ? await window.consoleri.scp.pickDir() : null
     if (path) {
       setDestPath(path)
       setResult(null)
@@ -188,9 +182,7 @@ export function ScpDialog({ host, profile, onClose }: ScpDialogProps): React.JSX
         </div>
 
         <div className="space-y-3 rounded border border-border bg-bg p-3">
-          <div className="text-[10px] font-medium uppercase tracking-wide text-muted">
-            Источник
-          </div>
+          <div className="text-[10px] font-medium uppercase tracking-wide text-muted">Источник</div>
           {sourceIsLocal ? (
             <PathField
               label="Local file"

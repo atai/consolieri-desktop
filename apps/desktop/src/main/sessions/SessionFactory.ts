@@ -1,5 +1,16 @@
-import { buildRdpDestination, defaultPortForProtocol, resolveRdpPort, resolveUxProfile } from '@consoleri/core'
-import type { ConnectionProfile, Host, OpenSessionRequest, Protocol, LocalShellType } from '../../shared/types'
+import {
+  buildRdpDestination,
+  defaultPortForProtocol,
+  resolveRdpPort,
+  resolveUxProfile
+} from '@consoleri/core'
+import type {
+  ConnectionProfile,
+  Host,
+  OpenSessionRequest,
+  Protocol,
+  LocalShellType
+} from '../../shared/types'
 import { hostRepository } from '../hosts/HostRepository'
 import { profileRepository } from '../hosts/ProfileRepository'
 import { uxProfileRepository } from '../ux/UxProfileRepository'
@@ -104,8 +115,9 @@ export class SessionFactory {
         if (!profile) throw new Error('SSH profile required')
         const credentials = await this._credentialResolver.resolveForProfile(profile)
         let jumpHost: Host | null = null
-        let jumpCredentials: Awaited<ReturnType<typeof this._credentialResolver.resolveForProfile>> | null =
-          null
+        let jumpCredentials: Awaited<
+          ReturnType<typeof this._credentialResolver.resolveForProfile>
+        > | null = null
         if (profile.jumpHostId) {
           jumpHost = this._hostRepository.getHost(profile.jumpHostId)
           if (!jumpHost) throw new Error(`Jump host not found: ${profile.jumpHostId}`)
@@ -163,9 +175,19 @@ export class SessionFactory {
         }
       }
       case 'wsl':
-        this.log.append(sessionId, 'info', `Opening WSL${request.wslDistro ? ` (${request.wslDistro})` : ''}`)
+        this.log.append(
+          sessionId,
+          'info',
+          `Opening WSL${request.wslDistro ? ` (${request.wslDistro})` : ''}`
+        )
         return {
-          transport: new PtySession('wsl', cols, rows, request.wslDistro, profile?.shell ?? '/bin/bash'),
+          transport: new PtySession(
+            'wsl',
+            cols,
+            rows,
+            request.wslDistro,
+            profile?.shell ?? '/bin/bash'
+          ),
           protocol: 'wsl',
           title
         }

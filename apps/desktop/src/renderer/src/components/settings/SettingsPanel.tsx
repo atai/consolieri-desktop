@@ -32,10 +32,7 @@ function GeneralTab(): React.JSX.Element {
                 independently
               </p>
             </div>
-            <SessionOpenModeToggle
-              mode={settings.sessionOpenMode}
-              onChange={setSessionOpenMode}
-            />
+            <SessionOpenModeToggle mode={settings.sessionOpenMode} onChange={setSessionOpenMode} />
           </div>
 
           <div className="flex items-center justify-between">

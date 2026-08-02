@@ -17,9 +17,7 @@ export class SecretsRepository {
   replaceAll(items: EncryptedSecretRecord[]): void {
     const db = getDatabase()
     db.prepare('DELETE FROM vault_secrets').run()
-    const insert = db.prepare(
-      'INSERT INTO vault_secrets (ref, encrypted_blob) VALUES (?, ?)'
-    )
+    const insert = db.prepare('INSERT INTO vault_secrets (ref, encrypted_blob) VALUES (?, ?)')
     for (const item of items) {
       insert.run(item.ref, item.encryptedBlob)
     }

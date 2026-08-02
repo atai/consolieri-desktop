@@ -236,7 +236,11 @@ describe('createProfile secret orchestration', () => {
   })
 
   it('creates profile without credentials when none provided', async () => {
-    const profile = await profileRepo.createProfile({ name: 'no-creds', protocol: 'ssh', username: 'u' })
+    const profile = await profileRepo.createProfile({
+      name: 'no-creds',
+      protocol: 'ssh',
+      username: 'u'
+    })
     expect(profile.credentialRef).toBeNull()
     expect(secretStore.size).toBe(0)
   })
@@ -549,7 +553,9 @@ describe('migratePaneBinding (via loadWorkspace)', () => {
       .run(
         JSON.stringify({
           layout: null,
-          panes: [{ paneId: 'pane-legacy', sessionId: 'old-session-id', protocol: 'ssh', title: 'legacy' }]
+          panes: [
+            { paneId: 'pane-legacy', sessionId: 'old-session-id', protocol: 'ssh', title: 'legacy' }
+          ]
         }),
         ws.id
       )

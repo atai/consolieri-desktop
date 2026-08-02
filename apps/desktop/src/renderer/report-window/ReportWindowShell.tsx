@@ -65,9 +65,7 @@ export function ReportWindowShell({
     progress && progress.total > 0 ? Math.round(((progress.index + 1) / progress.total) * 100) : 0
 
   const displayResult = result ?? report.lastResult
-  const generationDurationMs = displayResult
-    ? totalReportDurationMs(displayResult.entries)
-    : null
+  const generationDurationMs = displayResult ? totalReportDurationMs(displayResult.entries) : null
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-bg text-fg">
@@ -78,9 +76,7 @@ export function ReportWindowShell({
             <p className="mt-0.5 text-xs text-muted">
               {reportTypeLabel(report.type)} · {report.config.entries.length} host
               {report.config.entries.length === 1 ? '' : 's'}
-              {report.lastRunAt && (
-                <> · Last run: {new Date(report.lastRunAt).toLocaleString()}</>
-              )}
+              {report.lastRunAt && <> · Last run: {new Date(report.lastRunAt).toLocaleString()}</>}
               {generationDurationMs !== null && generationDurationMs > 0 && (
                 <> · Duration: {formatDuration(generationDurationMs)}</>
               )}
@@ -127,7 +123,10 @@ export function ReportWindowShell({
               <span>
                 {progressActionLabel(report.type)} {labels.hostName(progress.hostId)}
                 {progress.commandIndex != null && progress.commandTotal != null && (
-                  <> · command {progress.commandIndex + 1}/{progress.commandTotal}</>
+                  <>
+                    {' '}
+                    · command {progress.commandIndex + 1}/{progress.commandTotal}
+                  </>
                 )}{' '}
                 (host {progress.index + 1}/{progress.total})
               </span>

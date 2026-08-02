@@ -1,5 +1,12 @@
 import { useEffect, useId, useMemo, useState } from 'react'
-import type { ConnectionProfile, Host, HostLogVerbosity, OsType, ProfileInput, UxProfile } from '@shared/types'
+import type {
+  ConnectionProfile,
+  Host,
+  HostLogVerbosity,
+  OsType,
+  ProfileInput,
+  UxProfile
+} from '@shared/types'
 import {
   HOST_LOG_VERBOSITY_OPTIONS,
   normalizeHostInput,
@@ -10,10 +17,7 @@ import type { HostFormInput } from '@consoleri/core'
 import { useAppStore } from '../../stores/appStore'
 import { ProfileForm } from '../profiles/ProfileForm'
 import { PickProfileDialog } from '../profiles/PickProfileDialog'
-import {
-  SCROLLABLE_FORM_MAX_HEIGHT_PANEL,
-  ScrollableFormShell
-} from '../ui/ScrollableFormShell'
+import { SCROLLABLE_FORM_MAX_HEIGHT_PANEL, ScrollableFormShell } from '../ui/ScrollableFormShell'
 import { TagInput } from './TagInput'
 import { HostProfilesSection } from '../profiles/HostProfilesSection'
 import { hostCopyName } from './hostTemplate'
@@ -54,9 +58,7 @@ export function HostForm({
   const { allHostTags, allHosts, refreshAllHostTags, refreshAllHosts } = useAppStore()
   const source = host ?? copyFrom
   const isCopyMode = Boolean(copyFrom)
-  const [name, setName] = useState(
-    host?.name ?? (copyFrom ? hostCopyName(copyFrom) : '')
-  )
+  const [name, setName] = useState(host?.name ?? (copyFrom ? hostCopyName(copyFrom) : ''))
   const [hostname, setHostname] = useState(source?.hostname ?? '')
   const [httpEndpoint, setHttpEndpoint] = useState(source?.httpEndpoint ?? '')
   const [port, setPort] = useState(source?.port ?? 22)
@@ -214,246 +216,248 @@ export function HostForm({
         }
       >
         <form id={formId} onSubmit={handleSubmit} className="space-y-3 text-sm">
-        {formErrorEntries.length > 0 && (
-          <ul className="rounded border border-red-800 bg-red-950/40 px-3 py-2 text-xs text-danger">
-            {formErrorEntries.map(([field, msg]) => (
-              <li key={field}>{msg}</li>
-            ))}
-          </ul>
-        )}
-        <label className="block">
-          <span className="text-muted">Name</span>
-          <input
-            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </label>
-        <label className="block">
-          <span className="text-muted">Hostname / IP</span>
-          <input
-            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-            value={hostname}
-            onChange={(e) => setHostname(e.target.value)}
-            required
-          />
-        </label>
-        <label className="block">
-          <span className="text-muted">HTTP Endpoint</span>
-          <input
-            type="url"
-            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-            value={httpEndpoint}
-            onChange={(e) => {
-              setHttpEndpoint(e.target.value)
-              if (httpEndpointError) setHttpEndpointError(null)
-            }}
-            placeholder="https://alb.example/health"
-          />
-          <span className="mt-1 block text-xs text-muted">
-            Optional. For HTTP(S) traffic through ALB terminating on this host.
-          </span>
-          {httpEndpointError && (
-            <span className="mt-1 block text-xs text-danger">{httpEndpointError}</span>
+          {formErrorEntries.length > 0 && (
+            <ul className="rounded border border-red-800 bg-red-950/40 px-3 py-2 text-xs text-danger">
+              {formErrorEntries.map(([field, msg]) => (
+                <li key={field}>{msg}</li>
+              ))}
+            </ul>
           )}
-        </label>
-        <div className="grid grid-cols-2 gap-2">
           <label className="block">
-            <span className="text-muted">Port</span>
+            <span className="text-muted">Name</span>
             <input
-              type="number"
               className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-              value={port}
-              onChange={(e) => setPort(Number(e.target.value))}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
             />
           </label>
           <label className="block">
-            <span className="text-muted">OS</span>
-            <select
+            <span className="text-muted">Hostname / IP</span>
+            <input
               className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-              value={osType}
-              onChange={(e) => setOsType(e.target.value as OsType)}
-            >
-              {OS_OPTIONS.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
+              value={hostname}
+              onChange={(e) => setHostname(e.target.value)}
+              required
+            />
           </label>
-        </div>
-
-        <label className="block">
-          <span className="text-muted">Log verbosity</span>
-          <select
-            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-            value={logVerbosity}
-            onChange={(e) => setLogVerbosity(e.target.value as HostLogVerbosity)}
-          >
-            {HOST_LOG_VERBOSITY_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label} — {option.description}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {(host || isCopyMode) && (
           <label className="block">
-            <span className="text-muted">UX profile</span>
+            <span className="text-muted">HTTP Endpoint</span>
+            <input
+              type="url"
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+              value={httpEndpoint}
+              onChange={(e) => {
+                setHttpEndpoint(e.target.value)
+                if (httpEndpointError) setHttpEndpointError(null)
+              }}
+              placeholder="https://alb.example/health"
+            />
+            <span className="mt-1 block text-xs text-muted">
+              Optional. For HTTP(S) traffic through ALB terminating on this host.
+            </span>
+            {httpEndpointError && (
+              <span className="mt-1 block text-xs text-danger">{httpEndpointError}</span>
+            )}
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block">
+              <span className="text-muted">Port</span>
+              <input
+                type="number"
+                className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+                value={port}
+                onChange={(e) => setPort(Number(e.target.value))}
+              />
+            </label>
+            <label className="block">
+              <span className="text-muted">OS</span>
+              <select
+                className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+                value={osType}
+                onChange={(e) => setOsType(e.target.value as OsType)}
+              >
+                {OS_OPTIONS.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <label className="block">
+            <span className="text-muted">Log verbosity</span>
             <select
               className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-              value={uxProfileId}
-              onChange={(e) => setUxProfileId(e.target.value)}
+              value={logVerbosity}
+              onChange={(e) => setLogVerbosity(e.target.value as HostLogVerbosity)}
             >
-              <option value="">Use global active profile</option>
-              {uxProfiles.map((profile) => (
-                <option key={profile.id} value={profile.id}>
-                  {profile.name}
+              {HOST_LOG_VERBOSITY_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label} — {option.description}
                 </option>
               ))}
             </select>
-            <span className="mt-1 block text-xs text-muted">
-              Controls terminal colors and shell prompt style. Edit the profile to change Shell prompt
-              (Consoleri vs server).
-            </span>
           </label>
-        )}
 
-        {!host && (
-          <div>
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-xs font-medium uppercase tracking-wide text-muted">
-                Connection profiles
+          {(host || isCopyMode) && (
+            <label className="block">
+              <span className="text-muted">UX profile</span>
+              <select
+                className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+                value={uxProfileId}
+                onChange={(e) => setUxProfileId(e.target.value)}
+              >
+                <option value="">Use global active profile</option>
+                {uxProfiles.map((profile) => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.name}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-1 block text-xs text-muted">
+                Controls terminal colors and shell prompt style. Edit the profile to change Shell
+                prompt (Consoleri vs server).
               </span>
-              {!showAddProfile && (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowPickDialog(true)}
-                    className="text-xs text-accent hover:underline"
-                  >
-                    + Pick profile
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddProfile(true)}
-                    className="text-xs text-accent hover:underline"
-                  >
-                    + Add profile
-                  </button>
-                </div>
-              )}
-            </div>
+            </label>
+          )}
 
-            {showAddProfile && (
-              <div className="mb-2 rounded border border-border bg-bg">
-                <ProfileForm
-                  compact
-                  draft
-                  excludeProfileIds={excludeProfileIds}
-                  onDraftSave={handleDraftProfile}
-                  onSave={() => setShowAddProfile(false)}
-                  onCancel={() => setShowAddProfile(false)}
-                />
-              </div>
-            )}
-
-            {pendingProfiles.length === 0 && !showAddProfile ? (
-              <p className="text-xs text-muted">No profiles yet</p>
-            ) : (
-              <ul className="space-y-1">
-                {pendingProfiles.map((item) => (
-                  <li
-                    key={item.key}
-                    className="flex items-center justify-between gap-2 rounded bg-bg px-2 py-1.5 text-xs text-fg-2"
-                  >
-                    <span className="truncate">{pendingProfileLabel(item)}</span>
+          {!host && (
+            <div>
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="text-xs font-medium uppercase tracking-wide text-muted">
+                  Connection profiles
+                </span>
+                {!showAddProfile && (
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => removePending(item.key)}
-                      className="shrink-0 text-muted hover:text-danger"
+                      onClick={() => setShowPickDialog(true)}
+                      className="text-xs text-accent hover:underline"
                     >
-                      Remove
+                      + Pick profile
                     </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
+                    <button
+                      type="button"
+                      onClick={() => setShowAddProfile(true)}
+                      className="text-xs text-accent hover:underline"
+                    >
+                      + Add profile
+                    </button>
+                  </div>
+                )}
+              </div>
 
-        <label className="block">
-          <span className="text-muted">Tags (comma-separated)</span>
-          <TagInput
-            id="host-tags"
-            value={tags}
-            onChange={setTags}
-            existingTags={allHostTags}
-            placeholder="prod, db, eu-west"
-          />
-        </label>
-
-        {(host || isCopyMode) && otherHosts.length > 0 && (
-          <div className="block">
-            <span className="text-muted">Related hosts</span>
-            <div className="mt-1 max-h-28 overflow-y-auto rounded border border-border bg-bg p-2">
-              {otherHosts.map((h) => (
-                <label key={h.id} className="flex cursor-pointer items-center gap-2 py-0.5 text-xs text-fg-2">
-                  <input
-                    type="checkbox"
-                    checked={relatedHostIds.includes(h.id)}
-                    onChange={(e) => {
-                      setRelatedHostIds((prev) =>
-                        e.target.checked ? [...prev, h.id] : prev.filter((id) => id !== h.id)
-                      )
-                    }}
+              {showAddProfile && (
+                <div className="mb-2 rounded border border-border bg-bg">
+                  <ProfileForm
+                    compact
+                    draft
+                    excludeProfileIds={excludeProfileIds}
+                    onDraftSave={handleDraftProfile}
+                    onSave={() => setShowAddProfile(false)}
+                    onCancel={() => setShowAddProfile(false)}
                   />
-                  <span className="truncate">{h.name}</span>
-                </label>
-              ))}
+                </div>
+              )}
+
+              {pendingProfiles.length === 0 && !showAddProfile ? (
+                <p className="text-xs text-muted">No profiles yet</p>
+              ) : (
+                <ul className="space-y-1">
+                  {pendingProfiles.map((item) => (
+                    <li
+                      key={item.key}
+                      className="flex items-center justify-between gap-2 rounded bg-bg px-2 py-1.5 text-xs text-fg-2"
+                    >
+                      <span className="truncate">{pendingProfileLabel(item)}</span>
+                      <button
+                        type="button"
+                        onClick={() => removePending(item.key)}
+                        className="shrink-0 text-muted hover:text-danger"
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-          </div>
-        )}
+          )}
 
-        {(host || isCopyMode) && (
           <label className="block">
-            <span className="text-muted">Gateway host</span>
-            <select
-              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-              value={gatewayHostId}
-              onChange={(e) => setGatewayHostId(e.target.value)}
-            >
-              <option value="">None (direct)</option>
-              {gatewayOptions.map((h) => (
-                <option key={h.id} value={h.id}>
-                  {h.name}
-                </option>
-              ))}
-            </select>
+            <span className="text-muted">Tags (comma-separated)</span>
+            <TagInput
+              id="host-tags"
+              value={tags}
+              onChange={setTags}
+              existingTags={allHostTags}
+              placeholder="prod, db, eu-west"
+            />
           </label>
-        )}
 
-        <label className="block">
-          <span className="text-muted">Notes</span>
-          <textarea
-            className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-            rows={2}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </label>
+          {(host || isCopyMode) && otherHosts.length > 0 && (
+            <div className="block">
+              <span className="text-muted">Related hosts</span>
+              <div className="mt-1 max-h-28 overflow-y-auto rounded border border-border bg-bg p-2">
+                {otherHosts.map((h) => (
+                  <label
+                    key={h.id}
+                    className="flex cursor-pointer items-center gap-2 py-0.5 text-xs text-fg-2"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={relatedHostIds.includes(h.id)}
+                      onChange={(e) => {
+                        setRelatedHostIds((prev) =>
+                          e.target.checked ? [...prev, h.id] : prev.filter((id) => id !== h.id)
+                        )
+                      }}
+                    />
+                    <span className="truncate">{h.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
-        {host && profiles && onProfilesChanged && onConnect && (
-          <HostProfilesSection
-            host={host}
-            profiles={profiles}
-            onConnect={onConnect}
-            onProfilesChanged={onProfilesChanged}
-          />
-        )}
+          {(host || isCopyMode) && (
+            <label className="block">
+              <span className="text-muted">Gateway host</span>
+              <select
+                className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+                value={gatewayHostId}
+                onChange={(e) => setGatewayHostId(e.target.value)}
+              >
+                <option value="">None (direct)</option>
+                {gatewayOptions.map((h) => (
+                  <option key={h.id} value={h.id}>
+                    {h.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
+          <label className="block">
+            <span className="text-muted">Notes</span>
+            <textarea
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+              rows={2}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </label>
+
+          {host && profiles && onProfilesChanged && onConnect && (
+            <HostProfilesSection
+              host={host}
+              profiles={profiles}
+              onConnect={onConnect}
+              onProfilesChanged={onProfilesChanged}
+            />
+          )}
         </form>
       </ScrollableFormShell>
 

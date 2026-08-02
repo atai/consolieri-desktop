@@ -6,7 +6,14 @@ import {
   labelFromKeyPath,
   resolveRdpPort
 } from '@consoleri/core'
-import type { AuthMethod, ConnectionProfile, Host, Protocol, SecretBackendKind, SshKeyInfo } from '@shared/types'
+import type {
+  AuthMethod,
+  ConnectionProfile,
+  Host,
+  Protocol,
+  SecretBackendKind,
+  SshKeyInfo
+} from '@shared/types'
 
 export function profileAuthLabel(profile: ConnectionProfile): string {
   if (profile.authMethod === 'none' && !profile.credentialRef) return 'no auth'
@@ -26,10 +33,7 @@ export function profileAuthLabel(profile: ConnectionProfile): string {
   return profile.authMethod
 }
 
-export function profileJumpHostLabel(
-  profile: ConnectionProfile,
-  hosts: Host[]
-): string | null {
+export function profileJumpHostLabel(profile: ConnectionProfile, hosts: Host[]): string | null {
   if (!profile.jumpHostId) return null
   const jump = hosts.find((h) => h.id === profile.jumpHostId)
   return jump ? jump.name : profile.jumpHostId
@@ -96,10 +100,7 @@ export function profilePortLabel(profile: ConnectionProfile): string | null {
   return null
 }
 
-export function profileSummaryLines(
-  profile: ConnectionProfile,
-  hosts: Host[]
-): string[] {
+export function profileSummaryLines(profile: ConnectionProfile, hosts: Host[]): string[] {
   const lines: string[] = []
   if (profile.username) lines.push(profile.username)
   lines.push(profileAuthLabel(profile))

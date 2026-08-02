@@ -106,7 +106,11 @@ export class SessionManager {
     }
   }
 
-  private appendLog(sessionId: string, level: 'debug' | 'info' | 'warn' | 'error', message: string): void {
+  private appendLog(
+    sessionId: string,
+    level: 'debug' | 'info' | 'warn' | 'error',
+    message: string
+  ): void {
     const entry = this._connectionLog.append(sessionId, level, message)
     if (entry) this.send(IPC_CHANNELS.sessionLog, entry)
   }
@@ -136,7 +140,11 @@ export class SessionManager {
     })
   }
 
-  private applyTransportResult(managed: ManagedSession, sessionId: string, result: TransportResult): void {
+  private applyTransportResult(
+    managed: ManagedSession,
+    sessionId: string,
+    result: TransportResult
+  ): void {
     managed.transport = result.transport
     managed.rdpProxy = result.rdpProxy
     managed.vncProxy = result.vncProxy
@@ -312,7 +320,9 @@ export class SessionManager {
     this.logWindow = win
   }
 
-  async getCredentialsForRdp(profileId: string): Promise<{ username: string; password: string } | null> {
+  async getCredentialsForRdp(
+    profileId: string
+  ): Promise<{ username: string; password: string } | null> {
     const profile = this._profileRepository.getProfile(profileId)
     if (!profile) return null
     const password = await this._credentialResolver.resolvePassword(profile)

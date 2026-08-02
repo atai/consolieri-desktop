@@ -29,12 +29,7 @@ export function DialogFooter({
       <Button variant="ghost" size="md" onClick={onCancel} disabled={loading}>
         {cancelLabel}
       </Button>
-      <Button
-        variant="primary"
-        size="md"
-        onClick={onConfirm}
-        disabled={disabled || loading}
-      >
+      <Button variant="primary" size="md" onClick={onConfirm} disabled={disabled || loading}>
         {label}
       </Button>
     </div>

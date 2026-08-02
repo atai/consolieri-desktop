@@ -55,12 +55,7 @@ export function InlineConfirmButton({
         >
           {busy ? '…' : confirmLabel}
         </Button>
-        <Button
-          variant="ghost"
-          size={size}
-          disabled={busy}
-          onClick={() => setConfirming(false)}
-        >
+        <Button variant="ghost" size={size} disabled={busy} onClick={() => setConfirming(false)}>
           {cancelLabel}
         </Button>
       </span>

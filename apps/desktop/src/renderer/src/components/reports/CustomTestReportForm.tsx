@@ -1,10 +1,5 @@
 import { useState } from 'react'
-import type {
-  CustomTestCommand,
-  Report,
-  ReportConfig,
-  ReportHostEntry
-} from '@shared/types'
+import type { CustomTestCommand, Report, ReportConfig, ReportHostEntry } from '@shared/types'
 import { ReportFormShell } from './ReportFormShell'
 import { ReportHostEntriesSection } from './ReportHostEntriesSection'
 
@@ -21,9 +16,7 @@ function getInitialEntries(report: Report | undefined): ReportHostEntry[] {
 
 function getInitialCommands(report: Report | undefined): CustomTestCommand[] {
   if (!report || report.config.type !== 'custom_test') return [{ command: '' }]
-  return report.config.commands.length > 0
-    ? report.config.commands
-    : [{ command: '' }]
+  return report.config.commands.length > 0 ? report.config.commands : [{ command: '' }]
 }
 
 function getInitialContinueOnError(report: Report | undefined): boolean {

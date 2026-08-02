@@ -7,11 +7,7 @@ import {
   rowToHost,
   rowToProfile
 } from '@consoleri/core'
-import type {
-  ConnectionProfile,
-  Host,
-  ProfileInput
-} from '../../shared/types'
+import type { ConnectionProfile, Host, ProfileInput } from '../../shared/types'
 import { getDatabase } from '../db/database'
 import { beginOperationLog } from '../logging/OperationLog'
 import { secretBackendService } from '../secrets/SecretBackendService'
@@ -194,9 +190,7 @@ export class ProfileRepository {
 
   isProfileLinkedToHost(hostId: string, profileId: string): boolean {
     const row = getDatabase()
-      .prepare(
-        'SELECT 1 FROM host_profile_links WHERE host_id = ? AND profile_id = ? LIMIT 1'
-      )
+      .prepare('SELECT 1 FROM host_profile_links WHERE host_id = ? AND profile_id = ? LIMIT 1')
       .get(hostId, profileId)
     return Boolean(row)
   }
@@ -253,7 +247,8 @@ export class ProfileRepository {
     const existing = this.getProfile(id)
     if (!existing) throw new Error(`Profile not found: ${id}`)
 
-    let credentialRef = input.credentialRef !== undefined ? input.credentialRef : existing.credentialRef
+    let credentialRef =
+      input.credentialRef !== undefined ? input.credentialRef : existing.credentialRef
     const backend = this.resolveSecretBackend(input)
     if (input.password) {
       await this.deleteCredentialRef(existing.credentialRef)

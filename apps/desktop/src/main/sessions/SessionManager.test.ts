@@ -119,7 +119,13 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockGetRegisteredSessionWindow.mockReturnValue(undefined)
   mockGetSessionIdsForWindow.mockReturnValue([])
-  mockLogAppend.mockReturnValue({ id: 'log-1', sessionId: 'sess', level: 'info', message: '', timestamp: '' })
+  mockLogAppend.mockReturnValue({
+    id: 'log-1',
+    sessionId: 'sess',
+    level: 'info',
+    message: '',
+    timestamp: ''
+  })
   manager = new SessionManager()
 })
 

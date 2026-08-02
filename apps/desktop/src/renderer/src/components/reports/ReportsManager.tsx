@@ -54,9 +54,7 @@ export function ReportsManager(): React.JSX.Element {
     await refresh()
   }
 
-  const editingReport = editingReportId
-    ? reports.find((r) => r.id === editingReportId)
-    : undefined
+  const editingReport = editingReportId ? reports.find((r) => r.id === editingReportId) : undefined
 
   const renderCreateForm = (): React.JSX.Element | null => {
     if (!creatingType) return null

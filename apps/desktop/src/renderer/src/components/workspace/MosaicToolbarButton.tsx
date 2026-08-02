@@ -82,7 +82,12 @@ function IconLog(): React.JSX.Element {
 function IconClose(): React.JSX.Element {
   return (
     <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path
+        d="M4.5 4.5l7 7M11.5 4.5l-7 7"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }

@@ -18,9 +18,11 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
   const [needsPassword, setNeedsPassword] = useState(false)
   const [openLog, setOpenLog] = useState(true)
   const [deploying, setDeploying] = useState(false)
-  const [result, setResult] = useState<{ success: boolean; message: string; logId?: string } | null>(
-    null
-  )
+  const [result, setResult] = useState<{
+    success: boolean
+    message: string
+    logId?: string
+  } | null>(null)
 
   useEffect(() => {
     window.consoleri.keys.listAssignableHosts().then((list) => {
@@ -85,8 +87,8 @@ export function DeployKeyDialog({ keyInfo, onClose }: DeployKeyDialogProps): Rea
         <h3 className="mb-3 text-base font-medium text-fg">Deploy public key</h3>
         <p className="mb-1 truncate text-xs text-muted">{keyInfo.label}</p>
         <p className="mb-3 text-xs text-muted">
-          Appends the public key to <code className="text-muted">~/.ssh/authorized_keys</code> on the
-          remote host.
+          Appends the public key to <code className="text-muted">~/.ssh/authorized_keys</code> on
+          the remote host.
         </p>
 
         {hosts.length === 0 ? (

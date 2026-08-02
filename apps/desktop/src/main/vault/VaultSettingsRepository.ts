@@ -91,7 +91,8 @@ export class VaultSettingsRepository {
       if (patch.auth.method === 'token') {
         auth = {
           method: 'token',
-          hasToken: patch.auth.hasToken ?? (current.auth.method === 'token' ? current.auth.hasToken : false)
+          hasToken:
+            patch.auth.hasToken ?? (current.auth.method === 'token' ? current.auth.hasToken : false)
         }
       } else if (patch.auth.method === 'approle') {
         auth = {
@@ -196,9 +197,10 @@ export class VaultSettingsRepository {
         namespace: settings.namespace,
         tlsSkipVerify: settings.tlsSkipVerify
       })
-      const authenticated = health.initialized && !health.sealed
-        ? await vaultAuthManager.isAuthenticated(settings)
-        : false
+      const authenticated =
+        health.initialized && !health.sealed
+          ? await vaultAuthManager.isAuthenticated(settings)
+          : false
       return {
         configured: true,
         enabled: settings.enabled,

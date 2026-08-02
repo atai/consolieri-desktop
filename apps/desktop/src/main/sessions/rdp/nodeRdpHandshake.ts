@@ -42,7 +42,12 @@ export class NodeRdpHandshake implements RdpHandshakePort {
       }
 
       tcpSocket.setTimeout(HANDSHAKE_TIMEOUT_MS, () => {
-        fail(formatTcpConnectError(host, port, { code: 'ETIMEDOUT', message: 'RDP handshake timed out' }))
+        fail(
+          formatTcpConnectError(host, port, {
+            code: 'ETIMEDOUT',
+            message: 'RDP handshake timed out'
+          })
+        )
       })
 
       tcpSocket.once('error', (err: NodeJS.ErrnoException) => {

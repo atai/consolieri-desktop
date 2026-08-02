@@ -97,11 +97,12 @@ export async function connectPane(paneId: string): Promise<void> {
   }
 
   const panes = workspace.panes.map((p) =>
-    p.paneId === paneId ? { ...p, sessionId: session.id, title: session.title, protocol: session.protocol } : p
+    p.paneId === paneId
+      ? { ...p, sessionId: session.id, title: session.title, protocol: session.protocol }
+      : p
   )
   persistWorkspace(workspace.layout as MosaicNode<string> | null, panes)
 }
-
 
 export async function openSessionAndAddToWorkspace(request: OpenSessionRequest): Promise<void> {
   const session = await openSession(request)

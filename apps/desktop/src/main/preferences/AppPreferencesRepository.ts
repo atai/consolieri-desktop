@@ -57,9 +57,9 @@ export class AppPreferencesRepository {
 
   getMapView(): MapViewSettings {
     const db = getDatabase()
-    const pref = db
-      .prepare('SELECT value FROM app_preferences WHERE key = ?')
-      .get(MAP_VIEW_KEY) as { value: string } | undefined
+    const pref = db.prepare('SELECT value FROM app_preferences WHERE key = ?').get(MAP_VIEW_KEY) as
+      | { value: string }
+      | undefined
     const normalized = parseMapViewJson(pref?.value)
     if (pref?.value) {
       try {
@@ -109,7 +109,8 @@ export class AppPreferencesRepository {
     try {
       const parsed = JSON.parse(pref.value) as Partial<AppSettings>
       return {
-        autoOpenConnectionLog: parsed.autoOpenConnectionLog ?? DEFAULT_APP_SETTINGS.autoOpenConnectionLog,
+        autoOpenConnectionLog:
+          parsed.autoOpenConnectionLog ?? DEFAULT_APP_SETTINGS.autoOpenConnectionLog,
         sessionOpenMode:
           parsed.sessionOpenMode === 'window' ? 'window' : DEFAULT_APP_SETTINGS.sessionOpenMode
       }

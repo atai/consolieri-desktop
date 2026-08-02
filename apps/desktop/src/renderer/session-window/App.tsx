@@ -86,9 +86,7 @@ export function SessionWindowApp(): React.JSX.Element {
 
     const unsubExit = window.consoleri.sessions.onExit(({ id }) => {
       releaseTerminal(id)
-      setSessions((prev) =>
-        prev.map((s) => (s.id === id ? { ...s, status: 'disconnected' } : s))
-      )
+      setSessions((prev) => prev.map((s) => (s.id === id ? { ...s, status: 'disconnected' } : s)))
     })
 
     return () => {
@@ -160,7 +158,9 @@ export function SessionWindowApp(): React.JSX.Element {
         onConnectPane={handleConnectPane}
         onClosePane={handleClosePane}
         emptyLayoutView={
-          <div className="flex h-full items-center justify-center text-sm text-muted">No session</div>
+          <div className="flex h-full items-center justify-center text-sm text-muted">
+            No session
+          </div>
         }
       />
     </div>

@@ -1,9 +1,6 @@
 import { cloudAuthService } from './CloudAuthService'
 import { getCloudConfig } from './cloudConfig'
-import {
-  isCloudBackupEnvelope,
-  type CloudBackupEnvelope
-} from './SyncCrypto'
+import { isCloudBackupEnvelope, type CloudBackupEnvelope } from './SyncCrypto'
 
 export interface CloudBackupListItem {
   id: string
@@ -59,7 +56,9 @@ export class CloudBackupClient {
       const body = await response.text().catch(() => '')
       throw new Error(`Cloud backup list failed: ${response.status} ${body.slice(0, 200)}`)
     }
-    const data = (await response.json()) as { backups?: CloudBackupListItem[] } | CloudBackupListItem[]
+    const data = (await response.json()) as
+      | { backups?: CloudBackupListItem[] }
+      | CloudBackupListItem[]
     if (Array.isArray(data)) return data
     return data.backups ?? []
   }

@@ -84,7 +84,12 @@ function createNoDelaySocket(host: string, port: number, logCtx?: SocketLogConte
       log.append(sessionId, 'debug', `${tag} TCP socket error: ${err.message}`, meta)
     })
     sock.on('close', (hadError) => {
-      log.append(sessionId, 'debug', `${tag} TCP socket closed${hadError ? ' (with error)' : ''}`, meta)
+      log.append(
+        sessionId,
+        'debug',
+        `${tag} TCP socket closed${hadError ? ' (with error)' : ''}`,
+        meta
+      )
     })
   }
 
@@ -99,7 +104,11 @@ function connectWithJump(
 ): Promise<Client> {
   return new Promise((resolve, reject) => {
     const bastion = new Client()
-    log.append(sessionId, 'info', `Connecting to jump host ${bastionConfig.host}:${bastionConfig.port}`)
+    log.append(
+      sessionId,
+      'info',
+      `Connecting to jump host ${bastionConfig.host}:${bastionConfig.port}`
+    )
     bastion
       .on('ready', () => {
         log.append(sessionId, 'info', 'Jump host ready, forwarding to target')

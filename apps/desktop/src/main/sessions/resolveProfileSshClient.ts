@@ -6,7 +6,10 @@ import { profileRepository } from '../hosts/ProfileRepository'
 import { credentialResolver, findSshProfile } from '../services/CredentialResolver'
 import { connectSshClient, connectSshViaJump, toSshConnectConfig } from './SshConnectHelper'
 
-export async function connectSshForHostProfile(host: Host, profile: ConnectionProfile): Promise<Client> {
+export async function connectSshForHostProfile(
+  host: Host,
+  profile: ConnectionProfile
+): Promise<Client> {
   if (profile.protocol !== 'ssh') {
     throw new Error('SCP requires an SSH connection profile')
   }

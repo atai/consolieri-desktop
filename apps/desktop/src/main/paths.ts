@@ -21,9 +21,7 @@ export function getProductionDataDir(): string {
 }
 
 export function getDefaultDataDir(): string {
-  return app.isPackaged
-    ? getProductionDataDir()
-    : join(app.getAppPath(), '.consoleri-dev')
+  return app.isPackaged ? getProductionDataDir() : join(app.getAppPath(), '.consoleri-dev')
 }
 
 export function getDataDir(): string {

@@ -4,7 +4,12 @@ import { isVaultRef } from '@consoleri/core'
 import type { AppImportExportService } from '../settings/AppImportExportService'
 import { localSecretBackend } from '../secrets/LocalSecretBackend'
 import { isCloudSecureRef, cloudSecureStorage } from './CloudSecureStorage'
-import { openAppDocument, sealAppDocument, syncKeyFromBase64, type CloudBackupEnvelope } from './SyncCrypto'
+import {
+  openAppDocument,
+  sealAppDocument,
+  syncKeyFromBase64,
+  type CloudBackupEnvelope
+} from './SyncCrypto'
 
 /** Marks a secret payload that was decrypted for portable (cross-machine) cloud transfer. */
 export const PORTABLE_SECRET_PREFIX = 'portable:v1:'

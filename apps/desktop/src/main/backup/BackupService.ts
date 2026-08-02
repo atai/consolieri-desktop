@@ -49,12 +49,14 @@ export class BackupService {
       const parsed = JSON.parse(row.value) as Partial<BackupSettings>
       return {
         enabled: parsed.enabled ?? DEFAULT_BACKUP_SETTINGS.enabled,
-        maxCount: typeof parsed.maxCount === 'number' && parsed.maxCount >= 1
-          ? Math.min(parsed.maxCount, 100)
-          : DEFAULT_BACKUP_SETTINGS.maxCount,
-        intervalMinutes: typeof parsed.intervalMinutes === 'number' && parsed.intervalMinutes >= 5
-          ? parsed.intervalMinutes
-          : DEFAULT_BACKUP_SETTINGS.intervalMinutes,
+        maxCount:
+          typeof parsed.maxCount === 'number' && parsed.maxCount >= 1
+            ? Math.min(parsed.maxCount, 100)
+            : DEFAULT_BACKUP_SETTINGS.maxCount,
+        intervalMinutes:
+          typeof parsed.intervalMinutes === 'number' && parsed.intervalMinutes >= 5
+            ? parsed.intervalMinutes
+            : DEFAULT_BACKUP_SETTINGS.intervalMinutes,
         lastBackupAt: typeof parsed.lastBackupAt === 'string' ? parsed.lastBackupAt : null
       }
     } catch {
@@ -64,11 +66,15 @@ export class BackupService {
 
   updateSettings(patch: unknown): BackupSettings {
     const current = this.getSettings()
-    const p = patch && typeof patch === 'object' ? patch as Partial<BackupSettings> : {}
+    const p = patch && typeof patch === 'object' ? (patch as Partial<BackupSettings>) : {}
     const next: BackupSettings = {
       enabled: typeof p.enabled === 'boolean' ? p.enabled : current.enabled,
-      maxCount: typeof p.maxCount === 'number' ? Math.max(1, Math.min(100, p.maxCount)) : current.maxCount,
-      intervalMinutes: typeof p.intervalMinutes === 'number' ? Math.max(5, p.intervalMinutes) : current.intervalMinutes,
+      maxCount:
+        typeof p.maxCount === 'number' ? Math.max(1, Math.min(100, p.maxCount)) : current.maxCount,
+      intervalMinutes:
+        typeof p.intervalMinutes === 'number'
+          ? Math.max(5, p.intervalMinutes)
+          : current.intervalMinutes,
       lastBackupAt: current.lastBackupAt
     }
     getDatabase()
@@ -82,8 +88,9 @@ export class BackupService {
 
   listBackups(): BackupInfo[] {
     if (!existsSync(this.backupDir)) return []
-    const files = readdirSync(this.backupDir)
-      .filter((f) => f.startsWith('consoleri-backup-') && f.endsWith('.json'))
+    const files = readdirSync(this.backupDir).filter(
+      (f) => f.startsWith('consoleri-backup-') && f.endsWith('.json')
+    )
     const infos: BackupInfo[] = files.map((filename) => {
       const fullPath = join(this.backupDir, filename)
       const stat = statSync(fullPath)

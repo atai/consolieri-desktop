@@ -55,9 +55,7 @@ export function InventoryResultsTable({
               <Fragment key={`${entry.hostId}-${entry.profileId}`}>
                 <tr className="border-b border-border">
                   <td className="px-3 py-2 text-sm text-fg">{hostName(entry.hostId)}</td>
-                  <td className="px-3 py-2 text-sm text-muted">
-                    {profileName(entry.profileId)}
-                  </td>
+                  <td className="px-3 py-2 text-sm text-muted">{profileName(entry.profileId)}</td>
                   <td className="max-w-[180px] truncate px-3 py-2 text-sm text-fg-2">
                     {inv?.os ?? '—'}
                   </td>

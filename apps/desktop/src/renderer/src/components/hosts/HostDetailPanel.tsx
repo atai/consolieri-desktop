@@ -67,21 +67,21 @@ export function HostDetailPanel({
           Connect
         </div>
         <div className="mb-2 flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-medium text-fg">{host.name}</div>
-          <div className="truncate text-xs text-muted">
-            {host.hostname}:{host.port}
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-medium text-fg">{host.name}</div>
+            <div className="truncate text-xs text-muted">
+              {host.hostname}:{host.port}
+            </div>
+            {host.httpEndpoint && (
+              <div className="truncate text-xs text-muted">{host.httpEndpoint}</div>
+            )}
           </div>
-          {host.httpEndpoint && (
-            <div className="truncate text-xs text-muted">{host.httpEndpoint}</div>
-          )}
-        </div>
-        <EditDeleteActions
-          resetKey={host.id}
-          onEdit={onEdit}
-          onCopy={onCopy}
-          onDelete={() => onDelete(host.id)}
-        />
+          <EditDeleteActions
+            resetKey={host.id}
+            onEdit={onEdit}
+            onCopy={onCopy}
+            onDelete={() => onDelete(host.id)}
+          />
         </div>
 
         <HostProfilesSection

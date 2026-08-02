@@ -151,7 +151,14 @@ describe('ProfileForm edit mode', () => {
 
   it('shows the protocol as static text (not a selector) in edit mode', async () => {
     await act(async () => {
-      render(<ProfileForm profile={makeProfile({ protocol: 'rdp' })} onSave={noop} onCancel={noop} hosts={[]} />)
+      render(
+        <ProfileForm
+          profile={makeProfile({ protocol: 'rdp' })}
+          onSave={noop}
+          onCancel={noop}
+          hosts={[]}
+        />
+      )
     })
     // jsdom does not apply CSS text-transform:uppercase, text content stays lowercase
     expect(screen.getByText('rdp')).toBeDefined()
@@ -161,7 +168,14 @@ describe('ProfileForm edit mode', () => {
 
   it('pre-fills the name input with the profile name', async () => {
     await act(async () => {
-      render(<ProfileForm profile={makeProfile({ name: 'My SSH Prod' })} onSave={noop} onCancel={noop} hosts={[]} />)
+      render(
+        <ProfileForm
+          profile={makeProfile({ name: 'My SSH Prod' })}
+          onSave={noop}
+          onCancel={noop}
+          hosts={[]}
+        />
+      )
     })
     const input = screen.getByDisplayValue('My SSH Prod')
     expect(input).toBeDefined()
@@ -212,7 +226,14 @@ describe('ProfileForm SSH protocol fields', () => {
 describe('ProfileForm RDP protocol fields', () => {
   it('shows Auth method and Password fields for RDP', async () => {
     await act(async () => {
-      render(<ProfileForm profile={makeProfile({ protocol: 'rdp' })} onSave={noop} onCancel={noop} hosts={[]} />)
+      render(
+        <ProfileForm
+          profile={makeProfile({ protocol: 'rdp' })}
+          onSave={noop}
+          onCancel={noop}
+          hosts={[]}
+        />
+      )
     })
     expect(screen.getAllByText('Auth method').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Password').length).toBeGreaterThan(0)
@@ -220,14 +241,28 @@ describe('ProfileForm RDP protocol fields', () => {
 
   it('shows RDP port field', async () => {
     await act(async () => {
-      render(<ProfileForm profile={makeProfile({ protocol: 'rdp' })} onSave={noop} onCancel={noop} hosts={[]} />)
+      render(
+        <ProfileForm
+          profile={makeProfile({ protocol: 'rdp' })}
+          onSave={noop}
+          onCancel={noop}
+          hosts={[]}
+        />
+      )
     })
     expect(screen.getAllByText('RDP port').length).toBeGreaterThan(0)
   })
 
   it('does NOT show Shell or Jump host fields for RDP', async () => {
     await act(async () => {
-      render(<ProfileForm profile={makeProfile({ protocol: 'rdp' })} onSave={noop} onCancel={noop} hosts={[]} />)
+      render(
+        <ProfileForm
+          profile={makeProfile({ protocol: 'rdp' })}
+          onSave={noop}
+          onCancel={noop}
+          hosts={[]}
+        />
+      )
     })
     expect(screen.queryByText('Shell')).toBeNull()
     expect(screen.queryByText('Jump host (bastion)')).toBeNull()
@@ -235,7 +270,14 @@ describe('ProfileForm RDP protocol fields', () => {
 
   it('does NOT show VNC port field', async () => {
     await act(async () => {
-      render(<ProfileForm profile={makeProfile({ protocol: 'rdp' })} onSave={noop} onCancel={noop} hosts={[]} />)
+      render(
+        <ProfileForm
+          profile={makeProfile({ protocol: 'rdp' })}
+          onSave={noop}
+          onCancel={noop}
+          hosts={[]}
+        />
+      )
     })
     expect(screen.queryByText('VNC port')).toBeNull()
   })
@@ -245,7 +287,14 @@ describe('ProfileForm RDP protocol fields', () => {
 describe('ProfileForm VNC protocol fields', () => {
   it('shows Auth method and Password fields for VNC', async () => {
     await act(async () => {
-      render(<ProfileForm profile={makeProfile({ protocol: 'vnc' })} onSave={noop} onCancel={noop} hosts={[]} />)
+      render(
+        <ProfileForm
+          profile={makeProfile({ protocol: 'vnc' })}
+          onSave={noop}
+          onCancel={noop}
+          hosts={[]}
+        />
+      )
     })
     expect(screen.getAllByText('Auth method').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Password').length).toBeGreaterThan(0)
@@ -253,14 +302,28 @@ describe('ProfileForm VNC protocol fields', () => {
 
   it('shows VNC port field', async () => {
     await act(async () => {
-      render(<ProfileForm profile={makeProfile({ protocol: 'vnc' })} onSave={noop} onCancel={noop} hosts={[]} />)
+      render(
+        <ProfileForm
+          profile={makeProfile({ protocol: 'vnc' })}
+          onSave={noop}
+          onCancel={noop}
+          hosts={[]}
+        />
+      )
     })
     expect(screen.getAllByText('VNC port').length).toBeGreaterThan(0)
   })
 
   it('does NOT show Shell, Jump host, or RDP port', async () => {
     await act(async () => {
-      render(<ProfileForm profile={makeProfile({ protocol: 'vnc' })} onSave={noop} onCancel={noop} hosts={[]} />)
+      render(
+        <ProfileForm
+          profile={makeProfile({ protocol: 'vnc' })}
+          onSave={noop}
+          onCancel={noop}
+          hosts={[]}
+        />
+      )
     })
     expect(screen.queryByText('Shell')).toBeNull()
     expect(screen.queryByText('Jump host (bastion)')).toBeNull()
@@ -272,21 +335,42 @@ describe('ProfileForm VNC protocol fields', () => {
 describe('ProfileForm WSL protocol fields', () => {
   it('shows Shell field for WSL', async () => {
     await act(async () => {
-      render(<ProfileForm profile={makeProfile({ protocol: 'wsl' })} onSave={noop} onCancel={noop} hosts={[]} />)
+      render(
+        <ProfileForm
+          profile={makeProfile({ protocol: 'wsl' })}
+          onSave={noop}
+          onCancel={noop}
+          hosts={[]}
+        />
+      )
     })
     expect(screen.getAllByText('Shell').length).toBeGreaterThan(0)
   })
 
   it('does NOT show Auth method for WSL', async () => {
     await act(async () => {
-      render(<ProfileForm profile={makeProfile({ protocol: 'wsl' })} onSave={noop} onCancel={noop} hosts={[]} />)
+      render(
+        <ProfileForm
+          profile={makeProfile({ protocol: 'wsl' })}
+          onSave={noop}
+          onCancel={noop}
+          hosts={[]}
+        />
+      )
     })
     expect(screen.queryByText('Auth method')).toBeNull()
   })
 
   it('does NOT show RDP port, VNC port, or Jump host for WSL', async () => {
     await act(async () => {
-      render(<ProfileForm profile={makeProfile({ protocol: 'wsl' })} onSave={noop} onCancel={noop} hosts={[]} />)
+      render(
+        <ProfileForm
+          profile={makeProfile({ protocol: 'wsl' })}
+          onSave={noop}
+          onCancel={noop}
+          hosts={[]}
+        />
+      )
     })
     expect(screen.queryByText('RDP port')).toBeNull()
     expect(screen.queryByText('VNC port')).toBeNull()

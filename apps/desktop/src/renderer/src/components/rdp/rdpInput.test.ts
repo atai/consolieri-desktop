@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  canvasPointerPosition,
-  resolveRdpScancode,
-  wheelRotationAmount
-} from './rdpInput'
+import { canvasPointerPosition, resolveRdpScancode, wheelRotationAmount } from './rdpInput'
 
 describe('resolveRdpScancode', () => {
   it('maps common keys', () => {

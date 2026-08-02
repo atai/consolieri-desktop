@@ -7,7 +7,10 @@ interface ResizableSidebarProps {
   expanded?: boolean
 }
 
-export function ResizableSidebar({ children, expanded = false }: ResizableSidebarProps): React.JSX.Element {
+export function ResizableSidebar({
+  children,
+  expanded = false
+}: ResizableSidebarProps): React.JSX.Element {
   const { sidebarWidth, setSidebarWidth } = useAppStore()
   const dragging = useRef(false)
   const startX = useRef(0)
@@ -44,9 +47,7 @@ export function ResizableSidebar({ children, expanded = false }: ResizableSideba
 
   if (expanded) {
     return (
-      <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-        {children}
-      </div>
+      <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">{children}</div>
     )
   }
 

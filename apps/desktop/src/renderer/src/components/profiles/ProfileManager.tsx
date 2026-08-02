@@ -81,10 +81,7 @@ export function ProfileManager(): React.JSX.Element {
     const linkedFromApi = profileHosts.get(profile.id) ?? []
     const linkedHosts =
       filterHost && profiles.some((p) => p.id === profile.id)
-        ? [
-            filterHost,
-            ...linkedFromApi.filter((h) => h.id !== filterHost.id)
-          ]
+        ? [filterHost, ...linkedFromApi.filter((h) => h.id !== filterHost.id)]
         : linkedFromApi
     const editHost = filterHost ?? linkedHosts[0]
 
@@ -113,9 +110,7 @@ export function ProfileManager(): React.JSX.Element {
         showLinkedHosts
         onEdit={() => setEditingProfileId(profile.id)}
         onDelete={() => handleDelete(profile)}
-        onUnlink={
-          hostFilter ? () => handleUnlink(profile, hostFilter) : undefined
-        }
+        onUnlink={hostFilter ? () => handleUnlink(profile, hostFilter) : undefined}
         deleteLabel={hostFilter ? 'Remove' : 'Delete'}
         confirmDeleteLabel={hostFilter ? 'Remove' : 'Delete'}
       />

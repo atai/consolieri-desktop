@@ -12,7 +12,8 @@ export function registerVaultIpc(_getWindow: () => BrowserWindow | null): void {
     return vaultSettingsRepository.getSettings()
   })
 
-  ipcMain.handle(IPC_CHANNELS.vaultUpdateSettings,
+  ipcMain.handle(
+    IPC_CHANNELS.vaultUpdateSettings,
     createHandler(VaultSettingsUpdateSchema, async (patch: VaultSettingsUpdate) => {
       const next = await vaultSettingsRepository.updateSettings(patch)
       scheduleCloudUpload()

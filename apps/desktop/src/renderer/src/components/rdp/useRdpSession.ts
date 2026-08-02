@@ -77,8 +77,14 @@ export function useRdpSession({
 
       try {
         const ironrdp = await ensureIronRdpReady()
-        const { SessionBuilder, DesktopSize, Extension, DeviceEvent, InputTransaction, RotationUnit } =
-          ironrdp
+        const {
+          SessionBuilder,
+          DesktopSize,
+          Extension,
+          DeviceEvent,
+          InputTransaction,
+          RotationUnit
+        } = ironrdp
 
         const container = containerRef.current ?? canvas
         const rect = container.getBoundingClientRect()
@@ -132,11 +138,11 @@ export function useRdpSession({
           `RDP desktop ready (${remoteSize.width}×${remoteSize.height})`
         )
 
-        inputCleanupRef.current = attachInputHandlers(
-          canvas,
-          () => sessionRef.current,
-          { DeviceEvent, InputTransaction, RotationUnit }
-        )
+        inputCleanupRef.current = attachInputHandlers(canvas, () => sessionRef.current, {
+          DeviceEvent,
+          InputTransaction,
+          RotationUnit
+        })
 
         if (containerRef.current) {
           resizeObserverRef.current = new ResizeObserver(() => {
@@ -146,7 +152,10 @@ export function useRdpSession({
 
             const nextRect = (containerRef.current ?? currentCanvas).getBoundingClientRect()
             const nextSize = normalizeDesktopSize(nextRect.width, nextRect.height)
-            if (nextSize.width === currentCanvas.width && nextSize.height === currentCanvas.height) {
+            if (
+              nextSize.width === currentCanvas.width &&
+              nextSize.height === currentCanvas.height
+            ) {
               return
             }
 
@@ -156,23 +165,30 @@ export function useRdpSession({
           resizeObserverRef.current.observe(containerRef.current)
         }
 
-        void activeSession.run().then((info) => {
-          if (!cancelled) {
-            const reason = info.reason()
-            setStatus('disconnected')
-            if (reason) {
-              setError(reason)
-              void window.consoleri.sessions.appendLog(session.id, 'info', `RDP session ended: ${reason}`)
+        void activeSession
+          .run()
+          .then((info) => {
+            if (!cancelled) {
+              const reason = info.reason()
+              setStatus('disconnected')
+              if (reason) {
+                setError(reason)
+                void window.consoleri.sessions.appendLog(
+                  session.id,
+                  'info',
+                  `RDP session ended: ${reason}`
+                )
+              }
             }
-          }
-        }).catch((err: unknown) => {
-          if (!cancelled) {
-            const message = formatIronError(err)
-            setError(message)
-            setStatus('error')
-            logRdpError(session.id, err, 'session', window.consoleri.sessions.appendLog)
-          }
-        })
+          })
+          .catch((err: unknown) => {
+            if (!cancelled) {
+              const message = formatIronError(err)
+              setError(message)
+              setStatus('error')
+              logRdpError(session.id, err, 'session', window.consoleri.sessions.appendLog)
+            }
+          })
       } catch (err) {
         if (!cancelled) {
           const message = formatIronError(err)

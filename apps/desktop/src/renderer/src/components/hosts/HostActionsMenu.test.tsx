@@ -75,7 +75,14 @@ describe('HostActionsMenu local shells', () => {
         onImport={noop}
         onExport={noop}
         onOpenLocalShell={noop}
-        availableLocalShells={{ powershell: false, bash: true, zsh: true, sh: true, cmd: false, pwsh: false }}
+        availableLocalShells={{
+          powershell: false,
+          bash: true,
+          zsh: true,
+          sh: true,
+          cmd: false,
+          pwsh: false
+        }}
         wslDistros={[]}
         onOpenWsl={noop}
       />
@@ -89,4 +96,3 @@ describe('HostActionsMenu local shells', () => {
     expect(screen.queryByRole('menuitem', { name: 'PowerShell' })).toBeNull()
   })
 })
-

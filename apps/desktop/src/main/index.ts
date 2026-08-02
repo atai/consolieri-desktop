@@ -19,126 +19,129 @@ const gotSingleInstanceLock = app.requestSingleInstanceLock()
 if (!gotSingleInstanceLock) {
   app.quit()
 } else {
-let mainWindow: BrowserWindow | null = null
-const SHOW_FALLBACK_MS = 2500
+  let mainWindow: BrowserWindow | null = null
+  const SHOW_FALLBACK_MS = 2500
 
-function isMainWindowAlive(): boolean {
-  return mainWindow !== null && !mainWindow.isDestroyed()
-}
-
-function showAndFocusMainWindow(): void {
-  if (!isMainWindowAlive()) {
-    createWindow()
-    return
+  function isMainWindowAlive(): boolean {
+    return mainWindow !== null && !mainWindow.isDestroyed()
   }
 
-  if (mainWindow!.isMinimized()) mainWindow!.restore()
-  mainWindow!.show()
-  mainWindow!.focus()
-}
-
-function createWindow(): void {
-  mainWindow = new BrowserWindow({
-    width: 1400,
-    height: 900,
-    minWidth: 900,
-    minHeight: 600,
-    show: false,
-    autoHideMenuBar: true,
-    title: APP_NAME,
-    icon: appIconPath(),
-    backgroundColor: CHROME_BG_HEX,
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
-      contextIsolation: true,
-      nodeIntegration: false
+  function showAndFocusMainWindow(): void {
+    if (!isMainWindowAlive()) {
+      createWindow()
+      return
     }
-  })
 
-  let shown = false
-  let showFallbackTimer: ReturnType<typeof setTimeout> | undefined
-
-  const reveal = (): void => {
-    if (shown || !isMainWindowAlive()) return
-    shown = true
-    if (showFallbackTimer !== undefined) clearTimeout(showFallbackTimer)
+    if (mainWindow!.isMinimized()) mainWindow!.restore()
     mainWindow!.show()
     mainWindow!.focus()
   }
 
-  showFallbackTimer = setTimeout(() => {
-    if (!shown) {
-      console.warn('[main] Window ready-to-show timed out; forcing show')
-      reveal()
-    }
-  }, SHOW_FALLBACK_MS)
-
-  mainWindow.on('ready-to-show', reveal)
-
-  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
-    console.error(
-      `[main] Failed to load window content (${errorCode}): ${errorDescription} (${validatedURL})`
-    )
-    reveal()
-  })
-
-  mainWindow.on('closed', () => {
-    if (showFallbackTimer !== undefined) clearTimeout(showFallbackTimer)
-    mainWindow = null
-    app.quit()
-  })
-
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
-  })
-
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-  } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-  }
-
-  sessionManager.setWindow(mainWindow)
-}
-
-app.on('second-instance', () => {
-  showAndFocusMainWindow()
-})
-
-app.whenReady().then(() => {
-  try {
-    electronApp.setAppUserModelId('com.consoleri.desktop')
-    if (process.platform === 'darwin') {
-      app.dock?.setIcon(appIconPath())
-    }
-    getDatabase()
-
-    app.on('browser-window-created', (_, window) => {
-      optimizer.watchWindowShortcuts(window)
+  function createWindow(): void {
+    mainWindow = new BrowserWindow({
+      width: 1400,
+      height: 900,
+      minWidth: 900,
+      minHeight: 600,
+      show: false,
+      autoHideMenuBar: true,
+      title: APP_NAME,
+      icon: appIconPath(),
+      backgroundColor: CHROME_BG_HEX,
+      webPreferences: {
+        preload: join(__dirname, '../preload/index.js'),
+        sandbox: false,
+        contextIsolation: true,
+        nodeIntegration: false
+      }
     })
 
-    registerIpcHandlers(() => mainWindow)
-    backupService.startScheduler()
-  } catch (error) {
-    console.error('[main] Startup initialization failed:', error)
+    let shown = false
+    let showFallbackTimer: ReturnType<typeof setTimeout> | undefined
+
+    const reveal = (): void => {
+      if (shown || !isMainWindowAlive()) return
+      shown = true
+      if (showFallbackTimer !== undefined) clearTimeout(showFallbackTimer)
+      mainWindow!.show()
+      mainWindow!.focus()
+    }
+
+    showFallbackTimer = setTimeout(() => {
+      if (!shown) {
+        console.warn('[main] Window ready-to-show timed out; forcing show')
+        reveal()
+      }
+    }, SHOW_FALLBACK_MS)
+
+    mainWindow.on('ready-to-show', reveal)
+
+    mainWindow.webContents.on(
+      'did-fail-load',
+      (_event, errorCode, errorDescription, validatedURL) => {
+        console.error(
+          `[main] Failed to load window content (${errorCode}): ${errorDescription} (${validatedURL})`
+        )
+        reveal()
+      }
+    )
+
+    mainWindow.on('closed', () => {
+      if (showFallbackTimer !== undefined) clearTimeout(showFallbackTimer)
+      mainWindow = null
+      app.quit()
+    })
+
+    mainWindow.webContents.setWindowOpenHandler((details) => {
+      shell.openExternal(details.url)
+      return { action: 'deny' }
+    })
+
+    if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+      mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    } else {
+      mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    }
+
+    sessionManager.setWindow(mainWindow)
   }
 
-  createWindow()
-
-  app.on('activate', () => {
+  app.on('second-instance', () => {
     showAndFocusMainWindow()
   })
-})
 
-app.on('before-quit', () => {
-  backupService.stopScheduler()
-  sessionManager.closeAll()
-  closeDatabase()
-})
+  app.whenReady().then(() => {
+    try {
+      electronApp.setAppUserModelId('com.consoleri.desktop')
+      if (process.platform === 'darwin') {
+        app.dock?.setIcon(appIconPath())
+      }
+      getDatabase()
 
-app.on('window-all-closed', () => {
-  app.quit()
-})
+      app.on('browser-window-created', (_, window) => {
+        optimizer.watchWindowShortcuts(window)
+      })
+
+      registerIpcHandlers(() => mainWindow)
+      backupService.startScheduler()
+    } catch (error) {
+      console.error('[main] Startup initialization failed:', error)
+    }
+
+    createWindow()
+
+    app.on('activate', () => {
+      showAndFocusMainWindow()
+    })
+  })
+
+  app.on('before-quit', () => {
+    backupService.stopScheduler()
+    sessionManager.closeAll()
+    closeDatabase()
+  })
+
+  app.on('window-all-closed', () => {
+    app.quit()
+  })
 }

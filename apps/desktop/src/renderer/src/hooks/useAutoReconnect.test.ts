@@ -82,11 +82,7 @@ describe('enable and disable', () => {
     act(() => result.current.disable())
 
     expect(result.current.autoEnabled).toBe(false)
-    expect(mockAppendLog).toHaveBeenCalledWith(
-      session.id,
-      'info',
-      'Auto-reconnect stopped by user'
-    )
+    expect(mockAppendLog).toHaveBeenCalledWith(session.id, 'info', 'Auto-reconnect stopped by user')
   })
 
   it('enable includes unlimited-attempts label when maxAttempts is 0', () => {
@@ -253,4 +249,3 @@ describe('session change resets counters', () => {
     expect(result.current.attemptsDone).toBe(0)
   })
 })
-

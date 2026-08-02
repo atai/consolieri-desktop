@@ -1,5 +1,14 @@
 import { BrowserWindow } from 'electron'
-import type { CustomTestConfig, CustomTestHostResult, ConnectivityTestHostResult, InventoryHostResult, ReportConfig, ReportProgressEvent, ReportResult, ReportType } from '@consoleri/core'
+import type {
+  CustomTestConfig,
+  CustomTestHostResult,
+  ConnectivityTestHostResult,
+  InventoryHostResult,
+  ReportConfig,
+  ReportProgressEvent,
+  ReportResult,
+  ReportType
+} from '@consoleri/core'
 import { IPC_CHANNELS } from '../../shared/types'
 import { connectivityProbe } from './ConnectivityProbe'
 import { customTestProbe } from './CustomTestProbe'
@@ -64,7 +73,8 @@ export class ReportRunner {
 
     const entries = report.config.entries
     const runAt = new Date().toISOString()
-    const results: Array<ConnectivityTestHostResult | InventoryHostResult | CustomTestHostResult> = []
+    const results: Array<ConnectivityTestHostResult | InventoryHostResult | CustomTestHostResult> =
+      []
 
     for (let index = 0; index < entries.length; index++) {
       const entry = entries[index]!

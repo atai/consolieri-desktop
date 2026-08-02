@@ -53,7 +53,8 @@ export function ReportHostEntriesSection({
     const newEntries = [...entries]
     for (const pick of picked) {
       if (newEntries.some((e) => e.hostId === pick.hostId)) continue
-      const sshProfiles = profilesByHost.get(pick.hostId) ?? (await loadProfilesForHost(pick.hostId))
+      const sshProfiles =
+        profilesByHost.get(pick.hostId) ?? (await loadProfilesForHost(pick.hostId))
       if (sshProfiles.length === 0) continue
       const profileId =
         sshProfiles.length === 1
@@ -106,9 +107,7 @@ export function ReportHostEntriesSection({
                   <tr key={entry.hostId} className="border-b border-border last:border-0">
                     <td className="px-2 py-1.5 text-fg">
                       {host?.name ?? entry.hostId}
-                      {host && (
-                        <span className="ml-1 text-xs text-muted">({host.hostname})</span>
-                      )}
+                      {host && <span className="ml-1 text-xs text-muted">({host.hostname})</span>}
                     </td>
                     <td className="px-2 py-1.5">
                       {sshProfiles.length <= 1 ? (

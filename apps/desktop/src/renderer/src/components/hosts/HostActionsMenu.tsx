@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import type { LocalShellAvailability, LocalShellExecutableType } from '@shared/types'
 
-const LOCAL_SHELL_ORDER: LocalShellExecutableType[] = ['powershell', 'pwsh', 'cmd', 'bash', 'zsh', 'sh']
+const LOCAL_SHELL_ORDER: LocalShellExecutableType[] = [
+  'powershell',
+  'pwsh',
+  'cmd',
+  'bash',
+  'zsh',
+  'sh'
+]
 
 const LOCAL_SHELL_LABELS: Record<LocalShellExecutableType, string> = {
   powershell: 'PowerShell',

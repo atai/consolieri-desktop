@@ -15,29 +15,30 @@ import { workspaceRepository } from '../hosts/WorkspaceRepository'
 import { listWslDistros } from '../sessions/shellUtils'
 import { openLogWindow } from '../windows/LogWindow'
 import { openSessionWindow } from '../windows/SessionWindow'
-import {
-  isRegisteredSessionWindow,
-  registerSessionWindow
-} from '../windows/SessionWindowRegistry'
+import { isRegisteredSessionWindow, registerSessionWindow } from '../windows/SessionWindowRegistry'
 
 export function registerSessionIpc(getWindow: () => BrowserWindow | null): void {
   // ── sessions ───────────────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC_CHANNELS.sessionsOpen, async (event, rawRequest: unknown, cols?: number, rows?: number) => {
-    const request = OpenSessionRequestSchema.parse(rawRequest)
-    const win = getWindow()
-    if (win) sessionManager.setWindow(win)
-    const session = sessionManager.open(request, cols, rows)
+  ipcMain.handle(
+    IPC_CHANNELS.sessionsOpen,
+    async (event, rawRequest: unknown, cols?: number, rows?: number) => {
+      const request = OpenSessionRequestSchema.parse(rawRequest)
+      const win = getWindow()
+      if (win) sessionManager.setWindow(win)
+      const session = sessionManager.open(request, cols, rows)
 
-    const senderWindow = BrowserWindow.fromWebContents(event.sender)
-    if (senderWindow && isRegisteredSessionWindow(senderWindow)) {
-      registerSessionWindow(session.id, senderWindow)
+      const senderWindow = BrowserWindow.fromWebContents(event.sender)
+      if (senderWindow && isRegisteredSessionWindow(senderWindow)) {
+        registerSessionWindow(session.id, senderWindow)
+      }
+
+      return session
     }
+  )
 
-    return session
-  })
-
-  ipcMain.handle(IPC_CHANNELS.sessionsClose,
+  ipcMain.handle(
+    IPC_CHANNELS.sessionsClose,
     createHandler(Id, (sessionId: string) => {
       sessionManager.close(sessionId)
       return Promise.resolve()
@@ -66,26 +67,26 @@ export function registerSessionIpc(getWindow: () => BrowserWindow | null): void 
     return session
   })
 
-  ipcMain.handle(IPC_CHANNELS.sessionsGetConnectRequest,
+  ipcMain.handle(
+    IPC_CHANNELS.sessionsGetConnectRequest,
     createHandler(Id, (sessionId: string) =>
       Promise.resolve(sessionManager.getConnectRequest(sessionId))
     )
   )
 
   // Credential retrieval is restricted to non-empty profileId (no arbitrary lookup)
-  ipcMain.handle(IPC_CHANNELS.sessionsRdpCredentials,
-    createHandler(Id, (profileId: string) =>
-      sessionManager.getCredentialsForRdp(profileId)
-    )
+  ipcMain.handle(
+    IPC_CHANNELS.sessionsRdpCredentials,
+    createHandler(Id, (profileId: string) => sessionManager.getCredentialsForRdp(profileId))
   )
 
-  ipcMain.handle(IPC_CHANNELS.sessionsVncPassword,
-    createHandler(Id, (profileId: string) =>
-      sessionManager.getCredentialsForVnc(profileId)
-    )
+  ipcMain.handle(
+    IPC_CHANNELS.sessionsVncPassword,
+    createHandler(Id, (profileId: string) => sessionManager.getCredentialsForVnc(profileId))
   )
 
-  ipcMain.handle(IPC_CHANNELS.sessionsSnapshot,
+  ipcMain.handle(
+    IPC_CHANNELS.sessionsSnapshot,
     createHandler(SessionSnapshotSchema, (snapshot) => {
       workspaceRepository.saveSessionSnapshot(snapshot)
       return Promise.resolve()
@@ -94,13 +95,15 @@ export function registerSessionIpc(getWindow: () => BrowserWindow | null): void 
 
   // ── session logs ───────────────────────────────────────────────────────────
 
-  ipcMain.handle(IPC_CHANNELS.sessionsLogGet,
+  ipcMain.handle(
+    IPC_CHANNELS.sessionsLogGet,
     createHandler(Id, (sessionId: string) =>
       Promise.resolve(sessionManager.getLogEntries(sessionId))
     )
   )
 
-  ipcMain.handle(IPC_CHANNELS.sessionsLogAppend,
+  ipcMain.handle(
+    IPC_CHANNELS.sessionsLogAppend,
     createHandler(
       z.tuple([Id, LogLevelSchema, z.string()]),
       ([sessionId, level, message]: [string, 'debug' | 'info' | 'warn' | 'error', string]) => {
@@ -110,14 +113,16 @@ export function registerSessionIpc(getWindow: () => BrowserWindow | null): void 
     )
   )
 
-  ipcMain.handle(IPC_CHANNELS.sessionsLogOpenWindow,
+  ipcMain.handle(
+    IPC_CHANNELS.sessionsLogOpenWindow,
     createHandler(Id, (sessionId: string) => {
       openLogWindow(sessionId, getWindow())
       return Promise.resolve()
     })
   )
 
-  ipcMain.handle(IPC_CHANNELS.sessionsOpenSessionWindow,
+  ipcMain.handle(
+    IPC_CHANNELS.sessionsOpenSessionWindow,
     createHandler(Id, (sessionId: string) => {
       openSessionWindow(sessionId)
       return Promise.resolve()
@@ -139,4 +144,3 @@ export function registerSessionIpc(getWindow: () => BrowserWindow | null): void 
 
   ipcMain.handle(IPC_CHANNELS.workspaceGetActive, () => workspaceRepository.getActiveWorkspace())
 }
-

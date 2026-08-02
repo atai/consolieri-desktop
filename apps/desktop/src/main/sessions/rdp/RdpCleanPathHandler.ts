@@ -5,7 +5,13 @@ import {
   buildRdpDestination,
   parseRDCleanPathRequest
 } from '@consoleri/core'
-import type { AllowedTarget, RdpHandshakePort, RdpLogFn, RdpRelayPort, WebSocketLike } from './types'
+import type {
+  AllowedTarget,
+  RdpHandshakePort,
+  RdpLogFn,
+  RdpRelayPort,
+  WebSocketLike
+} from './types'
 
 export interface RdpCleanPathHandlerDeps {
   allowedTarget: AllowedTarget

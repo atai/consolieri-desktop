@@ -19,9 +19,7 @@ export function createPaneBinding(
   }
 }
 
-export async function openMosaicSession(
-  request: OpenSessionRequest
-): Promise<SessionInfo | null> {
+export async function openMosaicSession(request: OpenSessionRequest): Promise<SessionInfo | null> {
   const api = getConsoleriApi()
   const session = await api.sessions.open(request)
 
@@ -59,7 +57,11 @@ export async function splitMosaicPane(
   panes: PaneBinding[],
   sourcePaneId: string,
   direction: 'row' | 'column'
-): Promise<{ layout: MosaicNode<string> | null; panes: PaneBinding[]; sessions: SessionInfo[] } | null> {
+): Promise<{
+  layout: MosaicNode<string> | null
+  panes: PaneBinding[]
+  sessions: SessionInfo[]
+} | null> {
   const sourceBinding = panes.find((p) => p.paneId === sourcePaneId)
   if (!sourceBinding || !layout) return null
 

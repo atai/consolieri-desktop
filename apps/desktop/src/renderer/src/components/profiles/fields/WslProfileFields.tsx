@@ -5,7 +5,10 @@ interface WslProfileFieldsProps {
   onShellChange: (v: string) => void
 }
 
-export function WslProfileFields({ shell, onShellChange }: WslProfileFieldsProps): React.JSX.Element {
+export function WslProfileFields({
+  shell,
+  onShellChange
+}: WslProfileFieldsProps): React.JSX.Element {
   return (
     <FormField
       label="Shell"

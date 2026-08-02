@@ -1,9 +1,6 @@
 import { useId } from 'react'
 import type { ConnectionProfile, Host, ProfileInput, Protocol } from '@shared/types'
-import {
-  SCROLLABLE_FORM_MAX_HEIGHT_COMPACT,
-  ScrollableFormShell
-} from '../ui/ScrollableFormShell'
+import { SCROLLABLE_FORM_MAX_HEIGHT_COMPACT, ScrollableFormShell } from '../ui/ScrollableFormShell'
 import { useProfileFormState } from './useProfileFormState'
 import { FormField, LabeledSelect, INPUT_CLASS } from './fields/FormField'
 import { AuthFields } from './fields/AuthFields'
@@ -55,25 +52,39 @@ export function ProfileForm({
 
   const {
     isEdit,
-    name, setName,
-    protocol, setProtocol,
-    username, setUsername,
-    authMethod, setAuthMethod,
-    password, setPassword,
-    privateKey, setPrivateKey,
-    selectedKeyPath, setSelectedKeyPath,
+    name,
+    setName,
+    protocol,
+    setProtocol,
+    username,
+    setUsername,
+    authMethod,
+    setAuthMethod,
+    password,
+    setPassword,
+    privateKey,
+    setPrivateKey,
+    selectedKeyPath,
+    setSelectedKeyPath,
     sshKeys,
-    shell, setShell,
-    jumpHostId, setJumpHostId,
-    rdpPort, setRdpPort,
-    vncPort, setVncPort,
-    isDefault, setIsDefault,
+    shell,
+    setShell,
+    jumpHostId,
+    setJumpHostId,
+    rdpPort,
+    setRdpPort,
+    vncPort,
+    setVncPort,
+    isDefault,
+    setIsDefault,
     cloneFromProfileId,
-    showPickDialog, setShowPickDialog,
+    showPickDialog,
+    setShowPickDialog,
     saving,
     formErrors,
     vaultEnabled,
-    secretBackend, setSecretBackend,
+    secretBackend,
+    setSecretBackend,
     supportsAuth,
     jumpHostOptions,
     handlePickKeyFile,
@@ -138,11 +149,7 @@ export function ProfileForm({
           )}
 
           <FormField label="Name">
-            <input
-              className={INPUT_CLASS}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <input className={INPUT_CLASS} value={name} onChange={(e) => setName(e.target.value)} />
           </FormField>
 
           <FormField label="Protocol">
@@ -155,7 +162,9 @@ export function ProfileForm({
                 onChange={(e) => setProtocol(e.target.value as Protocol)}
               >
                 {PROTOCOLS.map((p) => (
-                  <option key={p} value={p}>{p}</option>
+                  <option key={p} value={p}>
+                    {p}
+                  </option>
                 ))}
               </select>
             )}
@@ -173,10 +182,12 @@ export function ProfileForm({
             <LabeledSelect
               label="Auth method"
               value={authMethod}
-              onChange={(v) => setAuthMethod(v as typeof AUTH_METHODS[number])}
+              onChange={(v) => setAuthMethod(v as (typeof AUTH_METHODS)[number])}
             >
               {AUTH_METHODS.map((m) => (
-                <option key={m} value={m}>{m}</option>
+                <option key={m} value={m}>
+                  {m}
+                </option>
               ))}
             </LabeledSelect>
           )}
@@ -218,9 +229,7 @@ export function ProfileForm({
             <VncProfileFields vncPort={vncPort} onVncPortChange={setVncPort} />
           )}
 
-          {protocol === 'wsl' && (
-            <WslProfileFields shell={shell} onShellChange={setShell} />
-          )}
+          {protocol === 'wsl' && <WslProfileFields shell={shell} onShellChange={setShell} />}
 
           {isEdit && linkHostId && host && (
             <label className="flex cursor-pointer items-center gap-2 text-muted">

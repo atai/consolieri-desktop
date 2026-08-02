@@ -58,11 +58,11 @@ export function MosaicWorkspace(): React.JSX.Element {
   }
 
   const handleClosePane = (paneId: string): void => {
-    const { layout: nextLayout, panes: nextPanes, closedSessionId } = closeMosaicPane(
-      layout,
-      workspace.panes,
-      paneId
-    )
+    const {
+      layout: nextLayout,
+      panes: nextPanes,
+      closedSessionId
+    } = closeMosaicPane(layout, workspace.panes, paneId)
     if (closedSessionId) {
       removeSession(closedSessionId)
     }

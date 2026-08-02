@@ -56,9 +56,6 @@ export function resizeTerminal(sessionId: string): void {
   terminalService.resizeTerminal(sessionId)
 }
 
-export function applyTerminalAppearance(
-  sessionId: string,
-  appearance: TerminalAppearance
-): void {
+export function applyTerminalAppearance(sessionId: string, appearance: TerminalAppearance): void {
   terminalService.applyAppearance(sessionId, appearance)
 }

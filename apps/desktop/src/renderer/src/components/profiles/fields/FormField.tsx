@@ -14,8 +14,7 @@ export function FormField({ label, children, hint }: FormFieldProps): React.JSX.
   )
 }
 
-const INPUT_CLASS =
-  'mt-1 w-full rounded-sm border border-border bg-bg px-2 py-1.5 text-fg'
+const INPUT_CLASS = 'mt-1 w-full rounded-sm border border-border bg-bg px-2 py-1.5 text-fg'
 
 interface LabeledSelectProps {
   label: string
@@ -24,14 +23,15 @@ interface LabeledSelectProps {
   children: React.ReactNode
 }
 
-export function LabeledSelect({ label, value, onChange, children }: LabeledSelectProps): React.JSX.Element {
+export function LabeledSelect({
+  label,
+  value,
+  onChange,
+  children
+}: LabeledSelectProps): React.JSX.Element {
   return (
     <FormField label={label}>
-      <select
-        className={INPUT_CLASS}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      >
+      <select className={INPUT_CLASS} value={value} onChange={(e) => onChange(e.target.value)}>
         {children}
       </select>
     </FormField>

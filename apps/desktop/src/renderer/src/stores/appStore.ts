@@ -68,7 +68,9 @@ interface AppState {
   refreshGroups: () => Promise<void>
 }
 
-function syncHostListViewFields(view: HostListViewSettings): Pick<
+function syncHostListViewFields(
+  view: HostListViewSettings
+): Pick<
   AppState,
   | 'hostListView'
   | 'selectedTags'

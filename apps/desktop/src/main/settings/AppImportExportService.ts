@@ -190,9 +190,11 @@ export class AppImportExportService {
           layout: doc.workspace.layout,
           panes
         })
-        db.prepare(
-          'UPDATE workspaces SET name=?, layout_json=? WHERE id=?'
-        ).run(doc.workspace.name, layoutJson, ws.id)
+        db.prepare('UPDATE workspaces SET name=?, layout_json=? WHERE id=?').run(
+          doc.workspace.name,
+          layoutJson,
+          ws.id
+        )
         db.prepare('DELETE FROM workspace_panes WHERE workspace_id = ?').run(ws.id)
       }
 

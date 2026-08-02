@@ -40,7 +40,9 @@ export function KeyListItem({
 
       {(keyInfo.keyType || keyInfo.fingerprint) && (
         <div className="mb-2 text-xs text-muted">
-          {keyInfo.keyType && <span className="mr-2 uppercase">{keyInfo.keyType.replace('ssh-', '')}</span>}
+          {keyInfo.keyType && (
+            <span className="mr-2 uppercase">{keyInfo.keyType.replace('ssh-', '')}</span>
+          )}
           {keyInfo.fingerprint && (
             <span className="font-mono" title={keyInfo.fingerprint}>
               {keyInfo.fingerprint.slice(0, 20)}…

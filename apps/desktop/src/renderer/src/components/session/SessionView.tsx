@@ -98,9 +98,7 @@ function ErrorPane({
                 min={1}
                 max={3600}
                 value={ar.intervalSec}
-                onChange={(e) =>
-                  ar.setIntervalSec(Math.max(1, parseInt(e.target.value, 10) || 1))
-                }
+                onChange={(e) => ar.setIntervalSec(Math.max(1, parseInt(e.target.value, 10) || 1))}
                 className="w-14 rounded border border-border bg-bg px-1.5 py-0.5 text-center"
               />
               <span className="text-muted">s, stop after</span>
@@ -108,9 +106,7 @@ function ErrorPane({
                 type="number"
                 min={0}
                 value={ar.maxAttempts}
-                onChange={(e) =>
-                  ar.setMaxAttempts(Math.max(0, parseInt(e.target.value, 10) || 0))
-                }
+                onChange={(e) => ar.setMaxAttempts(Math.max(0, parseInt(e.target.value, 10) || 0))}
                 className="w-14 rounded border border-border bg-bg px-1.5 py-0.5 text-center"
               />
               <span className="text-muted">tries (0=∞)</span>

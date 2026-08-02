@@ -44,7 +44,7 @@ export class SshKeyDeployer {
 
     const profiles = profileRepository.listProfiles(host.id).filter((p) => p.protocol === 'ssh')
     const profile = request.profileId
-      ? profiles.find((p) => p.id === request.profileId) ?? null
+      ? (profiles.find((p) => p.id === request.profileId) ?? null)
       : findSshProfile(profiles, null)
 
     if (!profile) {

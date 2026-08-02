@@ -51,7 +51,10 @@ function makeCanvas() {
     }),
     removeEventListener: vi.fn((type: string, handler: EventListener) => {
       const list = listeners.get(type) ?? []
-      listeners.set(type, list.filter((h) => h !== handler))
+      listeners.set(
+        type,
+        list.filter((h) => h !== handler)
+      )
     }),
     _listeners: listeners
   }
@@ -125,7 +128,11 @@ describe('attachInputHandlers: input event forwarding', () => {
     const api = makeIronRdpApi()
     const fakeSession = { applyInputs: vi.fn() }
 
-    attachInputHandlers(canvas, () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession, api)
+    attachInputHandlers(
+      canvas,
+      () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession,
+      api
+    )
     const handlers = canvas._listeners.get('keydown') ?? []
     handlers[0](new KeyboardEvent('keydown', { code: 'Enter' }))
 
@@ -137,7 +144,11 @@ describe('attachInputHandlers: input event forwarding', () => {
     const api = makeIronRdpApi()
     const fakeSession = { applyInputs: vi.fn() }
 
-    attachInputHandlers(canvas, () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession, api)
+    attachInputHandlers(
+      canvas,
+      () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession,
+      api
+    )
     const handlers = canvas._listeners.get('keydown') ?? []
 
     handlers[0](new KeyboardEvent('keydown', { code: 'UnknownKey12345' }))
@@ -149,7 +160,11 @@ describe('attachInputHandlers: input event forwarding', () => {
     const api = makeIronRdpApi()
     const fakeSession = { applyInputs: vi.fn() }
 
-    attachInputHandlers(canvas, () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession, api)
+    attachInputHandlers(
+      canvas,
+      () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession,
+      api
+    )
     const handlers = canvas._listeners.get('keyup') ?? []
     expect(handlers).toHaveLength(1)
 
@@ -174,7 +189,11 @@ describe('attachInputHandlers: input event forwarding', () => {
     const api = makeIronRdpApi()
     const fakeSession = { applyInputs: vi.fn() }
 
-    attachInputHandlers(canvas, () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession, api)
+    attachInputHandlers(
+      canvas,
+      () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession,
+      api
+    )
     const handlers = canvas._listeners.get('mousemove') ?? []
 
     handlers[0](new MouseEvent('mousemove', { clientX: 100, clientY: 200 }))
@@ -187,7 +206,11 @@ describe('attachInputHandlers: input event forwarding', () => {
     const api = makeIronRdpApi()
     const fakeSession = { applyInputs: vi.fn() }
 
-    attachInputHandlers(canvas, () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession, api)
+    attachInputHandlers(
+      canvas,
+      () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession,
+      api
+    )
     const handlers = canvas._listeners.get('mousedown') ?? []
 
     handlers[0](new MouseEvent('mousedown', { button: 0 }))
@@ -200,7 +223,11 @@ describe('attachInputHandlers: input event forwarding', () => {
     const api = makeIronRdpApi()
     const fakeSession = { applyInputs: vi.fn() }
 
-    attachInputHandlers(canvas, () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession, api)
+    attachInputHandlers(
+      canvas,
+      () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession,
+      api
+    )
     const handlers = canvas._listeners.get('mouseup') ?? []
 
     handlers[0](new MouseEvent('mouseup', { button: 2 }))
@@ -213,11 +240,19 @@ describe('attachInputHandlers: input event forwarding', () => {
     const api = makeIronRdpApi()
     const fakeSession = { applyInputs: vi.fn() }
 
-    attachInputHandlers(canvas, () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession, api)
+    attachInputHandlers(
+      canvas,
+      () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession,
+      api
+    )
     const handlers = canvas._listeners.get('wheel') ?? []
 
     handlers[0](new WheelEvent('wheel', { deltaY: 120, deltaX: 0 }))
-    expect(api.DeviceEvent.wheelRotations).toHaveBeenCalledWith(true, expect.any(Number), expect.anything())
+    expect(api.DeviceEvent.wheelRotations).toHaveBeenCalledWith(
+      true,
+      expect.any(Number),
+      expect.anything()
+    )
     expect(fakeSession.applyInputs).toHaveBeenCalledOnce()
   })
 
@@ -226,11 +261,19 @@ describe('attachInputHandlers: input event forwarding', () => {
     const api = makeIronRdpApi()
     const fakeSession = { applyInputs: vi.fn() }
 
-    attachInputHandlers(canvas, () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession, api)
+    attachInputHandlers(
+      canvas,
+      () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession,
+      api
+    )
     const handlers = canvas._listeners.get('wheel') ?? []
 
     handlers[0](new WheelEvent('wheel', { deltaY: 0, deltaX: 80 }))
-    expect(api.DeviceEvent.wheelRotations).toHaveBeenCalledWith(false, expect.any(Number), expect.anything())
+    expect(api.DeviceEvent.wheelRotations).toHaveBeenCalledWith(
+      false,
+      expect.any(Number),
+      expect.anything()
+    )
   })
 
   it('fires two wheelRotations events when both deltaX and deltaY are non-zero', () => {
@@ -238,7 +281,11 @@ describe('attachInputHandlers: input event forwarding', () => {
     const api = makeIronRdpApi()
     const fakeSession = { applyInputs: vi.fn() }
 
-    attachInputHandlers(canvas, () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession, api)
+    attachInputHandlers(
+      canvas,
+      () => fakeSession as unknown as import('ironrdp-wasm').IronRdpSession,
+      api
+    )
     const handlers = canvas._listeners.get('wheel') ?? []
 
     handlers[0](new WheelEvent('wheel', { deltaY: 120, deltaX: 80 }))
@@ -335,13 +382,9 @@ describe('useRdpConnection: credential fetch', () => {
     }
     const containerRef = { current: null }
 
-    renderHook(() =>
-      useRdpConnection({ session, profileId: 'prof-1', containerRef })
-    )
+    renderHook(() => useRdpConnection({ session, profileId: 'prof-1', containerRef }))
 
-    await vi.waitFor(() =>
-      expect(mockGetRdpCredentials).toHaveBeenCalledWith('prof-1')
-    )
+    await vi.waitFor(() => expect(mockGetRdpCredentials).toHaveBeenCalledWith('prof-1'))
   })
 
   it('falls back to empty credentials when profileId is absent', async () => {
@@ -355,9 +398,7 @@ describe('useRdpConnection: credential fetch', () => {
     }
     const containerRef = { current: null }
 
-    renderHook(() =>
-      useRdpConnection({ session, profileId: null, containerRef })
-    )
+    renderHook(() => useRdpConnection({ session, profileId: null, containerRef }))
 
     // No credentials call when no profileId
     await act(async () => {})

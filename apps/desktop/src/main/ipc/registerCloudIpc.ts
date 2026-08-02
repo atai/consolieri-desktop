@@ -1,6 +1,10 @@
 import { ipcMain } from 'electron'
 import { IPC_CHANNELS } from '../../shared/types'
-import { CloudSyncSettingsUpdateSchema, CloudImportRecoveryKeySchema, Id } from '../../shared/ipcSchemas'
+import {
+  CloudSyncSettingsUpdateSchema,
+  CloudImportRecoveryKeySchema,
+  Id
+} from '../../shared/ipcSchemas'
 import { createHandler } from './createHandler'
 import { cloudAuthService } from '../cloud/CloudAuthService'
 import { cloudSyncCoordinator } from '../cloud/CloudSyncCoordinator'

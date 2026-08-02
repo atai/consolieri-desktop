@@ -2,9 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import { useProfileFormState } from './useProfileFormState'
 
-function installConsoleri(overrides?: {
-  createReject?: Error
-}) {
+function installConsoleri(overrides?: { createReject?: Error }) {
   Object.defineProperty(window, 'consoleri', {
     value: {
       hosts: {

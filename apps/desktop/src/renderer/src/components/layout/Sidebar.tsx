@@ -8,9 +8,7 @@ export function Sidebar(): React.JSX.Element {
 
   const tabClass = (view: typeof sidebarView): string =>
     `flex-1 px-2 py-2 text-xs font-medium sm:px-3 sm:text-sm ${
-      sidebarView === view
-        ? 'border-b-2 border-accent text-fg'
-        : 'text-muted hover:text-fg-2'
+      sidebarView === view ? 'border-b-2 border-accent text-fg' : 'text-muted hover:text-fg-2'
     }`
 
   return (
@@ -19,7 +17,11 @@ export function Sidebar(): React.JSX.Element {
         <button type="button" onClick={() => setSidebarView('hosts')} className={tabClass('hosts')}>
           Hosts
         </button>
-        <button type="button" onClick={() => setSidebarView('profiles')} className={tabClass('profiles')}>
+        <button
+          type="button"
+          onClick={() => setSidebarView('profiles')}
+          className={tabClass('profiles')}
+        >
           Profiles
         </button>
         <button type="button" onClick={() => setSidebarView('keys')} className={tabClass('keys')}>

@@ -45,7 +45,9 @@ export class UxProfileRepository {
       const row = db.prepare('SELECT * FROM ux_profiles WHERE id = ?').get(host.ux_profile_id)
       return row ? [rowToUxProfile(row as Record<string, unknown>)] : []
     }
-    const rows = db.prepare('SELECT * FROM ux_profiles ORDER BY is_builtin DESC, name COLLATE NOCASE').all()
+    const rows = db
+      .prepare('SELECT * FROM ux_profiles ORDER BY is_builtin DESC, name COLLATE NOCASE')
+      .all()
     return rows.map((row) => rowToUxProfile(row as Record<string, unknown>))
   }
 

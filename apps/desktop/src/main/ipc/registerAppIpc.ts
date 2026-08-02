@@ -7,9 +7,7 @@ import { scheduleCloudUpload } from '../cloud/CloudSyncCoordinator'
 export function registerAppIpc(): void {
   ipcMain.handle(IPC_CHANNELS.appExport, () => appImportExportService.exportAppBundle())
 
-  ipcMain.handle(IPC_CHANNELS.appExportToFile, () =>
-    appImportExportService.exportAppToFile()
-  )
+  ipcMain.handle(IPC_CHANNELS.appExportToFile, () => appImportExportService.exportAppToFile())
 
   ipcMain.handle(IPC_CHANNELS.appImportFromFile, async () => {
     await appImportExportService.importAppFromFile()
@@ -31,9 +29,7 @@ export function registerAppIpc(): void {
     scheduleCloudUpload()
   })
 
-  ipcMain.handle(IPC_CHANNELS.backupDelete, (_e, id: string) =>
-    backupService.deleteBackup(id)
-  )
+  ipcMain.handle(IPC_CHANNELS.backupDelete, (_e, id: string) => backupService.deleteBackup(id))
 
   ipcMain.handle(IPC_CHANNELS.backupOpenFolder, () => backupService.openBackupFolder())
 }

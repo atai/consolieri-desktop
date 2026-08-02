@@ -1,10 +1,16 @@
 import { existsSync } from 'fs'
-import { getLocalShellAvailability, type LocalShellAvailability, type LocalShellAvailabilityDeps } from '@consoleri/core'
+import {
+  getLocalShellAvailability,
+  type LocalShellAvailability,
+  type LocalShellAvailabilityDeps
+} from '@consoleri/core'
 
 function getDeps(): LocalShellAvailabilityDeps {
   const homeDir = process.env.HOME ?? process.env.USERPROFILE
   const pathEnv = process.env.PATH
-  const pathext = process.env.PATHEXT?.split(';').map((s) => s.trim()).filter(Boolean)
+  const pathext = process.env.PATHEXT?.split(';')
+    .map((s) => s.trim())
+    .filter(Boolean)
 
   return {
     platform: process.platform as LocalShellAvailabilityDeps['platform'],
@@ -20,4 +26,3 @@ export const localShellsService = {
     return getLocalShellAvailability(getDeps())
   }
 }
-

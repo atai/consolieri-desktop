@@ -65,7 +65,9 @@ export function attachInputHandlers(
       applyEvent(DeviceEvent.wheelRotations(true, wheelRotationAmount(e.deltaY), RotationUnit.Line))
     }
     if (e.deltaX !== 0) {
-      applyEvent(DeviceEvent.wheelRotations(false, wheelRotationAmount(e.deltaX), RotationUnit.Line))
+      applyEvent(
+        DeviceEvent.wheelRotations(false, wheelRotationAmount(e.deltaX), RotationUnit.Line)
+      )
     }
   }
 

@@ -158,9 +158,7 @@ export function CloudSettingsPanel(): React.JSX.Element {
 
   if (loading || !status) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-muted">
-        Loading…
-      </div>
+      <div className="flex h-full items-center justify-center text-sm text-muted">Loading…</div>
     )
   }
 
@@ -174,18 +172,26 @@ export function CloudSettingsPanel(): React.JSX.Element {
             never sees plaintext secrets.
           </p>
           <div className="rounded border border-border bg-bg px-3 py-2 text-xs text-muted">
-            {status.signedIn
-              ? `Signed in as ${status.email ?? 'unknown'}`
-              : 'Not connected'}
+            {status.signedIn ? `Signed in as ${status.email ?? 'unknown'}` : 'Not connected'}
             {status.hasSyncKey ? ' · Sync key stored' : ' · No sync key'}
           </div>
           <div className="flex flex-wrap gap-2">
             {!status.signedIn ? (
-              <Button variant="primary" size="md" disabled={busy} onClick={() => void handleLogin()}>
+              <Button
+                variant="primary"
+                size="md"
+                disabled={busy}
+                onClick={() => void handleLogin()}
+              >
                 {busy ? 'Connecting…' : 'Connect account'}
               </Button>
             ) : (
-              <Button variant="default" size="md" disabled={busy} onClick={() => void handleLogout()}>
+              <Button
+                variant="default"
+                size="md"
+                disabled={busy}
+                onClick={() => void handleLogout()}
+              >
                 Sign out
               </Button>
             )}
@@ -195,8 +201,8 @@ export function CloudSettingsPanel(): React.JSX.Element {
         <section className="space-y-3">
           <h2 className="text-base font-semibold text-fg">Sync key</h2>
           <p className="text-xs text-muted">
-            The recovery key decrypts cloud backups on other devices. Sign-out keeps the key on
-            this machine.
+            The recovery key decrypts cloud backups on other devices. Sign-out keeps the key on this
+            machine.
           </p>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -277,7 +283,12 @@ export function CloudSettingsPanel(): React.JSX.Element {
                 <span className="ml-2 text-sm font-normal text-muted">({backups.length})</span>
               )}
             </h2>
-            <Button variant="default" size="sm" onClick={() => void refresh()} disabled={!status.signedIn}>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => void refresh()}
+              disabled={!status.signedIn}
+            >
               Refresh
             </Button>
           </div>

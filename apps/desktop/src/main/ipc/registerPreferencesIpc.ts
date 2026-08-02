@@ -11,7 +11,8 @@ export function registerPreferencesIpc(): void {
 
   ipcMain.handle(IPC_CHANNELS.clipboardReadText, () => clipboard.readText())
 
-  ipcMain.handle(IPC_CHANNELS.clipboardWriteText,
+  ipcMain.handle(
+    IPC_CHANNELS.clipboardWriteText,
     createHandler(z.string(), (text: string) => {
       clipboard.writeText(text)
       return Promise.resolve()

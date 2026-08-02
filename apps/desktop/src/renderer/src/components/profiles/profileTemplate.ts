@@ -1,13 +1,17 @@
-import { defaultPortForProtocol, isKeyFileRef, keyPathFromRef, makeKeyFileRef, resolveRdpPort } from '@consoleri/core'
+import {
+  defaultPortForProtocol,
+  isKeyFileRef,
+  keyPathFromRef,
+  makeKeyFileRef,
+  resolveRdpPort
+} from '@consoleri/core'
 import type { ConnectionProfile, ProfileInput } from '@shared/types'
 
 export function profileTemplateName(source: ConnectionProfile): string {
   return `${source.name} (copy)`
 }
 
-export function applyProfileTemplate(
-  source: ConnectionProfile
-): {
+export function applyProfileTemplate(source: ConnectionProfile): {
   name: string
   protocol: ConnectionProfile['protocol']
   username: string

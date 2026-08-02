@@ -5,7 +5,10 @@ export interface LabeledSelectOption {
   label: string
 }
 
-export interface LabeledSelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'children'> {
+export interface LabeledSelectProps extends Omit<
+  SelectHTMLAttributes<HTMLSelectElement>,
+  'children'
+> {
   label: string
   options: LabeledSelectOption[]
   emptyOption?: LabeledSelectOption

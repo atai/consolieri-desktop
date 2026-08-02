@@ -5,7 +5,10 @@ interface VncProfileFieldsProps {
   onVncPortChange: (port: number) => void
 }
 
-export function VncProfileFields({ vncPort, onVncPortChange }: VncProfileFieldsProps): React.JSX.Element {
+export function VncProfileFields({
+  vncPort,
+  onVncPortChange
+}: VncProfileFieldsProps): React.JSX.Element {
   return (
     <FormField label="VNC port">
       <input

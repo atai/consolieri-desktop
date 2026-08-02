@@ -76,7 +76,15 @@ export interface ProfileFormState {
 }
 
 export function useProfileFormState(options: UseProfileFormStateOptions): ProfileFormState {
-  const { linkHostId, profile, host, hosts: hostsProp, draft = false, onDraftSave, onSave } = options
+  const {
+    linkHostId,
+    profile,
+    host,
+    hosts: hostsProp,
+    draft = false,
+    onDraftSave,
+    onSave
+  } = options
   const isEdit = Boolean(profile)
   const isNameManuallySet = useRef(isEdit)
 
@@ -147,15 +155,25 @@ export function useProfileFormState(options: UseProfileFormStateOptions): Profil
         secretBackend
       })
     )
-  }, [isEdit, username, protocol, authMethod, jumpHostId, hosts, selectedKeyPath, privateKey, sshKeys, secretBackend])
+  }, [
+    isEdit,
+    username,
+    protocol,
+    authMethod,
+    jumpHostId,
+    hosts,
+    selectedKeyPath,
+    privateKey,
+    sshKeys,
+    secretBackend
+  ])
 
   const supportsAuth = protocol === 'ssh' || protocol === 'rdp' || protocol === 'vnc'
   const jumpHostOptions = hosts.filter((h) => h.id !== linkHostId)
 
   const setSubmitError = (err: unknown): void => {
     const message = err instanceof Error ? err.message : String(err)
-    const vaultHint =
-      secretBackend === 'vault' ? ' Details are in the Vault log window.' : ''
+    const vaultHint = secretBackend === 'vault' ? ' Details are in the Vault log window.' : ''
     setFormErrors({
       submit: `Could not save profile: ${message}${vaultHint}`
     })
@@ -226,7 +244,18 @@ export function useProfileFormState(options: UseProfileFormStateOptions): Profil
       if (protocol === 'vnc') extra.vncPort = vncPort
 
       const rawInput: ProfileFormInput = {
-        name: name.trim() || suggestProfileName({ username, protocol, authMethod, jumpHostId, hosts, selectedKeyPath, privateKey, sshKeys }),
+        name:
+          name.trim() ||
+          suggestProfileName({
+            username,
+            protocol,
+            authMethod,
+            jumpHostId,
+            hosts,
+            selectedKeyPath,
+            privateKey,
+            sshKeys
+          }),
         protocol,
         shell: protocol === 'ssh' || protocol === 'wsl' ? shell : null,
         username: username || undefined,

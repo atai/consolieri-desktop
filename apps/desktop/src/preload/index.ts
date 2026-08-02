@@ -245,7 +245,8 @@ const consoleri: ConsoleriAPI = {
     delete: (ref) => ipcRenderer.invoke(IPC_CHANNELS.credentialsDelete, ref)
   },
   sessions: {
-    open: (request, cols, rows) => ipcRenderer.invoke(IPC_CHANNELS.sessionsOpen, request, cols, rows),
+    open: (request, cols, rows) =>
+      ipcRenderer.invoke(IPC_CHANNELS.sessionsOpen, request, cols, rows),
     close: (sessionId) => ipcRenderer.invoke(IPC_CHANNELS.sessionsClose, sessionId),
     write: (sessionId, data) => ipcRenderer.send(IPC_CHANNELS.sessionsWrite, sessionId, data),
     resize: (sessionId, cols, rows) =>
@@ -397,8 +398,7 @@ const consoleri: ConsoleriAPI = {
     pickDir: () => ipcRenderer.invoke(IPC_CHANNELS.scpPickDir),
     transfer: (request) => ipcRenderer.invoke(IPC_CHANNELS.scpTransfer, request),
     getRecent: (profileId) => ipcRenderer.invoke(IPC_CHANNELS.scpGetRecent, profileId),
-    setRecent: (profileId, entry) =>
-      ipcRenderer.invoke(IPC_CHANNELS.scpSetRecent, profileId, entry)
+    setRecent: (profileId, entry) => ipcRenderer.invoke(IPC_CHANNELS.scpSetRecent, profileId, entry)
   }
 }
 

@@ -3,10 +3,7 @@ import { app } from 'electron'
 import { existsSync, mkdirSync } from 'fs'
 import { join } from 'path'
 import { nanoid } from 'nanoid'
-import {
-  BUILTIN_UX_PROFILE_ID,
-  createBuiltinUxProfile
-} from '@consoleri/core'
+import { BUILTIN_UX_PROFILE_ID, createBuiltinUxProfile } from '@consoleri/core'
 
 let db: DatabaseSync | null = null
 
@@ -259,4 +256,3 @@ function migrateReports(database: DatabaseSync): void {
     );
   `)
 }
-

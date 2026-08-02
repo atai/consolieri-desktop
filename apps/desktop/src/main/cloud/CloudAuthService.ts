@@ -249,7 +249,11 @@ export class CloudAuthService {
     }
   }
 
-  private waitForAuthorizationCode(port: number, authUrl: string, expectedState: string): Promise<string> {
+  private waitForAuthorizationCode(
+    port: number,
+    authUrl: string,
+    expectedState: string
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       let settled = false
       let server: Server | null = null
@@ -298,7 +302,9 @@ export class CloudAuthService {
         }
 
         res.writeHead(200, { 'Content-Type': 'text/html' })
-        res.end('<html><body><p>Consolieri Cloud login successful. You can close this tab.</p></body></html>')
+        res.end(
+          '<html><body><p>Consolieri Cloud login successful. You can close this tab.</p></body></html>'
+        )
 
         if (!settled) {
           settled = true

@@ -66,7 +66,9 @@ export function HostListSection({
         <span className="min-w-0 flex-1 truncate text-xs font-semibold uppercase tracking-wide text-fg">
           {label}
         </span>
-        <span className="shrink-0 text-sm font-semibold tabular-nums text-fg-2">{hosts.length}</span>
+        <span className="shrink-0 text-sm font-semibold tabular-nums text-fg-2">
+          {hosts.length}
+        </span>
       </button>
       {!collapsed && (
         <ul id={`host-section-${id}`}>

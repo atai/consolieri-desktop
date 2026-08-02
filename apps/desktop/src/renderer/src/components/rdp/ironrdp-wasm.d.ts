@@ -37,7 +37,7 @@ declare module 'ironrdp-wasm' {
   export enum RotationUnit {
     Pixel = 0,
     Line = 1,
-    Page = 2,
+    Page = 2
   }
 
   export class SessionBuilder {

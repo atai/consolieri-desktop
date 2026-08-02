@@ -87,9 +87,7 @@ export function CustomTestResultsTable({
                   {entry.status}
                 </td>
                 <td className="px-3 py-2 text-sm text-fg-2">{commandSummary(entry)}</td>
-                <td className="px-3 py-2 text-sm text-muted">
-                  {formatDuration(entry.durationMs)}
-                </td>
+                <td className="px-3 py-2 text-sm text-muted">{formatDuration(entry.durationMs)}</td>
                 <td className="px-3 py-2 text-sm">
                   {hasDetails && (
                     <button

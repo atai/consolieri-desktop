@@ -16,9 +16,7 @@ export { getRegisteredSessionWindow as getSessionWindow }
 export function openSessionWindow(sessionId: string): BrowserWindow {
   const existing = getRegisteredSessionWindow(sessionId)
   const info = sessionManager.list().find((s) => s.id === sessionId)
-  const title = info
-    ? formatSessionWindowTitle(info)
-    : joinWindowTitle('Session', APP_NAME)
+  const title = info ? formatSessionWindowTitle(info) : joinWindowTitle('Session', APP_NAME)
 
   if (existing) {
     existing.setTitle(title)

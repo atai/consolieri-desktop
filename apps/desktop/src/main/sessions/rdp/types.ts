@@ -16,11 +16,7 @@ export interface RdpHandshakePort {
 }
 
 export interface RdpRelayPort {
-  attach(
-    ws: WebSocketLike,
-    tlsSocket: TLSSocket,
-    onClose?: (reason: string) => void
-  ): void
+  attach(ws: WebSocketLike, tlsSocket: TLSSocket, onClose?: (reason: string) => void): void
 }
 
 export interface WebSocketLike {

@@ -40,7 +40,9 @@ function attachRequestTimeout(
   req.setTimeout(timeoutMs, () => {
     req.destroy()
     reject(
-      new Error(`Vault request timed out (${Math.round(timeoutMs / 1000)}s). Check address and network.`)
+      new Error(
+        `Vault request timed out (${Math.round(timeoutMs / 1000)}s). Check address and network.`
+      )
     )
   })
 }

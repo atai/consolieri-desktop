@@ -38,9 +38,7 @@ function NavRailButton({
       aria-current={active ? 'page' : undefined}
       onClick={onClick}
       className={`flex h-10 w-10 items-center justify-center rounded-md transition-colors ${
-        active
-          ? 'bg-accent text-accent-on'
-          : 'text-muted hover:bg-surface-raised hover:text-fg'
+        active ? 'bg-accent text-accent-on' : 'text-muted hover:bg-surface-raised hover:text-fg'
       }`}
     >
       <Icon size={20} strokeWidth={1.75} aria-hidden />

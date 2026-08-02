@@ -9,10 +9,7 @@ import { CHROME_BG_HEX } from '../../shared/chromeHex'
 
 const reportWindows = new Map<string, BrowserWindow>()
 
-export function openReportWindow(
-  reportId: string,
-  parent: BrowserWindow | null
-): BrowserWindow {
+export function openReportWindow(reportId: string, parent: BrowserWindow | null): BrowserWindow {
   const report = reportRepository.get(reportId)
   const title = formatReportWindowTitle(report?.name ?? 'Report')
 

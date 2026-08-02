@@ -23,9 +23,7 @@ export function RdpPane({ session, profileId }: RdpPaneProps): React.JSX.Element
       {error && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 p-4 text-center text-sm text-danger">
           <p className="max-w-lg whitespace-pre-wrap break-words">{error}</p>
-          <p className="mt-2 text-xs text-muted">
-            Open View log for full RDP handshake details.
-          </p>
+          <p className="mt-2 text-xs text-muted">Open View log for full RDP handshake details.</p>
         </div>
       )}
       <canvas ref={setCanvasElement} className="h-full w-full flex-1 outline-none" />

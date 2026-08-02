@@ -24,9 +24,7 @@ const HOST_SORT_OPTIONS: Array<{ value: HostListSortBy; label: string }> = [
 
 function toolbarButtonClass(active: boolean): string {
   return `shrink-0 rounded px-1.5 py-0.5 text-[11px] ${
-    active
-      ? 'bg-accent text-accent-on'
-      : 'bg-surface-raised text-muted hover:text-fg'
+    active ? 'bg-accent text-accent-on' : 'bg-surface-raised text-muted hover:text-fg'
   }`
 }
 
@@ -71,17 +69,22 @@ export function HostBrowser(): React.JSX.Element {
   const [showImport, setShowImport] = useState(false)
   const [showTagFilters, setShowTagFilters] = useState(false)
   const [wslDistros, setWslDistros] = useState<{ name: string }[]>([])
-  const [availableLocalShells, setAvailableLocalShells] = useState<Partial<LocalShellAvailability>>({})
+  const [availableLocalShells, setAvailableLocalShells] = useState<Partial<LocalShellAvailability>>(
+    {}
+  )
 
   useEffect(() => {
     void loadHostListView()
   }, [loadHostListView])
 
   useEffect(() => {
-    void window.consoleri.localShells.available().then(setAvailableLocalShells).catch(() => {
-      // If the availability probe fails for any reason, hide shell options conservatively.
-      setAvailableLocalShells({})
-    })
+    void window.consoleri.localShells
+      .available()
+      .then(setAvailableLocalShells)
+      .catch(() => {
+        // If the availability probe fails for any reason, hide shell options conservatively.
+        setAvailableLocalShells({})
+      })
   }, [])
 
   useEffect(() => {
@@ -244,10 +247,7 @@ export function HostBrowser(): React.JSX.Element {
             onOpenWsl={(distro) => openLocalShell('wsl', distro)}
           />
 
-          <SessionOpenModeToggle
-            mode={settings.sessionOpenMode}
-            onChange={setSessionOpenMode}
-          />
+          <SessionOpenModeToggle mode={settings.sessionOpenMode} onChange={setSessionOpenMode} />
 
           <div className="flex min-w-0 flex-1 items-center justify-end gap-1">
             {GROUP_BY_OPTIONS.map((option) => (
@@ -390,9 +390,7 @@ export function HostBrowser(): React.JSX.Element {
           <div className="border-b border-border">
             <HostForm
               copyFrom={copyFrom ?? undefined}
-              initialPendingProfiles={
-                copyFrom ? pendingProfilesFromHost(copyProfiles) : undefined
-              }
+              initialPendingProfiles={copyFrom ? pendingProfilesFromHost(copyProfiles) : undefined}
               onSave={() => {
                 closeHostForm()
                 refreshHosts()
@@ -441,14 +439,14 @@ export function HostBrowser(): React.JSX.Element {
           onHostUpdated={() => {
             refreshHosts()
             refreshAllHostTags()
-    refreshAllHosts()
+            refreshAllHosts()
             refreshProfiles()
           }}
           onProfilesChanged={() => {
             refreshProfiles()
             refreshHosts()
             refreshAllHostTags()
-    refreshAllHosts()
+            refreshAllHosts()
           }}
         />
       )}

@@ -50,9 +50,7 @@ export class CredentialResolver {
       const backendHint = isVaultRef(profile.credentialRef)
         ? 'Check Vault connectivity and permissions.'
         : 'Check OS secure storage availability.'
-      throw new Error(
-        `Could not load credentials for profile "${profile.name}". ${backendHint}`
-      )
+      throw new Error(`Could not load credentials for profile "${profile.name}". ${backendHint}`)
     }
     const auth = applyAuthToConnectConfig(profile.credentialRef, secret)
     return { username, ...auth }
@@ -105,7 +103,9 @@ export function resolveHostAndProfile(
   getHost: (id: string) => Host | null,
   listProfiles: (hostId: string) => ConnectionProfile[]
 ): { host: Host | null; profile: ConnectionProfile | null } {
-  const profile = profileId ? listProfiles(hostId ?? '').find((p) => p.id === profileId) ?? null : null
+  const profile = profileId
+    ? (listProfiles(hostId ?? '').find((p) => p.id === profileId) ?? null)
+    : null
   const host = hostId ? getHost(hostId) : null
 
   if (!host) {
@@ -114,7 +114,7 @@ export function resolveHostAndProfile(
 
   const profiles = listProfiles(host.id)
   const defaultProfile = host.defaultProfileId
-    ? profiles.find((p) => p.id === host.defaultProfileId) ?? null
+    ? (profiles.find((p) => p.id === host.defaultProfileId) ?? null)
     : null
 
   return {

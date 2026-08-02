@@ -21,11 +21,13 @@ export const LogLevelSchema = z.enum(['debug', 'info', 'warn', 'error'])
 
 // ── HostFilter ────────────────────────────────────────────────────────────────
 
-export const HostFilterSchema = z.object({
-  search: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  groupId: z.string().nullable().optional()
-}).default({})
+export const HostFilterSchema = z
+  .object({
+    search: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    groupId: z.string().nullable().optional()
+  })
+  .default({})
 
 // ── HostInput ─────────────────────────────────────────────────────────────────
 
@@ -65,11 +67,13 @@ export const ProfileInputSchema = z.object({
 
 // ── UxProfileInput ────────────────────────────────────────────────────────────
 
-export const UxProfileInputSchema = z.object({
-  name: NonEmptyString,
-  terminal: z.record(z.unknown()).optional(),
-  chrome: z.record(z.unknown()).optional()
-}).passthrough()
+export const UxProfileInputSchema = z
+  .object({
+    name: NonEmptyString,
+    terminal: z.record(z.unknown()).optional(),
+    chrome: z.record(z.unknown()).optional()
+  })
+  .passthrough()
 
 // ── Credential ref ────────────────────────────────────────────────────────────
 
@@ -138,26 +142,30 @@ export const DeployKeyRequestSchema = z.object({
 
 // ── VaultSettingsUpdate ───────────────────────────────────────────────────────
 
-export const VaultSettingsUpdateSchema = z.object({
-  enabled: z.boolean().optional(),
-  url: z.string().optional(),
-  authMethod: z.string().optional(),
-  token: z.string().optional(),
-  defaultKvMount: z.string().optional(),
-  secretPathPrefix: z.string().optional(),
-  tlsSkipVerify: z.boolean().optional(),
-  appRoleRoleId: z.string().optional(),
-  appRoleSecretId: z.string().optional(),
-  defaultBackend: z.enum(['local', 'vault']).optional()
-}).passthrough()
+export const VaultSettingsUpdateSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    url: z.string().optional(),
+    authMethod: z.string().optional(),
+    token: z.string().optional(),
+    defaultKvMount: z.string().optional(),
+    secretPathPrefix: z.string().optional(),
+    tlsSkipVerify: z.boolean().optional(),
+    appRoleRoleId: z.string().optional(),
+    appRoleSecretId: z.string().optional(),
+    defaultBackend: z.enum(['local', 'vault']).optional()
+  })
+  .passthrough()
 
 // ── ReportInput ───────────────────────────────────────────────────────────────
 
-export const ReportInputSchema = z.object({
-  name: NonEmptyString,
-  type: z.enum(['connectivity_test', 'inventory', 'custom_test']),
-  config: z.record(z.unknown()).optional()
-}).passthrough()
+export const ReportInputSchema = z
+  .object({
+    name: NonEmptyString,
+    type: z.enum(['connectivity_test', 'inventory', 'custom_test']),
+    config: z.record(z.unknown()).optional()
+  })
+  .passthrough()
 
 // ── SCP ───────────────────────────────────────────────────────────────────────
 

@@ -6,12 +6,7 @@ import {
   normalizeRelatedHostIds,
   rowToHost
 } from '@consoleri/core'
-import type {
-  Host,
-  HostFilter,
-  HostGroup,
-  HostInput
-} from '../../shared/types'
+import type { Host, HostFilter, HostGroup, HostInput } from '../../shared/types'
 import { getDatabase } from '../db/database'
 
 /**
@@ -72,7 +67,11 @@ export class HostRepository {
     const db = getDatabase()
     const existingIds = this.existingHostIdSet()
     const relatedHostIds = normalizeRelatedHostIds(id, input.relatedHostIds, existingIds)
-    const gatewayHostId = normalizeGatewayHostId(id, input.gatewayHostId ?? null, this.existingHostsForGateway())
+    const gatewayHostId = normalizeGatewayHostId(
+      id,
+      input.gatewayHostId ?? null,
+      this.existingHostsForGateway()
+    )
     const httpEndpoint = normalizeHttpEndpoint(input.httpEndpoint)
     db.prepare(
       `INSERT INTO hosts (id, name, hostname, port, os_type, tags_json, group_id, notes, default_profile_id, ux_profile_id, log_verbosity, related_hosts_json, gateway_host_id, http_endpoint, created_at, updated_at)

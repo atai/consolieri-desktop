@@ -1,10 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { IPC_CHANNELS } from '../shared/types'
-import type {
-  Report,
-  ReportProgressEvent,
-  ReportResult
-} from '../shared/types'
+import type { Report, ReportProgressEvent, ReportResult } from '../shared/types'
 
 const reportApi = {
   getReportId: (): string => {

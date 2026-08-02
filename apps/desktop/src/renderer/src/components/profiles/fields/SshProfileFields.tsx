@@ -30,11 +30,7 @@ export function SshProfileFields({
         />
       </FormField>
 
-      <LabeledSelect
-        label="Jump host (bastion)"
-        value={jumpHostId}
-        onChange={onJumpHostChange}
-      >
+      <LabeledSelect label="Jump host (bastion)" value={jumpHostId} onChange={onJumpHostChange}>
         <option value="">None</option>
         {jumpHostOptions.map((h) => (
           <option key={h.id} value={h.id}>

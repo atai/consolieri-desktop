@@ -135,9 +135,7 @@ export class HostImportExportService {
     }
 
     for (const host of doc.hosts) {
-      const uxProfileId = validUxProfileIds.has(host.uxProfileId ?? '')
-        ? host.uxProfileId
-        : null
+      const uxProfileId = validUxProfileIds.has(host.uxProfileId ?? '') ? host.uxProfileId : null
       db.prepare(
         `INSERT INTO hosts (id, name, hostname, port, os_type, tags_json, group_id, notes,
           default_profile_id, ux_profile_id, log_verbosity, related_hosts_json,

@@ -47,10 +47,7 @@ export interface ClipboardHandlers {
   dispose: () => void
 }
 
-export function attachClipboardHandlers(
-  term: Terminal,
-  container: HTMLElement
-): ClipboardHandlers {
+export function attachClipboardHandlers(term: Terminal, container: HTMLElement): ClipboardHandlers {
   term.attachCustomKeyEventHandler((event) => {
     if (event.type !== 'keydown') return true
 

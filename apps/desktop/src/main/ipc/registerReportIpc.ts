@@ -13,13 +13,13 @@ import { scheduleCloudUpload } from '../cloud/CloudSyncCoordinator'
 export function registerReportIpc(getWindow: () => BrowserWindow | null): void {
   ipcMain.handle(IPC_CHANNELS.reportsList, () => reportRepository.list())
 
-  ipcMain.handle(IPC_CHANNELS.reportsGet,
-    createHandler(Id, (id: string) =>
-      Promise.resolve(reportRepository.get(id))
-    )
+  ipcMain.handle(
+    IPC_CHANNELS.reportsGet,
+    createHandler(Id, (id: string) => Promise.resolve(reportRepository.get(id)))
   )
 
-  ipcMain.handle(IPC_CHANNELS.reportsCreate,
+  ipcMain.handle(
+    IPC_CHANNELS.reportsCreate,
     createHandler(ReportInputSchema, (input) => {
       const report = reportRepository.create(input as unknown as ReportInput)
       scheduleCloudUpload()
@@ -27,7 +27,8 @@ export function registerReportIpc(getWindow: () => BrowserWindow | null): void {
     })
   )
 
-  ipcMain.handle(IPC_CHANNELS.reportsUpdate,
+  ipcMain.handle(
+    IPC_CHANNELS.reportsUpdate,
     createHandler(z.tuple([Id, ReportInputSchema.partial()]), ([id, patch]) => {
       const report = reportRepository.update(id, patch as unknown as Partial<ReportInput>)
       scheduleCloudUpload()
@@ -35,7 +36,8 @@ export function registerReportIpc(getWindow: () => BrowserWindow | null): void {
     })
   )
 
-  ipcMain.handle(IPC_CHANNELS.reportsDelete,
+  ipcMain.handle(
+    IPC_CHANNELS.reportsDelete,
     createHandler(Id, (id: string) => {
       reportRepository.delete(id)
       scheduleCloudUpload()
@@ -43,13 +45,13 @@ export function registerReportIpc(getWindow: () => BrowserWindow | null): void {
     })
   )
 
-  ipcMain.handle(IPC_CHANNELS.reportsRun,
-    createHandler(Id, (reportId: string) =>
-      reportRunner.run(reportId)
-    )
+  ipcMain.handle(
+    IPC_CHANNELS.reportsRun,
+    createHandler(Id, (reportId: string) => reportRunner.run(reportId))
   )
 
-  ipcMain.handle(IPC_CHANNELS.reportsOpenWindow,
+  ipcMain.handle(
+    IPC_CHANNELS.reportsOpenWindow,
     createHandler(Id, (reportId: string) => {
       openReportWindow(reportId, getWindow())
       return Promise.resolve()

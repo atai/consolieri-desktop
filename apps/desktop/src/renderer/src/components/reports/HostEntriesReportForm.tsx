@@ -98,11 +98,7 @@ export function HostEntriesReportForm({
         />
       </label>
 
-      <ReportHostEntriesSection
-        entries={entries}
-        onEntriesChange={setEntries}
-        disabled={saving}
-      />
+      <ReportHostEntriesSection entries={entries} onEntriesChange={setEntries} disabled={saving} />
 
       {error && <p className="mt-3 text-xs text-danger">{error}</p>}
     </ReportFormShell>

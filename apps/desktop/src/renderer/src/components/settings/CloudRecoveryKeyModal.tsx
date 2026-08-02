@@ -97,7 +97,10 @@ export function CloudRecoveryKeyModal({
             checked={acknowledged}
             onChange={(e) => setAcknowledged(e.target.checked)}
           />
-          <span>I stored this key somewhere safe. Without it, other devices cannot decrypt cloud backups.</span>
+          <span>
+            I stored this key somewhere safe. Without it, other devices cannot decrypt cloud
+            backups.
+          </span>
         </label>
       </div>
       <DialogFooter

@@ -8,7 +8,50 @@ export type LocalShellAvailability = Record<LocalShellExecutableType, boolean>
 export type { SessionOpenMode, AppSettings } from '@consoleri/core'
 export type SessionStatus = 'connecting' | 'connected' | 'disconnected' | 'error'
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
-export type { HostLogVerbosity, UxProfile, UxProfileInput, TerminalAppearance, ChromeAppearance, HostListViewSettings, HostListGroupBy, HostListSortBy, HostListSortDir, HostListGroupFilter, HostListSection, MapViewSettings, MapViewMode, AppView, Report, ReportInput, ReportType, ReportConfig, ReportResult, ReportHostEntry, ReportHostStatus, ConnectivityTestConfig, ConnectivityTestEntry, ConnectivityTestResult, ConnectivityTestHostResult, InventoryConfig, InventoryEntry, InventoryResult, InventoryHostResult, InventoryHostData, CustomTestConfig, CustomTestEntry, CustomTestCommand, CustomTestResult, CustomTestHostResult, CustomTestCommandResult, ReportProgressEvent, VaultSettings, VaultSettingsUpdate, VaultStatus, VaultAuthMethod, SecretBackendKind } from '@consoleri/core'
+export type {
+  HostLogVerbosity,
+  UxProfile,
+  UxProfileInput,
+  TerminalAppearance,
+  ChromeAppearance,
+  HostListViewSettings,
+  HostListGroupBy,
+  HostListSortBy,
+  HostListSortDir,
+  HostListGroupFilter,
+  HostListSection,
+  MapViewSettings,
+  MapViewMode,
+  AppView,
+  Report,
+  ReportInput,
+  ReportType,
+  ReportConfig,
+  ReportResult,
+  ReportHostEntry,
+  ReportHostStatus,
+  ConnectivityTestConfig,
+  ConnectivityTestEntry,
+  ConnectivityTestResult,
+  ConnectivityTestHostResult,
+  InventoryConfig,
+  InventoryEntry,
+  InventoryResult,
+  InventoryHostResult,
+  InventoryHostData,
+  CustomTestConfig,
+  CustomTestEntry,
+  CustomTestCommand,
+  CustomTestResult,
+  CustomTestHostResult,
+  CustomTestCommandResult,
+  ReportProgressEvent,
+  VaultSettings,
+  VaultSettingsUpdate,
+  VaultStatus,
+  VaultAuthMethod,
+  SecretBackendKind
+} from '@consoleri/core'
 import type { HostLogVerbosity, SecretBackendKind } from '@consoleri/core'
 
 export interface LogEntry {

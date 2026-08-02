@@ -58,8 +58,7 @@ export class CloudSyncCoordinator {
     const current = this.getSettings()
     const next: CloudSyncSettings = {
       enabled: typeof patch.enabled === 'boolean' ? patch.enabled : current.enabled,
-      lastUploadAt:
-        patch.lastUploadAt !== undefined ? patch.lastUploadAt : current.lastUploadAt,
+      lastUploadAt: patch.lastUploadAt !== undefined ? patch.lastUploadAt : current.lastUploadAt,
       lastError: patch.lastError !== undefined ? patch.lastError : current.lastError
     }
     getDatabase()

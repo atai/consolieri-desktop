@@ -10,7 +10,9 @@ export class WorkspaceRepository {
     if (!row) {
       const id = nanoid()
       getDatabase()
-        .prepare(`INSERT INTO workspaces (id, name, layout_json, is_last_active) VALUES (?, ?, ?, 1)`)
+        .prepare(
+          `INSERT INTO workspaces (id, name, layout_json, is_last_active) VALUES (?, ?, ?, 1)`
+        )
         .run(id, 'Default', 'null')
       return { id, name: 'Default', layoutJson: 'null', isLastActive: true }
     }
@@ -28,9 +30,11 @@ export class WorkspaceRepository {
     const layoutJson = JSON.stringify({ layout: state.layout, panes: state.panes })
 
     db.prepare(`UPDATE workspaces SET is_last_active = 0`).run()
-    db.prepare(
-      `UPDATE workspaces SET name=?, layout_json=?, is_last_active=1 WHERE id=?`
-    ).run(name, layoutJson, existing.id)
+    db.prepare(`UPDATE workspaces SET name=?, layout_json=?, is_last_active=1 WHERE id=?`).run(
+      name,
+      layoutJson,
+      existing.id
+    )
 
     db.prepare(`DELETE FROM workspace_panes WHERE workspace_id = ?`).run(existing.id)
     const insertPane = db.prepare(

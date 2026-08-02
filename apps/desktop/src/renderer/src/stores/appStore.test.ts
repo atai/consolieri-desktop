@@ -5,10 +5,14 @@ const mockPreferencesSetHostListView = vi.fn().mockResolvedValue(undefined)
 const mockPreferencesSetMapView = vi.fn().mockResolvedValue(undefined)
 const mockPreferencesGetHostListView = vi.fn()
 const mockPreferencesGetMapView = vi.fn()
-const mockPreferencesGetAppSettings = vi.fn().mockResolvedValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace' })
-const mockPreferencesSetAppSettings = vi.fn().mockImplementation((patch: Record<string, unknown>) =>
-  Promise.resolve({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace', ...patch })
-)
+const mockPreferencesGetAppSettings = vi
+  .fn()
+  .mockResolvedValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace' })
+const mockPreferencesSetAppSettings = vi
+  .fn()
+  .mockImplementation((patch: Record<string, unknown>) =>
+    Promise.resolve({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace', ...patch })
+  )
 const mockWorkspaceSave = vi.fn().mockResolvedValue(undefined)
 const mockHostsList = vi.fn().mockResolvedValue([])
 const mockGroupsList = vi.fn().mockResolvedValue([])
@@ -234,7 +238,10 @@ describe('settings load/persist', () => {
   })
 
   it('refresh loads settings from IPC', async () => {
-    mockPreferencesGetAppSettings.mockResolvedValueOnce({ autoOpenConnectionLog: true, sessionOpenMode: 'window' })
+    mockPreferencesGetAppSettings.mockResolvedValueOnce({
+      autoOpenConnectionLog: true,
+      sessionOpenMode: 'window'
+    })
     const { usePreferencesStore } = await freshPreferencesStore()
     await usePreferencesStore.getState().refresh()
     expect(usePreferencesStore.getState().settings.autoOpenConnectionLog).toBe(true)
@@ -254,7 +261,10 @@ describe('settings load/persist', () => {
   })
 
   it('refresh migrates legacy localStorage key and removes it', async () => {
-    storage.set('consoleri.settings', JSON.stringify({ autoOpenConnectionLog: true, sessionOpenMode: 'workspace' }))
+    storage.set(
+      'consoleri.settings',
+      JSON.stringify({ autoOpenConnectionLog: true, sessionOpenMode: 'workspace' })
+    )
     const { usePreferencesStore } = await freshPreferencesStore()
     await usePreferencesStore.getState().refresh()
     expect(mockPreferencesSetAppSettings).toHaveBeenCalledWith(
@@ -268,14 +278,28 @@ describe('settings load/persist', () => {
 describe('sessions state management', () => {
   it('addSession appends to sessions array', async () => {
     const { useSessionWorkspaceStore } = await freshSessionWorkspaceStore()
-    const session = { id: 's1', protocol: 'ssh' as const, title: 'web01', status: 'connected' as const, hostId: null, profileId: null }
+    const session = {
+      id: 's1',
+      protocol: 'ssh' as const,
+      title: 'web01',
+      status: 'connected' as const,
+      hostId: null,
+      profileId: null
+    }
     useSessionWorkspaceStore.getState().addSession(session)
     expect(useSessionWorkspaceStore.getState().sessions).toHaveLength(1)
   })
 
   it('updateSession patches a session by id', async () => {
     const { useSessionWorkspaceStore } = await freshSessionWorkspaceStore()
-    const session = { id: 's1', protocol: 'ssh' as const, title: 'web01', status: 'connecting' as const, hostId: null, profileId: null }
+    const session = {
+      id: 's1',
+      protocol: 'ssh' as const,
+      title: 'web01',
+      status: 'connecting' as const,
+      hostId: null,
+      profileId: null
+    }
     useSessionWorkspaceStore.getState().addSession(session)
     useSessionWorkspaceStore.getState().updateSession('s1', { status: 'connected' })
     expect(useSessionWorkspaceStore.getState().sessions[0].status).toBe('connected')
@@ -283,7 +307,14 @@ describe('sessions state management', () => {
 
   it('upsertSession inserts or replaces a session', async () => {
     const { useSessionWorkspaceStore } = await freshSessionWorkspaceStore()
-    const session = { id: 's1', protocol: 'ssh' as const, title: 'web01', status: 'connecting' as const, hostId: null, profileId: null }
+    const session = {
+      id: 's1',
+      protocol: 'ssh' as const,
+      title: 'web01',
+      status: 'connecting' as const,
+      hostId: null,
+      profileId: null
+    }
     useSessionWorkspaceStore.getState().upsertSession(session)
     useSessionWorkspaceStore.getState().upsertSession({ ...session, status: 'connected' })
     expect(useSessionWorkspaceStore.getState().sessions).toHaveLength(1)
@@ -292,7 +323,14 @@ describe('sessions state management', () => {
 
   it('removeSession removes a session by id', async () => {
     const { useSessionWorkspaceStore } = await freshSessionWorkspaceStore()
-    const session = { id: 's1', protocol: 'ssh' as const, title: 'web01', status: 'connected' as const, hostId: null, profileId: null }
+    const session = {
+      id: 's1',
+      protocol: 'ssh' as const,
+      title: 'web01',
+      status: 'connected' as const,
+      hostId: null,
+      profileId: null
+    }
     useSessionWorkspaceStore.getState().addSession(session)
     useSessionWorkspaceStore.getState().removeSession('s1')
     expect(useSessionWorkspaceStore.getState().sessions).toHaveLength(0)

@@ -19,7 +19,8 @@ export function registerKeysIpc(getWindow: () => BrowserWindow | null): void {
     return key
   })
 
-  ipcMain.handle(IPC_CHANNELS.keysRemove,
+  ipcMain.handle(
+    IPC_CHANNELS.keysRemove,
     createHandler(Id, (id: string) => {
       sshKeyService.removeCustomKey(id)
       scheduleCloudUpload()
@@ -29,14 +30,19 @@ export function registerKeysIpc(getWindow: () => BrowserWindow | null): void {
 
   ipcMain.handle(IPC_CHANNELS.keysPickFile, () => sshKeyService.pickKeyFile())
 
-  ipcMain.handle(IPC_CHANNELS.keysAssign,
-    createHandler(z.tuple([Id, z.string().min(1)]), async ([profileId, keyPath]: [string, string]) => {
-      await sshKeyService.assignToProfile(profileId, keyPath)
-      scheduleCloudUpload()
-    })
+  ipcMain.handle(
+    IPC_CHANNELS.keysAssign,
+    createHandler(
+      z.tuple([Id, z.string().min(1)]),
+      async ([profileId, keyPath]: [string, string]) => {
+        await sshKeyService.assignToProfile(profileId, keyPath)
+        scheduleCloudUpload()
+      }
+    )
   )
 
-  ipcMain.handle(IPC_CHANNELS.keysDeploy,
+  ipcMain.handle(
+    IPC_CHANNELS.keysDeploy,
     createHandler(DeployKeyRequestSchema, async (request: DeployKeyRequest) => {
       const logId = request.logId ?? nanoid()
       registerLogContext(logId, {
@@ -56,11 +62,15 @@ export function registerKeysIpc(getWindow: () => BrowserWindow | null): void {
     })
   )
 
-  ipcMain.handle(IPC_CHANNELS.keysStorePassphrase,
-    createHandler(z.tuple([z.string().min(1), z.string()]), async ([keyPath, passphrase]: [string, string]) => {
-      await sshKeyService.storePassphrase(keyPath, passphrase)
-      scheduleCloudUpload()
-    })
+  ipcMain.handle(
+    IPC_CHANNELS.keysStorePassphrase,
+    createHandler(
+      z.tuple([z.string().min(1), z.string()]),
+      async ([keyPath, passphrase]: [string, string]) => {
+        await sshKeyService.storePassphrase(keyPath, passphrase)
+        scheduleCloudUpload()
+      }
+    )
   )
 
   ipcMain.handle(IPC_CHANNELS.keysAssignableHosts, () => sshKeyService.listAssignableHosts())

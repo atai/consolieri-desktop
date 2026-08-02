@@ -82,7 +82,7 @@ export function VaultSettingsPanel(): React.JSX.Element {
       setMessage(
         result.authenticated
           ? 'Vault connection successful'
-          : result.error ?? 'Vault is reachable but not authenticated'
+          : (result.error ?? 'Vault is reachable but not authenticated')
       )
     } catch (error) {
       setMessage(error instanceof Error ? error.message : String(error))
@@ -93,7 +93,13 @@ export function VaultSettingsPanel(): React.JSX.Element {
 
   const setAuthMethod = (method: VaultAuthMethod): void => {
     if (method === 'token') {
-      setSettings({ ...settings, auth: { method: 'token', hasToken: settings.auth.method === 'token' ? settings.auth.hasToken : false } })
+      setSettings({
+        ...settings,
+        auth: {
+          method: 'token',
+          hasToken: settings.auth.method === 'token' ? settings.auth.hasToken : false
+        }
+      })
       return
     }
     if (method === 'approle') {
@@ -124,7 +130,8 @@ export function VaultSettingsPanel(): React.JSX.Element {
       <header className="border-b border-border px-6 py-4">
         <h1 className="text-lg font-semibold text-fg">HashiCorp Vault</h1>
         <p className="mt-1 text-sm text-muted">
-          Configure an optional Vault backend for profile credentials. Local OS vault remains available.
+          Configure an optional Vault backend for profile credentials. Local OS vault remains
+          available.
         </p>
       </header>
 
@@ -242,7 +249,9 @@ export function VaultSettingsPanel(): React.JSX.Element {
                   className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
                   value={tokenInput}
                   onChange={(e) => setTokenInput(e.target.value)}
-                  placeholder={settings.auth.hasToken ? 'Leave blank to keep current token' : 'Vault token'}
+                  placeholder={
+                    settings.auth.hasToken ? 'Leave blank to keep current token' : 'Vault token'
+                  }
                 />
               </label>
             )}
@@ -287,7 +296,9 @@ export function VaultSettingsPanel(): React.JSX.Element {
                     value={secretIdInput}
                     onChange={(e) => setSecretIdInput(e.target.value)}
                     placeholder={
-                      settings.auth.hasSecretId ? 'Leave blank to keep current secret ID' : 'Secret ID'
+                      settings.auth.hasSecretId
+                        ? 'Leave blank to keep current secret ID'
+                        : 'Secret ID'
                     }
                   />
                 </label>
@@ -328,7 +339,12 @@ export function VaultSettingsPanel(): React.JSX.Element {
                   <button
                     type="button"
                     disabled={saving}
-                    onClick={() => void savePatch({ auth: settings.auth }).then(() => window.consoleri.vault.login()).then(refresh).catch((e) => setMessage(String(e)))}
+                    onClick={() =>
+                      void savePatch({ auth: settings.auth })
+                        .then(() => window.consoleri.vault.login())
+                        .then(refresh)
+                        .catch((e) => setMessage(String(e)))
+                    }
                     className="rounded bg-accent px-3 py-1.5 text-xs text-accent-on hover:bg-accent-hover disabled:opacity-50"
                   >
                     Sign in to Vault

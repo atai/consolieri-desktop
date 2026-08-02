@@ -26,11 +26,7 @@ export function PickUxProfileDialog({
 
   return (
     <Modal size="md" scrollable onClose={onClose}>
-      <DialogHeader
-        bordered
-        title="Link appearance profile"
-        onClose={onClose}
-      />
+      <DialogHeader bordered title="Link appearance profile" onClose={onClose} />
       <div className="max-h-64 overflow-y-auto">
         {loading ? (
           <p className="p-4 text-center text-sm text-muted">Loading…</p>

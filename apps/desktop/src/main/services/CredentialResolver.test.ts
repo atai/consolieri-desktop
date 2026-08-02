@@ -81,7 +81,9 @@ describe('resolveForProfile', () => {
   })
 
   it('returns username and privateKey for a local key ref', async () => {
-    mockRetrieve.mockResolvedValue('-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----')
+    mockRetrieve.mockResolvedValue(
+      '-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----'
+    )
     const result = await resolver.resolveForProfile(
       makeProfile({ credentialRef: 'profile:prof-1:key', username: 'git' })
     )
@@ -123,9 +125,7 @@ describe('resolveForProfile', () => {
       throw new Error('ENOENT')
     })
     await expect(
-      resolver.resolveForProfile(
-        makeProfile({ credentialRef: 'keyfile:/missing/id_rsa' })
-      )
+      resolver.resolveForProfile(makeProfile({ credentialRef: 'keyfile:/missing/id_rsa' }))
     ).rejects.toThrow('Could not read SSH key file: /missing/id_rsa')
   })
 

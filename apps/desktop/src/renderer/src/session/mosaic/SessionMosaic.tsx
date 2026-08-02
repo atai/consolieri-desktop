@@ -1,10 +1,5 @@
 import { useCallback, type ReactElement, type ReactNode } from 'react'
-import {
-  Mosaic,
-  MosaicWindow,
-  MosaicNode,
-  MosaicPath
-} from 'react-mosaic-component'
+import { Mosaic, MosaicWindow, MosaicNode, MosaicPath } from 'react-mosaic-component'
 import { removeFromLayout } from '@consoleri/core'
 import type { MosaicNode as CoreMosaicNode } from '@consoleri/core'
 import type { PaneBinding, SessionInfo } from '@shared/types'
@@ -18,7 +13,11 @@ import {
   splitStackedButton
 } from '../../components/workspace/MosaicToolbarButton'
 
-function paneTitle(session: SessionInfo | undefined, binding: PaneBinding | undefined, paneId: string): string {
+function paneTitle(
+  session: SessionInfo | undefined,
+  binding: PaneBinding | undefined,
+  paneId: string
+): string {
   const base = binding?.title ?? session?.title ?? paneId
   if (!session) return base
   if (session.status === 'connecting') return `${base} — Connecting…`

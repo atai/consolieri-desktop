@@ -7,7 +7,9 @@ describe('formatIronError', () => {
       kind: () => 5,
       backtrace: () => 'ProxyConnect: failed to open websocket'
     }
-    expect(formatIronError(err)).toBe('Proxy connect failed — ProxyConnect: failed to open websocket')
+    expect(formatIronError(err)).toBe(
+      'Proxy connect failed — ProxyConnect: failed to open websocket'
+    )
   })
 
   it('includes RDCleanPath WSA details', () => {

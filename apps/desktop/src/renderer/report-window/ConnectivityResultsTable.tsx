@@ -1,9 +1,5 @@
 import { Fragment, useMemo, useState } from 'react'
-import {
-  classifyHttpStatus,
-  formatHttpStatusLabel,
-  httpStatusTailwindClass
-} from '@consoleri/core'
+import { classifyHttpStatus, formatHttpStatusLabel, httpStatusTailwindClass } from '@consoleri/core'
 import type { ConnectivityTestResult, Host } from '@shared/types'
 
 function formatDuration(ms: number): string {
@@ -70,10 +66,7 @@ export function ConnectivityResultsTable({
             ? classifyHttpStatus(entry.httpStatusCode, entry.httpError)
             : 'none'
           const hasDetails =
-            entry.error ||
-            entry.pingError ||
-            entry.httpError ||
-            (entry.log && entry.log.length > 0)
+            entry.error || entry.pingError || entry.httpError || (entry.log && entry.log.length > 0)
           return (
             <Fragment key={`${entry.hostId}-${entry.profileId}`}>
               <tr className="border-b border-border">
@@ -100,9 +93,7 @@ export function ConnectivityResultsTable({
                       : '—'}
                   </td>
                 )}
-                <td className="px-3 py-2 text-sm text-muted">
-                  {formatDuration(entry.durationMs)}
-                </td>
+                <td className="px-3 py-2 text-sm text-muted">{formatDuration(entry.durationMs)}</td>
                 <td className="px-3 py-2 text-sm">
                   {hasDetails && (
                     <button
