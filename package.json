@@ -20,13 +20,15 @@
     "version:minor": "node scripts/bump-version.mjs minor",
     "version:major": "node scripts/bump-version.mjs major",
     "version:set": "node scripts/bump-version.mjs",
-    "release": "bash scripts/release.sh"
+    "release": "bash scripts/release.sh",
+    "prepare": "husky"
   },
   "engines": {
     "node": ">=20",
     "pnpm": ">=10"
   },
   "devDependencies": {
+    "husky": "^9.1.7",
     "pnpm": "10.34.5"
   }
 }
