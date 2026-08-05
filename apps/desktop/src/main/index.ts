@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { getDataDir } from './paths'
@@ -8,6 +8,15 @@ import { registerIpcHandlers } from './ipc/register'
 import { sessionManager } from './compositionRoot'
 import { backupService } from './backup/backupServiceInstance'
 import { CHROME_BG_HEX } from '../shared/chromeHex'
+import { IPC_CHANNELS } from '../shared/types'
+import { runBootSequence } from './boot/bootSequence'
+import {
+  closeSplashWindow,
+  focusSplashWindow,
+  isSplashOpen,
+  openSplashWindow,
+  updateSplashProgress
+} from './windows/AboutWindow'
 
 // Must be called before app.whenReady() and before any call to app.getPath('userData').
 // This redirects ALL Electron storage (SQLite, localStorage, IndexedDB, cookies)
@@ -20,19 +29,37 @@ if (!gotSingleInstanceLock) {
   app.quit()
 } else {
   let mainWindow: BrowserWindow | null = null
-  const SHOW_FALLBACK_MS = 2500
+  let booting = false
+  let onRendererReady: (() => void) | null = null
+  const RENDERER_READY_FALLBACK_MS = 8000
 
   function isMainWindowAlive(): boolean {
     return mainWindow !== null && !mainWindow.isDestroyed()
   }
 
+  function signalRendererReady(): void {
+    onRendererReady?.()
+  }
+
   function showAndFocusMainWindow(): void {
+    if (booting || isSplashOpen()) {
+      focusSplashWindow()
+      return
+    }
+
     if (!isMainWindowAlive()) {
       createWindow()
+      revealMainWindow()
       return
     }
 
     if (mainWindow!.isMinimized()) mainWindow!.restore()
+    mainWindow!.show()
+    mainWindow!.focus()
+  }
+
+  function revealMainWindow(): void {
+    if (!isMainWindowAlive()) return
     mainWindow!.show()
     mainWindow!.focus()
   }
@@ -56,37 +83,17 @@ if (!gotSingleInstanceLock) {
       }
     })
 
-    let shown = false
-
-    const showFallbackTimer = setTimeout(() => {
-      if (!shown) {
-        console.warn('[main] Window ready-to-show timed out; forcing show')
-        reveal()
-      }
-    }, SHOW_FALLBACK_MS)
-
-    function reveal(): void {
-      if (shown || !isMainWindowAlive()) return
-      shown = true
-      clearTimeout(showFallbackTimer)
-      mainWindow!.show()
-      mainWindow!.focus()
-    }
-
-    mainWindow.on('ready-to-show', reveal)
-
     mainWindow.webContents.on(
       'did-fail-load',
       (_event, errorCode, errorDescription, validatedURL) => {
         console.error(
           `[main] Failed to load window content (${errorCode}): ${errorDescription} (${validatedURL})`
         )
-        reveal()
+        signalRendererReady()
       }
     )
 
     mainWindow.on('closed', () => {
-      if (showFallbackTimer !== undefined) clearTimeout(showFallbackTimer)
       mainWindow = null
       app.quit()
     })
@@ -105,29 +112,78 @@ if (!gotSingleInstanceLock) {
     sessionManager.setWindow(mainWindow)
   }
 
+  function waitForRendererReady(): Promise<void> {
+    return new Promise((resolve) => {
+      let settled = false
+
+      const finish = (): void => {
+        if (settled) return
+        settled = true
+        clearTimeout(timer)
+        onRendererReady = null
+        ipcMain.removeListener(IPC_CHANNELS.appRendererReady, onIpcReady)
+        resolve()
+      }
+
+      const onIpcReady = (): void => finish()
+      onRendererReady = finish
+
+      const timer = setTimeout(() => {
+        console.warn('[main] Renderer ready timed out; continuing startup')
+        finish()
+      }, RENDERER_READY_FALLBACK_MS)
+
+      ipcMain.on(IPC_CHANNELS.appRendererReady, onIpcReady)
+    })
+  }
+
   app.on('second-instance', () => {
     showAndFocusMainWindow()
   })
 
-  app.whenReady().then(() => {
-    try {
-      electronApp.setAppUserModelId('com.consoleri.desktop')
-      if (process.platform === 'darwin') {
-        app.dock?.setIcon(appIconPath())
-      }
-      getDatabase()
-
-      app.on('browser-window-created', (_, window) => {
-        optimizer.watchWindowShortcuts(window)
-      })
-
-      registerIpcHandlers(() => mainWindow)
-      backupService.startScheduler()
-    } catch (error) {
-      console.error('[main] Startup initialization failed:', error)
+  app.whenReady().then(async () => {
+    electronApp.setAppUserModelId('com.consoleri.desktop')
+    if (process.platform === 'darwin') {
+      app.dock?.setIcon(appIconPath())
     }
 
-    createWindow()
+    app.on('browser-window-created', (_, window) => {
+      optimizer.watchWindowShortcuts(window)
+    })
+
+    booting = true
+
+    try {
+      await openSplashWindow()
+
+      await runBootSequence({
+        onProgress: updateSplashProgress,
+        openDatabase: () => {
+          getDatabase()
+        },
+        startServices: () => {
+          registerIpcHandlers(() => mainWindow)
+          backupService.startScheduler()
+        },
+        createMainWindow: () => {
+          createWindow()
+        },
+        waitUntilReady: waitForRendererReady
+      })
+    } catch (error) {
+      console.error('[main] Startup initialization failed:', error)
+      if (!isMainWindowAlive()) {
+        try {
+          createWindow()
+        } catch (createError) {
+          console.error('[main] Failed to create main window after boot error:', createError)
+        }
+      }
+    } finally {
+      booting = false
+      revealMainWindow()
+      closeSplashWindow()
+    }
 
     app.on('activate', () => {
       showAndFocusMainWindow()

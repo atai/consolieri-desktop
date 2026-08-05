@@ -199,6 +199,12 @@ vi.mock('../windows/LogWindow', () => ({
   registerLogContext: mockRegisterLogContext
 }))
 vi.mock('../windows/ReportWindow', () => ({ openReportWindow: vi.fn() }))
+vi.mock('../windows/AboutWindow', () => ({
+  openAboutWindow: vi.fn(),
+  closeSplashWindow: vi.fn(),
+  getAboutWindow: vi.fn(() => null),
+  registerAboutWindowIpc: vi.fn()
+}))
 vi.mock('../windows/SessionWindow', () => ({ openSessionWindow: vi.fn() }))
 vi.mock('../windows/SessionWindowRegistry', () => ({
   isRegisteredSessionWindow: vi.fn(() => false),
@@ -333,6 +339,7 @@ describe('IPC channel inventory', () => {
     IPC_CHANNELS.appExport,
     IPC_CHANNELS.appExportToFile,
     IPC_CHANNELS.appImportFromFile,
+    IPC_CHANNELS.appOpenAbout,
     IPC_CHANNELS.backupGetSettings,
     IPC_CHANNELS.backupUpdateSettings,
     IPC_CHANNELS.backupList,

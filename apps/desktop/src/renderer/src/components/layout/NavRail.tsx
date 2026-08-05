@@ -75,12 +75,15 @@ export function NavRail(): React.JSX.Element {
           Icon={SETTINGS_NAV_ITEM.Icon}
           onClick={() => setAppView(SETTINGS_NAV_ITEM.view)}
         />
-        <span
-          className="select-all pb-1 pt-0.5 text-[10px] leading-none text-muted"
-          title={`Consoleri v${APP_VERSION}`}
+        <button
+          type="button"
+          className="select-all pb-1 pt-0.5 text-[10px] leading-none text-muted hover:text-fg"
+          title={`About Consoleri v${APP_VERSION}`}
+          aria-label={`About Consoleri version ${APP_VERSION}`}
+          onClick={() => void window.consoleri.app.openAbout()}
         >
           v{APP_VERSION}
-        </span>
+        </button>
       </div>
     </nav>
   )

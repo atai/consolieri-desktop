@@ -20,7 +20,7 @@ export function registerIpcHandlers(getWindow: () => BrowserWindow | null): void
   registerUxProfilesIpc()
   registerPreferencesIpc()
   registerReportIpc(getWindow)
-  registerAppIpc()
+  registerAppIpc(getWindow)
   registerCloudIpc()
   registerScpIpc()
 }

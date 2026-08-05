@@ -179,6 +179,8 @@ export interface ConsoleriAPI {
     export: () => Promise<AppExportDocument>
     exportToFile: () => Promise<{ path: string } | { canceled: true }>
     importFromFile: () => Promise<void>
+    openAbout: () => Promise<void>
+    notifyReady: () => void
   }
   backup: {
     getSettings: () => Promise<BackupSettings>
@@ -382,7 +384,11 @@ const consoleri: ConsoleriAPI = {
   app: {
     export: () => ipcRenderer.invoke(IPC_CHANNELS.appExport),
     exportToFile: () => ipcRenderer.invoke(IPC_CHANNELS.appExportToFile),
-    importFromFile: () => ipcRenderer.invoke(IPC_CHANNELS.appImportFromFile)
+    importFromFile: () => ipcRenderer.invoke(IPC_CHANNELS.appImportFromFile),
+    openAbout: () => ipcRenderer.invoke(IPC_CHANNELS.appOpenAbout),
+    notifyReady: () => {
+      ipcRenderer.send(IPC_CHANNELS.appRendererReady)
+    }
   },
   backup: {
     getSettings: () => ipcRenderer.invoke(IPC_CHANNELS.backupGetSettings),

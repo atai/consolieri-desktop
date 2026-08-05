@@ -25,7 +25,14 @@ export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
   const [bootstrapped, setBootstrapped] = useState(false)
 
   useEffect(() => {
-    void loadMapView().then(() => setBootstrapped(true))
+    void loadMapView()
+      .catch((error) => {
+        console.error('[AppShell] Failed to load map view preferences:', error)
+      })
+      .finally(() => {
+        setBootstrapped(true)
+        window.consoleri.app.notifyReady()
+      })
     void refreshUxProfiles()
     void refreshPreferences()
   }, [loadMapView, refreshUxProfiles, refreshPreferences])
@@ -68,11 +75,7 @@ export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
   }, [addSession, upsertSession, updateSession, removeSession])
 
   if (!bootstrapped) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center bg-bg text-sm text-muted">
-        Loading…
-      </div>
-    )
+    return <div className="h-screen w-screen bg-bg" aria-hidden />
   }
 
   const listUsesWindows = settings.sessionOpenMode === 'window'

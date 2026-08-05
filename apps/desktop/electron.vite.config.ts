@@ -27,7 +27,8 @@ export default defineConfig({
         input: {
           index: resolve('src/preload/index.ts'),
           log: resolve('src/preload/log.ts'),
-          report: resolve('src/preload/report.ts')
+          report: resolve('src/preload/report.ts'),
+          about: resolve('src/preload/about.ts')
         }
       }
     }
@@ -51,7 +52,8 @@ export default defineConfig({
           index: resolve('src/renderer/index.html'),
           'log-window/index': resolve('src/renderer/log-window/index.html'),
           'session-window/index': resolve('src/renderer/session-window/index.html'),
-          'report-window/index': resolve('src/renderer/report-window/index.html')
+          'report-window/index': resolve('src/renderer/report-window/index.html'),
+          'about-window/index': resolve('src/renderer/about-window/index.html')
         }
       }
     }

@@ -8,6 +8,7 @@ export type LocalShellAvailability = Record<LocalShellExecutableType, boolean>
 export type { SessionOpenMode, AppSettings } from '@consoleri/core'
 export type SessionStatus = 'connecting' | 'connected' | 'disconnected' | 'error'
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+export type AboutWindowMode = 'splash' | 'about'
 export type {
   HostLogVerbosity,
   UxProfile,
@@ -360,6 +361,11 @@ export const IPC_CHANNELS = {
   appExport: 'app:export',
   appExportToFile: 'app:export-to-file',
   appImportFromFile: 'app:import-from-file',
+  appOpenAbout: 'app:open-about',
+  appAboutMeta: 'app:about-meta',
+  appAboutClose: 'app:about-close',
+  appBootProgress: 'app:boot-progress',
+  appRendererReady: 'app:renderer-ready',
   backupGetSettings: 'backup:get-settings',
   backupUpdateSettings: 'backup:update-settings',
   backupList: 'backup:list',
