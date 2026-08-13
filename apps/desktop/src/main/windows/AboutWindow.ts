@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
 import { APP_NAME, appIconPath } from '../appBranding'
@@ -11,6 +11,7 @@ let currentMode: AboutWindowMode | null = null
 let aboutIpcRegistered = false
 let lastSplashProgress: { label: string; detail?: string } | null = null
 let splashContentReady = false
+let splashCloseAllowed = false
 
 /** Meta/close handlers must exist before splash HTML invokes them. */
 export function registerAboutWindowIpc(): void {
@@ -24,9 +25,9 @@ export function registerAboutWindowIpc(): void {
   }))
 
   ipcMain.on(IPC_CHANNELS.appAboutClose, () => {
-    if (isAlive(aboutWindow)) {
-      aboutWindow.close()
-    }
+    if (!isAlive(aboutWindow)) return
+    if (currentMode === 'splash' && !splashCloseAllowed) return
+    aboutWindow.close()
   })
 }
 
@@ -50,7 +51,21 @@ function loadAboutContent(win: BrowserWindow, mode: AboutWindowMode): void {
   }
 }
 
-function createAboutBrowserWindow(mode: AboutWindowMode, parent?: BrowserWindow | null): BrowserWindow {
+function bringWindowForward(win: BrowserWindow): void {
+  if (win.isDestroyed()) return
+  if (win.isMinimized()) win.restore()
+  win.show()
+  if (process.platform === 'darwin') {
+    app.focus({ steal: true })
+    win.moveTop()
+  }
+  win.focus()
+}
+
+function createAboutBrowserWindow(
+  mode: AboutWindowMode,
+  parent?: BrowserWindow | null
+): BrowserWindow {
   const win = new BrowserWindow({
     width: 420,
     height: 320,
@@ -66,8 +81,10 @@ function createAboutBrowserWindow(mode: AboutWindowMode, parent?: BrowserWindow 
     backgroundColor: CHROME_BG_HEX,
     parent: parent ?? undefined,
     modal: mode === 'about' && Boolean(parent),
-    closable: mode === 'about',
-    skipTaskbar: mode === 'splash',
+    closable: true,
+    // skipTaskbar on darwin makes the window transient and can hide it from
+    // Mission Control / the screen. Only skip the Windows taskbar for splash.
+    skipTaskbar: mode === 'splash' && process.platform === 'win32',
     webPreferences: {
       preload: join(__dirname, '../preload/about.js'),
       contextIsolation: true,
@@ -78,6 +95,10 @@ function createAboutBrowserWindow(mode: AboutWindowMode, parent?: BrowserWindow 
 
   if (mode === 'splash') {
     splashContentReady = false
+    splashCloseAllowed = false
+    win.on('close', (event) => {
+      if (!splashCloseAllowed) event.preventDefault()
+    })
     win.webContents.on('did-finish-load', () => {
       if (aboutWindow !== win || currentMode !== 'splash') return
       splashContentReady = true
@@ -87,13 +108,12 @@ function createAboutBrowserWindow(mode: AboutWindowMode, parent?: BrowserWindow 
     })
   }
 
-  loadAboutContent(win, mode)
-
   win.on('closed', () => {
     if (aboutWindow === win) {
       aboutWindow = null
       currentMode = null
       splashContentReady = false
+      splashCloseAllowed = false
     }
   })
 
@@ -101,20 +121,26 @@ function createAboutBrowserWindow(mode: AboutWindowMode, parent?: BrowserWindow 
 }
 
 function waitUntilShown(win: BrowserWindow, timeoutMs = 2000): Promise<void> {
-  if (win.isVisible()) return Promise.resolve()
+  if (win.isDestroyed()) return Promise.resolve()
+  if (win.isVisible()) {
+    bringWindowForward(win)
+    return Promise.resolve()
+  }
 
   return new Promise((resolve) => {
     let settled = false
     const finish = (): void => {
-      if (settled || win.isDestroyed()) return
+      if (settled) return
       settled = true
       clearTimeout(timer)
-      win.show()
+      win.removeListener('ready-to-show', onReady)
+      if (!win.isDestroyed()) bringWindowForward(win)
       resolve()
     }
 
+    const onReady = (): void => finish()
     const timer = setTimeout(finish, timeoutMs)
-    win.once('ready-to-show', finish)
+    win.once('ready-to-show', onReady)
   })
 }
 
@@ -123,19 +149,22 @@ export function openSplashWindow(): Promise<BrowserWindow> {
   lastSplashProgress = null
 
   if (isAlive(aboutWindow) && currentMode === 'splash') {
-    aboutWindow.focus()
+    bringWindowForward(aboutWindow)
     return Promise.resolve(aboutWindow)
   }
 
   if (isAlive(aboutWindow)) {
-    aboutWindow.close()
+    splashCloseAllowed = true
+    aboutWindow.destroy()
     aboutWindow = null
   }
 
   const win = createAboutBrowserWindow('splash')
   aboutWindow = win
   currentMode = 'splash'
-  return waitUntilShown(win).then(() => win)
+  const shown = waitUntilShown(win)
+  loadAboutContent(win, 'splash')
+  return shown.then(() => win)
 }
 
 export function updateSplashProgress(label: string, detail?: string): void {
@@ -145,16 +174,18 @@ export function updateSplashProgress(label: string, detail?: string): void {
 
 export function closeSplashWindow(): void {
   if (!isAlive(aboutWindow) || currentMode !== 'splash') return
-  aboutWindow.close()
+  splashCloseAllowed = true
+  const win = aboutWindow
   aboutWindow = null
   currentMode = null
   splashContentReady = false
   lastSplashProgress = null
+  win.destroy()
 }
 
 export function focusSplashWindow(): void {
   if (isAlive(aboutWindow) && currentMode === 'splash') {
-    aboutWindow.focus()
+    bringWindowForward(aboutWindow)
   }
 }
 
@@ -166,13 +197,13 @@ export function openAboutWindow(parent?: BrowserWindow | null): BrowserWindow {
   registerAboutWindowIpc()
 
   if (isAlive(aboutWindow) && currentMode === 'about') {
-    aboutWindow.focus()
+    bringWindowForward(aboutWindow)
     return aboutWindow
   }
 
   if (isAlive(aboutWindow) && currentMode === 'splash') {
     // Boot splash owns the window; ignore About until boot finishes.
-    aboutWindow.focus()
+    bringWindowForward(aboutWindow)
     return aboutWindow
   }
 
@@ -183,8 +214,10 @@ export function openAboutWindow(parent?: BrowserWindow | null): BrowserWindow {
   const win = createAboutBrowserWindow('about', parent)
   aboutWindow = win
   currentMode = 'about'
+  const shown = waitUntilShown(win)
+  loadAboutContent(win, 'about')
 
-  void waitUntilShown(win).then(() => {
+  void shown.then(() => {
     if (!win.isDestroyed()) win.focus()
   })
 

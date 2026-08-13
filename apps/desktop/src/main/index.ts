@@ -42,20 +42,20 @@ if (!gotSingleInstanceLock) {
   }
 
   function showAndFocusMainWindow(): void {
+    if (isMainWindowAlive()) {
+      if (mainWindow!.isMinimized()) mainWindow!.restore()
+      mainWindow!.show()
+      mainWindow!.focus()
+      return
+    }
+
     if (booting || isSplashOpen()) {
       focusSplashWindow()
       return
     }
 
-    if (!isMainWindowAlive()) {
-      createWindow()
-      revealMainWindow()
-      return
-    }
-
-    if (mainWindow!.isMinimized()) mainWindow!.restore()
-    mainWindow!.show()
-    mainWindow!.focus()
+    createWindow()
+    revealMainWindow()
   }
 
   function revealMainWindow(): void {
@@ -95,7 +95,9 @@ if (!gotSingleInstanceLock) {
 
     mainWindow.on('closed', () => {
       mainWindow = null
-      app.quit()
+      if (!booting && !isSplashOpen()) {
+        app.quit()
+      }
     })
 
     mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -142,18 +144,22 @@ if (!gotSingleInstanceLock) {
   })
 
   app.whenReady().then(async () => {
-    electronApp.setAppUserModelId('com.consoleri.desktop')
-    if (process.platform === 'darwin') {
-      app.dock?.setIcon(appIconPath())
-    }
-
-    app.on('browser-window-created', (_, window) => {
-      optimizer.watchWindowShortcuts(window)
-    })
-
     booting = true
 
     try {
+      electronApp.setAppUserModelId('com.consoleri.desktop')
+      if (process.platform === 'darwin') {
+        try {
+          app.dock?.setIcon(appIconPath())
+        } catch (iconError) {
+          console.error('[main] Failed to set dock icon:', iconError)
+        }
+      }
+
+      app.on('browser-window-created', (_, window) => {
+        optimizer.watchWindowShortcuts(window)
+      })
+
       await openSplashWindow()
 
       await runBootSequence({
@@ -180,9 +186,14 @@ if (!gotSingleInstanceLock) {
         }
       }
     } finally {
-      booting = false
-      revealMainWindow()
-      closeSplashWindow()
+      try {
+        revealMainWindow()
+        if (isMainWindowAlive() && mainWindow!.isVisible()) {
+          closeSplashWindow()
+        }
+      } finally {
+        booting = false
+      }
     }
 
     app.on('activate', () => {
@@ -197,6 +208,7 @@ if (!gotSingleInstanceLock) {
   })
 
   app.on('window-all-closed', () => {
+    if (booting) return
     app.quit()
   })
 }
