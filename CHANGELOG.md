@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2026-08-13
+
+### Other
+
+- Chore: add husky for Git hooks management
+
+- Enhance TypeScript definitions and improve ESLint configuration
+
+- Implement About window functionality and enhance IPC communication
+
+
+### Refactoring
+
+- Refactor configuration files and improve code formatting
+
+- Refactor main and About window logic for improved window management
+
 ## [0.7.0] - 2026-08-05
 
 ### Other
