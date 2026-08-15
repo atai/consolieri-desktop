@@ -5,6 +5,7 @@ import {
   buildRdpDestination,
   parseRDCleanPathRequest
 } from '@consoleri/core'
+import { reportBestEffortFailure } from '../../../shared/bestEffort'
 import type {
   AllowedTarget,
   RdpHandshakePort,
@@ -68,14 +69,14 @@ export class RdpCleanPathHandler {
 
       try {
         ws.send(buildRDCleanPathError(1, 502))
-      } catch {
-        /* ignore */
+      } catch (error) {
+        reportBestEffortFailure('rdcleanpath error frame', error)
       }
 
       try {
         ws.close()
-      } catch {
-        /* ignore */
+      } catch (error) {
+        reportBestEffortFailure('rdcleanpath close socket', error)
       }
     }
   }

@@ -4,6 +4,7 @@ import { join } from 'path'
 import { app } from 'electron'
 import { shellHistoryDir, shellHistoryFile } from '@consoleri/core'
 import type { LocalShellType } from '../../shared/types'
+import { reportBestEffortFailure } from '../../shared/bestEffort'
 
 export function shellHistoryRoot(): string {
   return join(app.getPath('userData'), 'shell-history')
@@ -25,8 +26,8 @@ export function deletePaneShellHistory(hostId: string, paneId: string): void {
   const file = shellHistoryPath(hostId, paneId)
   try {
     rmSync(file, { force: true })
-  } catch {
-    /* ignore */
+  } catch (error) {
+    reportBestEffortFailure('delete pane shell history', error)
   }
 }
 
@@ -34,8 +35,8 @@ export function deleteHostShellHistory(hostId: string): void {
   const dir = shellHistoryDir(app.getPath('userData'), hostId)
   try {
     rmSync(dir, { recursive: true, force: true })
-  } catch {
-    /* ignore */
+  } catch (error) {
+    reportBestEffortFailure('delete host shell history', error)
   }
 }
 

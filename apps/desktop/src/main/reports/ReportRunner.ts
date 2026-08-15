@@ -14,19 +14,11 @@ import { connectivityProbe } from './ConnectivityProbe'
 import { customTestProbe } from './CustomTestProbe'
 import { inventoryProbe } from './InventoryProbe'
 import { reportRepository } from './ReportRepository'
-
-const reportWindows = new Map<string, BrowserWindow>()
-
-export function registerReportWindow(reportId: string, win: BrowserWindow): void {
-  reportWindows.set(reportId, win)
-  win.on('closed', () => {
-    reportWindows.delete(reportId)
-  })
-}
+import { getReportWindow } from '../windows/ReportWindowRegistry'
 
 function sendProgress(reportId: string, event: ReportProgressEvent): void {
-  const win = reportWindows.get(reportId)
-  if (win && !win.isDestroyed()) {
+  const win = getReportWindow(reportId)
+  if (win) {
     win.webContents.send(IPC_CHANNELS.reportProgress, event)
   }
 }

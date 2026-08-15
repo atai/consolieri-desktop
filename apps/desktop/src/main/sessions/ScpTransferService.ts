@@ -6,6 +6,7 @@ import type { ScpTransferRequest, ScpTransferResult } from '../../shared/types'
 import { hostRepository } from '../hosts/HostRepository'
 import { profileRepository } from '../hosts/ProfileRepository'
 import { connectSshForHostProfile } from './resolveProfileSshClient'
+import { reportBestEffortFailure } from '../../shared/bestEffort'
 
 function posixJoin(dir: string, file: string): string {
   const normalized = dir.replace(/\\/g, '/').replace(/\/+$/, '')
@@ -111,8 +112,8 @@ export class ScpTransferService {
       await fastGet(sftp, remotePath, localPath)
       try {
         bytes = statSync(localPath).size
-      } catch {
-        // ignore size read failure after successful transfer
+      } catch (error) {
+        reportBestEffortFailure('scp local size after download', error)
       }
       return {
         success: true,

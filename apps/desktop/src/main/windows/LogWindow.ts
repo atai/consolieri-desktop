@@ -1,10 +1,10 @@
-import { BrowserWindow } from 'electron'
-import { join } from 'path'
-import { is } from '@electron-toolkit/utils'
+import type { BrowserWindow } from 'electron'
 import { appIconPath } from '../appBranding'
-import { sessionManager } from '../sessions/SessionManager'
+import { sessionManager } from '../compositionRoot'
 import { formatLogWindowTitle, pinBrowserWindowTitle, type LogWindowKind } from '../windowTitles'
-import { CHROME_BG_HEX } from '../../shared/chromeHex'
+import { createAppBrowserWindow } from './createAppBrowserWindow'
+import { loadRendererEntry } from './loadRendererEntry'
+import { attachWindowDiagnostics } from './attachWindowDiagnostics'
 
 const logWindows = new Map<string, BrowserWindow>()
 
@@ -50,14 +50,6 @@ function resolveLogTitle(logId: string, explicit?: LogWindowContext): string {
   return formatLogWindowTitle({ kind, fallbackLabel })
 }
 
-function buildLogQuery(logId: string, headerTitle: string): string {
-  const params = new URLSearchParams({
-    sessionId: logId,
-    headerTitle
-  })
-  return `?${params.toString()}`
-}
-
 export function openLogWindow(
   logId: string,
   parent: BrowserWindow | null,
@@ -68,7 +60,6 @@ export function openLogWindow(
   }
 
   const headerTitle = resolveLogTitle(logId, context)
-  const query = buildLogQuery(logId, headerTitle)
 
   const existing = logWindows.get(logId)
   if (existing && !existing.isDestroyed()) {
@@ -77,23 +68,18 @@ export function openLogWindow(
     return existing
   }
 
-  const win = new BrowserWindow({
+  const win = createAppBrowserWindow({
     width: 640,
     height: 420,
     minWidth: 400,
     minHeight: 200,
     title: headerTitle,
     icon: appIconPath(),
-    backgroundColor: CHROME_BG_HEX,
     parent: parent ?? undefined,
-    autoHideMenuBar: true,
-    webPreferences: {
-      preload: join(__dirname, '../preload/log.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false
-    }
+    show: false,
+    preload: 'log'
   })
+  attachWindowDiagnostics(win, { name: 'log-window' })
 
   pinBrowserWindowTitle(win, () => resolveLogTitle(logId))
 
@@ -102,16 +88,19 @@ export function openLogWindow(
 
   win.on('closed', () => {
     logWindows.delete(logId)
-    if (sessionManager) sessionManager.setLogWindow(null)
+    sessionManager.setLogWindow(null)
   })
 
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/log-window/index.html${query}`)
-  } else {
-    win.loadFile(join(__dirname, '../renderer/log-window/index.html'), {
-      query: Object.fromEntries(new URLSearchParams(query.slice(1)))
-    })
-  }
+  loadRendererEntry(win, 'log-window', {
+    sessionId: logId,
+    headerTitle
+  })
+  win.once('ready-to-show', () => {
+    if (!win.isDestroyed()) {
+      win.show()
+      win.focus()
+    }
+  })
 
   return win
 }

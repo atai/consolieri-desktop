@@ -1,5 +1,6 @@
 import type { TLSSocket } from 'node:tls'
 import type { RdpRelayPort, WebSocketLike } from './types'
+import { reportBestEffortFailure } from '../../../shared/bestEffort'
 
 const WS_OPEN = 1
 
@@ -11,8 +12,8 @@ export class NodeRdpRelay implements RdpRelayPort {
       if (ws.readyState === WS_OPEN) {
         try {
           ws.close()
-        } catch {
-          /* ignore */
+        } catch (error) {
+          reportBestEffortFailure('rdp relay ws.close', error)
         }
       }
     }

@@ -55,40 +55,45 @@ export function SessionWindowApp(): React.JSX.Element {
   useEffect(() => {
     if (hostId) {
       const initHost = async (): Promise<void> => {
-        const host = await window.consoleri.hosts.get(hostId)
-        if (!host) {
-          setInitError('Host not found')
-          return
-        }
-        setBoundHostId(host.id)
-        setBoundHostName(host.name)
-        const preset = await window.consoleri.hostPresets.get(host.id)
-        if (!preset || preset.panes.length === 0) {
-          // Fallback: single local shell
-          const request: OpenSessionRequest = {
-            hostId: host.id,
-            profileId: host.defaultProfileId ?? undefined,
-            title: host.name,
-            protocol: 'local_pty'
+        try {
+          const host = await window.consoleri.hosts.get(hostId)
+          if (!host) {
+            setInitError('Host not found')
+            return
           }
-          const session = await window.consoleri.sessions.open(request)
-          const paneId = nanoid()
-          const binding: PaneBinding = {
-            paneId,
-            sessionId: session.id,
-            protocol: session.protocol,
-            title: session.title,
-            connectRequest: { ...request, paneId }
+          setBoundHostId(host.id)
+          setBoundHostName(host.name)
+          const preset = await window.consoleri.hostPresets.get(host.id)
+          if (!preset || preset.panes.length === 0) {
+            // Fallback: single local shell
+            const request: OpenSessionRequest = {
+              hostId: host.id,
+              profileId: host.defaultProfileId ?? undefined,
+              title: host.name,
+              protocol: 'local_pty'
+            }
+            const session = await window.consoleri.sessions.open(request)
+            const paneId = nanoid()
+            const binding: PaneBinding = {
+              paneId,
+              sessionId: session.id,
+              protocol: session.protocol,
+              title: session.title,
+              connectRequest: { ...request, paneId }
+            }
+            setPanes([binding])
+            setLayout(paneId)
+            setSessions([session])
+            return
           }
-          setPanes([binding])
-          setLayout(paneId)
-          setSessions([session])
-          return
+          const restored = await restoreHostPresetSessions(host, preset)
+          setPanes(restored.panes)
+          setLayout(restored.layout)
+          setSessions(restored.sessions)
+        } catch (error) {
+          console.error('[session-window] Failed to initialize host window:', error)
+          setInitError(error instanceof Error ? error.message : String(error))
         }
-        const restored = await restoreHostPresetSessions(host, preset)
-        setPanes(restored.panes)
-        setLayout(restored.layout)
-        setSessions(restored.sessions)
       }
       void initHost()
       return
@@ -97,40 +102,45 @@ export function SessionWindowApp(): React.JSX.Element {
     if (!sessionId) return
 
     const init = async (): Promise<void> => {
-      const listed = await window.consoleri.sessions.list()
-      const session = listed.find((s) => s.id === sessionId)
-      if (!session) {
-        setInitError('Session not found')
-        return
-      }
+      try {
+        const listed = await window.consoleri.sessions.list()
+        const session = listed.find((s) => s.id === sessionId)
+        if (!session) {
+          setInitError('Session not found')
+          return
+        }
 
-      const connectRequest =
-        (await window.consoleri.sessions.getConnectRequest(sessionId)) ??
-        ({
-          hostId: session.hostId ?? undefined,
-          profileId: session.profileId ?? undefined,
+        const connectRequest =
+          (await window.consoleri.sessions.getConnectRequest(sessionId)) ??
+          ({
+            hostId: session.hostId ?? undefined,
+            profileId: session.profileId ?? undefined,
+            protocol: session.protocol,
+            title: session.title
+          } satisfies OpenSessionRequest)
+
+        if (connectRequest.hostId) {
+          setBoundHostId(connectRequest.hostId)
+          const host = await window.consoleri.hosts.get(connectRequest.hostId)
+          if (host) setBoundHostName(host.name)
+        }
+
+        const paneId = nanoid()
+        const binding: PaneBinding = {
+          paneId,
+          sessionId: session.id,
           protocol: session.protocol,
-          title: session.title
-        } satisfies OpenSessionRequest)
+          title: session.title,
+          connectRequest: { ...connectRequest, paneId }
+        }
 
-      if (connectRequest.hostId) {
-        setBoundHostId(connectRequest.hostId)
-        const host = await window.consoleri.hosts.get(connectRequest.hostId)
-        if (host) setBoundHostName(host.name)
+        setPanes([binding])
+        setLayout(paneId)
+        setSessions([session])
+      } catch (error) {
+        console.error('[session-window] Failed to initialize session window:', error)
+        setInitError(error instanceof Error ? error.message : String(error))
       }
-
-      const paneId = nanoid()
-      const binding: PaneBinding = {
-        paneId,
-        sessionId: session.id,
-        protocol: session.protocol,
-        title: session.title,
-        connectRequest: { ...connectRequest, paneId }
-      }
-
-      setPanes([binding])
-      setLayout(paneId)
-      setSessions([session])
     }
 
     void init()

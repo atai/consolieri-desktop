@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react'
 import type { SessionInfo } from '@shared/types'
+import { reportBestEffortFailure } from '../../../shared/bestEffort'
 
 export interface AutoReconnectHook {
   panelOpen: boolean
@@ -30,8 +31,8 @@ function playSuccessBeep(): void {
     osc.start()
     osc.stop(ctx.currentTime + 0.6)
     osc.addEventListener('ended', () => void ctx.close())
-  } catch {
-    // AudioContext unavailable in this environment
+  } catch (error) {
+    reportBestEffortFailure('reconnect success sound', error)
   }
 }
 

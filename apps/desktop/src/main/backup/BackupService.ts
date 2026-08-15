@@ -12,6 +12,7 @@ import { join } from 'path'
 import { parseAppImportJson, serializeAppExportDocument } from '@consoleri/core'
 import { getDatabase } from '../db/database'
 import type { AppImportExportService } from '../settings/AppImportExportService'
+import { reportBestEffortFailure } from '../../shared/bestEffort'
 import type { BackupInfo, BackupSettings } from '../../shared/types'
 
 const BACKUP_SETTINGS_KEY = 'backup_settings'
@@ -177,8 +178,8 @@ export class BackupService {
     }
     try {
       this.createBackupNow()
-    } catch {
-      // Silently ignore backup errors to not disturb the app
+    } catch (error) {
+      reportBestEffortFailure('scheduled backup', error)
     }
   }
 

@@ -1,4 +1,5 @@
 import { formatWsaErrorCode } from '@consoleri/core'
+import { reportBestEffortFailure } from '../../../../shared/bestEffort'
 
 const IRON_ERROR_KIND_LABEL: Record<number, string> = {
   0: 'General error',
@@ -26,15 +27,15 @@ function formatIronErrorDetails(err: IronErrorLike): string[] {
   try {
     const kind = err.kind()
     parts.push(IRON_ERROR_KIND_LABEL[kind] ?? `Error kind ${kind}`)
-  } catch {
-    /* ignore */
+  } catch (error) {
+    reportBestEffortFailure('ironrdp error accessor', error)
   }
 
   try {
     const trace = err.backtrace()
     if (trace) parts.push(trace)
-  } catch {
-    /* ignore */
+  } catch (error) {
+    reportBestEffortFailure('ironrdp error accessor', error)
   }
 
   try {
@@ -48,8 +49,8 @@ function formatIronErrorDetails(err: IronErrorLike): string[] {
     if (details?.tlsAlertCode != null) {
       parts.push(`TLS alert ${details.tlsAlertCode}`)
     }
-  } catch {
-    /* ignore */
+  } catch (error) {
+    reportBestEffortFailure('ironrdp error accessor', error)
   }
 
   return parts
@@ -65,8 +66,8 @@ export function formatIronError(err: unknown): string {
     try {
       const trace = (err as IronErrorLike).backtrace()
       if (trace) return trace
-    } catch {
-      /* fall through */
+    } catch (error) {
+      reportBestEffortFailure('ironrdp backtrace', error)
     }
   }
 

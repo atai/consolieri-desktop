@@ -5,6 +5,7 @@ import { APP_VERSION } from '../../shared/appVersion'
 import { getCloudConfig } from './cloudConfig'
 import { cloudSecureStorage } from './CloudSecureStorage'
 import { createPkcePair, generateSyncKey, syncKeyToBase64 } from './SyncCrypto'
+import { reportBestEffortFailure } from '../../shared/bestEffort'
 
 export interface CloudUserInfo {
   id: string
@@ -186,8 +187,8 @@ export class CloudAuthService {
           },
           body: JSON.stringify({ refreshToken: refreshToken ?? undefined })
         })
-      } catch {
-        // Best-effort revoke; always wipe local tokens.
+      } catch (error) {
+        reportBestEffortFailure('cloud logout revoke', error)
       }
     }
 

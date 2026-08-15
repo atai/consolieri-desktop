@@ -43,16 +43,21 @@ export function WorkspaceWindowApp(): React.JSX.Element {
     if (!windowId) return
 
     const init = async (): Promise<void> => {
-      const snapshot = await window.consoleri.control.getWorkspaceWindow(windowId)
-      if (!snapshot) {
-        setInitError('Window not found')
-        return
-      }
-      setLayout(snapshot.layout as MosaicNode<string> | null)
-      setPanes(snapshot.panes)
-      setSessions(snapshot.sessions)
-      if (snapshot.title) {
-        document.title = snapshot.title
+      try {
+        const snapshot = await window.consoleri.control.getWorkspaceWindow(windowId)
+        if (!snapshot) {
+          setInitError('Window not found')
+          return
+        }
+        setLayout(snapshot.layout as MosaicNode<string> | null)
+        setPanes(snapshot.panes)
+        setSessions(snapshot.sessions)
+        if (snapshot.title) {
+          document.title = snapshot.title
+        }
+      } catch (error) {
+        console.error('[workspace-window] Failed to initialize:', error)
+        setInitError(error instanceof Error ? error.message : String(error))
       }
     }
 

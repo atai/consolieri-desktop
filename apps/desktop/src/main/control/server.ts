@@ -13,6 +13,7 @@ import {
   validateHostHeader,
   validateOriginHeader
 } from './auth'
+import { reportBestEffortFailure } from '../../shared/bestEffort'
 import {
   clearStoredTokenHash,
   generateControlToken,
@@ -64,8 +65,8 @@ function writeDiscoveryFile(port: number): void {
 function removeDiscoveryFile(): void {
   try {
     unlinkSync(controlJsonPath())
-  } catch {
-    /* ignore */
+  } catch (error) {
+    reportBestEffortFailure('remove control discovery file', error)
   }
 }
 

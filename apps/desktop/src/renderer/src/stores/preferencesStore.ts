@@ -6,6 +6,7 @@ import {
   type KeybindingId,
   type SessionOpenMode
 } from '@consoleri/core'
+import { reportBestEffortFailure } from '../../../shared/bestEffort'
 
 export type { SessionOpenMode }
 
@@ -42,8 +43,8 @@ export const usePreferencesStore = create<PreferencesState>((set) => ({
         await window.consoleri.preferences.setAppSettings(parsed)
         localStorage.removeItem(LEGACY_SETTINGS_KEY)
       }
-    } catch {
-      /* ignore migration errors */
+    } catch (error) {
+      reportBestEffortFailure('migrate legacy settings', error)
     }
 
     const settings = await window.consoleri.preferences.getAppSettings()

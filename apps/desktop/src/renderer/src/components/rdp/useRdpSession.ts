@@ -6,6 +6,7 @@ import { ensureIronRdpReady, formatIronError } from './ironrdpInit'
 import { logRdpError } from './rdpErrors'
 import { attachInputHandlers } from './rdpInputHandlers'
 import type { RdpCredentials } from './useRdpCredentials'
+import { reportBestEffortFailure } from '../../../../shared/bestEffort'
 
 export type RdpConnectionStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'error'
 
@@ -61,8 +62,8 @@ export function useRdpSession({
       if (active) {
         try {
           active.shutdown()
-        } catch {
-          /* ignore */
+        } catch (error) {
+          reportBestEffortFailure('rdp session shutdown', error)
         }
       }
     }

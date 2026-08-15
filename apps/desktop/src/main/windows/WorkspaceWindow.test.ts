@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 
-vi.mock('../sessions/SessionManager', () => ({
+vi.mock('../compositionRoot', () => ({
   sessionManager: {
     open: vi.fn((request: { title?: string; protocol?: string }) => ({
       id: `sess-${request.title ?? 'x'}`,
@@ -29,6 +29,14 @@ vi.mock('../windowTitles', () => ({
   pinBrowserWindowTitle: vi.fn()
 }))
 
+vi.mock('./attachWindowDiagnostics', () => ({
+  attachWindowDiagnostics: vi.fn()
+}))
+
+vi.mock('./loadRendererEntry', () => ({
+  loadRendererEntry: vi.fn()
+}))
+
 const destroyFns: Array<() => void> = []
 
 vi.mock('electron', () => {
@@ -46,10 +54,18 @@ vi.mock('electron', () => {
     isMinimized(): boolean {
       return false
     }
-    restore(): void {}
-    show(): void {}
-    focus(): void {}
-    setTitle(): void {}
+    restore(): void {
+      /* noop */
+    }
+    show(): void {
+      /* noop */
+    }
+    focus(): void {
+      /* noop */
+    }
+    setTitle(): void {
+      /* noop */
+    }
     close(): void {
       this.destroyed = true
       for (const fn of this.listeners.closed ?? []) fn()
@@ -57,13 +73,22 @@ vi.mock('electron', () => {
     destroy(): void {
       this.destroyed = true
     }
-    removeAllListeners(): void {}
+    removeAllListeners(): void {
+      /* noop */
+    }
     on(event: string, fn: () => void): void {
       this.listeners[event] = this.listeners[event] ?? []
       this.listeners[event].push(fn)
     }
-    loadURL(): void {}
-    loadFile(): void {}
+    once(event: string, fn: () => void): void {
+      this.on(event, fn)
+    }
+    loadURL(): void {
+      /* noop */
+    }
+    loadFile(): void {
+      /* noop */
+    }
   }
   return { BrowserWindow: FakeBrowserWindow }
 })

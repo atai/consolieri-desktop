@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { MosaicNode } from 'react-mosaic-component'
 import type { SessionInfo } from '@shared/types'
 import { flushWorkspacePersist, useSessionWorkspaceStore } from '../../stores/sessionWorkspaceStore'
@@ -21,25 +21,34 @@ export function MosaicWorkspace(): React.JSX.Element {
     useSessionWorkspaceStore()
   const [showSaveAs, setShowSaveAs] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [boundHostId, setBoundHostId] = useState<string | null>(null)
-  const [boundHostName, setBoundHostName] = useState<string | null>(null)
+  const [boundHostNameState, setBoundHostNameState] = useState<{
+    id: string
+    name: string | null
+  } | null>(null)
 
   const layout = workspace.layout as MosaicNode<string> | null
   const canSave = isLocalOnlyLayout(workspace.panes)
 
-  useEffect(() => {
+  const boundHostId = useMemo(() => {
     const hostIds = new Set(
       workspace.panes.map((p) => p.connectRequest.hostId).filter((id): id is string => Boolean(id))
     )
-    if (hostIds.size === 1) {
-      const id = [...hostIds][0]!
-      setBoundHostId(id)
-      void window.consoleri.hosts.get(id).then((h) => setBoundHostName(h?.name ?? null))
-    } else {
-      setBoundHostId(null)
-      setBoundHostName(null)
-    }
+    return hostIds.size === 1 ? [...hostIds][0]! : null
   }, [workspace.panes])
+
+  const boundHostName =
+    boundHostId && boundHostNameState?.id === boundHostId ? boundHostNameState.name : null
+
+  useEffect(() => {
+    if (!boundHostId) return
+    let cancelled = false
+    void window.consoleri.hosts.get(boundHostId).then((h) => {
+      if (!cancelled) setBoundHostNameState({ id: boundHostId, name: h?.name ?? null })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [boundHostId])
 
   useEffect(() => {
     const saveOnExit = (): void => {
@@ -125,8 +134,7 @@ export function MosaicWorkspace(): React.JSX.Element {
         layout,
         panes: workspace.panes
       })
-      setBoundHostId(host.id)
-      setBoundHostName(host.name)
+      setBoundHostNameState({ id: host.id, name: host.name })
       persistWorkspace(
         layout,
         workspace.panes.map((p) => ({

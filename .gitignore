@@ -147,3 +147,7 @@ vite.config.ts.timestamp-*
 .DS_Store
 Thumbs.db
 *.local
+
+# Sphinx documentation
+docs/build/
+docs/.venv/

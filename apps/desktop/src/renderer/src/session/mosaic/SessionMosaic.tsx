@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactElement,
@@ -75,7 +76,10 @@ export function SessionMosaic({
   const mosaicRef = useRef<HTMLDivElement>(null)
   const leafCount = getLeaves(layout).length
   const canMaximize = leafCount > 1
-  const keybindings = usePreferencesStore((s) => mergeKeybindings(s.settings.keybindings))
+  // Select a stable store reference — never create objects inside the selector
+  // (Zustand compares with Object.is; a new merge result every snapshot loops forever).
+  const rawKeybindings = usePreferencesStore((s) => s.settings.keybindings)
+  const keybindings = useMemo(() => mergeKeybindings(rawKeybindings), [rawKeybindings])
   const maximizeAccel = keybindings.toggleMaximizePane
   const maximizeHint = formatAccelerator(maximizeAccel)
 
@@ -88,21 +92,21 @@ export function SessionMosaic({
     [panes, sessions]
   )
 
+  // Derive active maximize — avoids setState-in-effect when layout shrinks.
+  const activeMaximizedPaneId =
+    maximizedPaneId !== null &&
+    leafCount > 1 &&
+    panes.some((p) => p.paneId === maximizedPaneId)
+      ? maximizedPaneId
+      : null
+
   const toggleMaximize = useCallback(
     (paneId: string) => {
-      if (!canMaximize && maximizedPaneId === null) return
+      if (!canMaximize && activeMaximizedPaneId === null) return
       setMaximizedPaneId((current) => (current === paneId ? null : paneId))
     },
-    [canMaximize, maximizedPaneId]
+    [canMaximize, activeMaximizedPaneId]
   )
-
-  // Drop maximize when layout shrinks to a single pane or the pane disappears.
-  useEffect(() => {
-    if (!maximizedPaneId) return
-    if (leafCount <= 1 || !panes.some((p) => p.paneId === maximizedPaneId)) {
-      setMaximizedPaneId(null)
-    }
-  }, [leafCount, maximizedPaneId, panes])
 
   // Track focused pane for hotkey targeting.
   useEffect(() => {
@@ -132,20 +136,20 @@ export function SessionMosaic({
       const pane = target.closest('[data-pane-id]') as HTMLElement | null
       const paneId = pane?.dataset.paneId
       if (!paneId) return
-      if (!canMaximize && maximizedPaneId !== paneId) return
+      if (!canMaximize && activeMaximizedPaneId !== paneId) return
       toggleMaximize(paneId)
     }
 
     root.addEventListener('dblclick', onDblClick)
     return () => root.removeEventListener('dblclick', onDblClick)
-  }, [canMaximize, maximizedPaneId, toggleMaximize])
+  }, [canMaximize, activeMaximizedPaneId, toggleMaximize])
 
   // Capture-phase hotkey so it works while xterm has focus.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (!matchAccelerator(event, maximizeAccel)) return
 
-      if (maximizedPaneId) {
+      if (activeMaximizedPaneId) {
         event.preventDefault()
         event.stopPropagation()
         setMaximizedPaneId(null)
@@ -163,7 +167,7 @@ export function SessionMosaic({
 
     window.addEventListener('keydown', onKeyDown, true)
     return () => window.removeEventListener('keydown', onKeyDown, true)
-  }, [canMaximize, maximizeAccel, maximizedPaneId, panes])
+  }, [canMaximize, maximizeAccel, activeMaximizedPaneId, panes])
 
   const handleReconnect = async (sessionId: string): Promise<void> => {
     const updated = await window.consoleri.sessions.reconnect(sessionId)
@@ -191,7 +195,7 @@ export function SessionMosaic({
     const showLog = session?.status === 'connecting' || session?.status === 'error'
     const splitDisabled = session?.status === 'connecting'
     const showConnect = needsConnect(session, binding)
-    const isMaximized = maximizedPaneId === paneId
+    const isMaximized = activeMaximizedPaneId === paneId
 
     const toolbarControls = [
       ...(!splitDisabled
@@ -221,7 +225,7 @@ export function SessionMosaic({
           path={path}
           title={title}
           toolbarControls={toolbarControls}
-          draggable={!maximizedPaneId}
+          draggable={!activeMaximizedPaneId}
         >
           {binding ? (
             <SessionView
@@ -253,7 +257,7 @@ export function SessionMosaic({
 
   const mosaicClass = [
     'consoleri-mosaic mosaic-blueprint-theme bp5-dark h-full',
-    maximizedPaneId ? 'consoleri-mosaic--maximized' : ''
+    activeMaximizedPaneId ? 'consoleri-mosaic--maximized' : ''
   ]
     .filter(Boolean)
     .join(' ')

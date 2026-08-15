@@ -5,6 +5,7 @@ import { CloudPortableExport } from './CloudPortableExport'
 import { cloudSecureStorage } from './CloudSecureStorage'
 import { appImportExportService } from '../settings/appImportExportServiceInstance'
 import { syncKeyFromBase64, syncKeyToBase64, generateSyncKey } from './SyncCrypto'
+import { reportBestEffortFailure } from '../../shared/bestEffort'
 
 const CLOUD_SYNC_SETTINGS_KEY = 'cloud_sync'
 const DEBOUNCE_MS = 45_000
@@ -102,8 +103,9 @@ export class CloudSyncCoordinator {
     if (this.debounceTimer) clearTimeout(this.debounceTimer)
     this.debounceTimer = setTimeout(() => {
       this.debounceTimer = null
-      void this.upload('auto').catch(() => {
+      void this.upload('auto').catch((error) => {
         // Errors already recorded in lastError for non-skip failures.
+        reportBestEffortFailure('cloud auto upload', error)
       })
     }, DEBOUNCE_MS)
   }
@@ -202,8 +204,8 @@ export class CloudSyncCoordinator {
       const settings = this.getSettings()
       if (!settings.enabled) return
       this.scheduleUpload()
-    } catch {
-      // ignore
+    } catch (error) {
+      reportBestEffortFailure('notifyDataChanged', error)
     }
   }
 }

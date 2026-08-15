@@ -2,11 +2,14 @@
 
 Monorepo for Consoleri — a desktop host console manager (SSH, shells, RDP, VNC).
 
+**Documentation:** [https://atai.github.io/consolieri-desktop/](https://atai.github.io/consolieri-desktop/) (published on each release) · sources in [`docs/source/`](docs/source/)
+
 ## Structure
 
 - `apps/desktop` — Electron application (`@consoleri/desktop`)
 - `packages/core` — shared pure functions (`@consoleri/core`)
 - `scripts/` — root tooling (dev launcher, native rebuild, etc.)
+- `docs/` — Sphinx / reStructuredText documentation
 
 ## Prerequisites
 
@@ -57,13 +60,19 @@ npm run package
 npm run test
 ```
 
+## Documentation
+
+```bash
+python3 -m venv docs/.venv
+docs/.venv/bin/pip install -r docs/requirements.txt
+cd docs && make html
+```
+
+Open `docs/build/html/index.html`. Agent and contributor notes live in [`docs/source/agent.rst`](docs/source/agent.rst). Release and CI signing secrets: [`docs/source/release.rst`](docs/source/release.rst), [`docs/source/ci-secrets.rst`](docs/source/ci-secrets.rst).
+
 ## Release
 
-Prerequisites:
-
-- [git-cliff](https://git-cliff.org/) in `PATH` (`scoop install git-cliff` on Windows)
-- Git Bash or another `bash` shell (`bash` ships with Git for Windows)
-- Clean working tree on `main` or `master`
+See [Release process](docs/source/release.rst). Short version:
 
 ```bash
 # Preview the next version and changelog

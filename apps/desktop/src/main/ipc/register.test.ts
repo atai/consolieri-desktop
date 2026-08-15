@@ -223,9 +223,15 @@ vi.mock('../windows/LogWindow', () => ({
 vi.mock('../windows/ReportWindow', () => ({ openReportWindow: vi.fn() }))
 vi.mock('../windows/AboutWindow', () => ({
   openAboutWindow: vi.fn(),
+  getAboutWindow: vi.fn(() => null)
+}))
+vi.mock('../windows/SplashWindowController', () => ({
+  openSplashWindow: vi.fn(),
   closeSplashWindow: vi.fn(),
-  getAboutWindow: vi.fn(() => null),
-  registerAboutWindowIpc: vi.fn()
+  updateSplashProgress: vi.fn(),
+  registerSplashAndAboutIpc: vi.fn(),
+  isSplashOpen: vi.fn(() => false),
+  focusSplashWindow: vi.fn()
 }))
 vi.mock('../windows/SessionWindow', () => ({ openSessionWindow: vi.fn() }))
 vi.mock('../windows/SessionWindowRegistry', () => ({

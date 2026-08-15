@@ -8,6 +8,7 @@ import {
   rowToProfile
 } from '@consoleri/core'
 import type { ConnectionProfile, Host, ProfileInput } from '../../shared/types'
+import { reportBestEffortFailure } from '../../shared/bestEffort'
 import { getDatabase } from '../db/database'
 import { beginOperationLog } from '../logging/OperationLog'
 import { secretBackendService } from '../secrets/SecretBackendService'
@@ -35,8 +36,8 @@ export class ProfileRepository {
     if (!credentialRef || isKeyFileRef(credentialRef)) return
     try {
       await secretBackendService.delete(credentialRef)
-    } catch {
-      /* best effort cleanup */
+    } catch (error) {
+      reportBestEffortFailure('delete credential ref', error)
     }
   }
 

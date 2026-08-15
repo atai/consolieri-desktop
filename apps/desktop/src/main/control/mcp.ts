@@ -12,6 +12,7 @@ import {
   openControlWindow
 } from './useCases'
 import { ControlWindowRecipeSchema } from './recipes'
+import { reportBestEffortFailure } from '../../shared/bestEffort'
 
 const transports = new Map<string, StreamableHTTPServerTransport>()
 
@@ -202,8 +203,8 @@ export async function closeAllMcpTransports(): Promise<void> {
   for (const transport of transports.values()) {
     try {
       await transport.close()
-    } catch {
-      /* ignore */
+    } catch (error) {
+      reportBestEffortFailure('close MCP transport', error)
     }
   }
   transports.clear()

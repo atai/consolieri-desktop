@@ -5,6 +5,40 @@ import eslintPluginReact from 'eslint-plugin-react'
 import eslintPluginReactHooks from 'eslint-plugin-react-hooks'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
 
+const silentCatchSelectors = [
+  {
+    selector: 'CatchClause > BlockStatement[body.length=0]',
+    message:
+      'Do not swallow errors with an empty catch (comments do not count). Log, rethrow, apply an explicit fallback, or call reportBestEffortFailure().'
+  },
+  {
+    selector:
+      'CallExpression[callee.type="MemberExpression"][callee.property.name="catch"] > ArrowFunctionExpression[expression=false] > BlockStatement[body.length=0]',
+    message:
+      'Do not use empty .catch(() => {}). Log, rethrow, return an explicit fallback, or call reportBestEffortFailure().'
+  },
+  {
+    selector:
+      'CallExpression[callee.type="MemberExpression"][callee.property.name="catch"] > FunctionExpression > BlockStatement[body.length=0]',
+    message:
+      'Do not use empty .catch(function () {}). Log, rethrow, return an explicit fallback, or call reportBestEffortFailure().'
+  }
+]
+
+const hexClassSelectors = [
+  {
+    selector:
+      'Literal[value=/^(?:.*?)(?:bg|text|border|ring|from|to|via|fill|stroke)-\\[[#][0-9a-fA-F]{3,8}\\]/]',
+    message:
+      'Use design-system semantic utilities (bg-bg, border-border, text-muted, …) or theme/hex.ts for non-Tailwind colors — not arbitrary hex in className.'
+  },
+  {
+    selector: 'TemplateElement[value.raw=/\\b(?:bg|text|border)-\\[[#][0-9a-fA-F]{3,8}\\]/]',
+    message:
+      'Use design-system semantic utilities (bg-bg, border-border, text-muted, …) — not arbitrary hex in className templates.'
+  }
+]
+
 export default defineConfig(
   { ignores: ['**/node_modules', '**/dist', '**/out'] },
   tseslint.configs.recommended,
@@ -35,26 +69,14 @@ export default defineConfig(
           caughtErrorsIgnorePattern: '^_',
           ignoreRestSiblings: true
         }
-      ]
+      ],
+      'no-restricted-syntax': ['error', ...silentCatchSelectors]
     }
   },
   {
     files: ['src/renderer/**/*.{ts,tsx}'],
     rules: {
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector:
-            'Literal[value=/^(?:.*?)(?:bg|text|border|ring|from|to|via|fill|stroke)-\\[[#][0-9a-fA-F]{3,8}\\]/]',
-          message:
-            'Use design-system semantic utilities (bg-bg, border-border, text-muted, …) or theme/hex.ts for non-Tailwind colors — not arbitrary hex in className.'
-        },
-        {
-          selector: 'TemplateElement[value.raw=/\\b(?:bg|text|border)-\\[[#][0-9a-fA-F]{3,8}\\]/]',
-          message:
-            'Use design-system semantic utilities (bg-bg, border-border, text-muted, …) — not arbitrary hex in className templates.'
-        }
-      ]
+      'no-restricted-syntax': ['error', ...silentCatchSelectors, ...hexClassSelectors]
     }
   },
   {
@@ -66,7 +88,8 @@ export default defineConfig(
       'src/renderer/src/components/rdp/**/*.{ts,tsx}'
     ],
     rules: {
-      'no-restricted-syntax': 'off'
+      // Keep silent-catch rule; only drop hex class restrictions for these files.
+      'no-restricted-syntax': ['error', ...silentCatchSelectors]
     }
   },
   eslintConfigPrettier

@@ -1,12 +1,9 @@
-import { BrowserWindow } from 'electron'
-import { join } from 'path'
-import { is } from '@electron-toolkit/utils'
+import type { BrowserWindow } from 'electron'
 import { nanoid } from 'nanoid'
 import { insertPaneIntoLayout, type MosaicNode } from '@consoleri/core'
-import { APP_NAME, appIconPath } from '../appBranding'
-import { sessionManager } from '../sessions/SessionManager'
+import { APP_NAME } from '../appBranding'
+import { sessionManager } from '../compositionRoot'
 import { joinWindowTitle, pinBrowserWindowTitle } from '../windowTitles'
-import { CHROME_BG_HEX } from '../../shared/chromeHex'
 import type {
   ControlWindowInfo,
   ControlWindowRecipe,
@@ -14,10 +11,10 @@ import type {
   PaneBinding,
   SessionInfo
 } from '../../shared/types'
-import {
-  registerSessionWindow,
-  unregisterAllForWindow
-} from './SessionWindowRegistry'
+import { registerSessionWindow, unregisterAllForWindow } from './SessionWindowRegistry'
+import { createAppBrowserWindow } from './createAppBrowserWindow'
+import { loadRendererEntry } from './loadRendererEntry'
+import { attachWindowDiagnostics } from './attachWindowDiagnostics'
 
 export interface WorkspaceWindowState {
   id: string
@@ -120,22 +117,16 @@ export function openWorkspaceWindowFromRecipe(recipe: ControlWindowRecipe): Cont
 
   const windowId = nanoid()
   const title = joinWindowTitle(recipe.title, APP_NAME)
-  const win = new BrowserWindow({
+  const win = createAppBrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 500,
     minHeight: 360,
     title,
-    icon: appIconPath(),
-    backgroundColor: CHROME_BG_HEX,
-    autoHideMenuBar: true,
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false
-    }
+    show: false,
+    preload: 'index'
   })
+  attachWindowDiagnostics(win, { name: 'workspace-window' })
 
   pinBrowserWindowTitle(win, () => title)
 
@@ -189,17 +180,13 @@ export function openWorkspaceWindowFromRecipe(recipe: ControlWindowRecipe): Cont
     forgetWorkspaceWindow(state)
   })
 
-  const query = `?windowId=${encodeURIComponent(windowId)}`
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/workspace-window/index.html${query}`)
-  } else {
-    win.loadFile(join(__dirname, '../renderer/workspace-window/index.html'), {
-      query: { windowId }
-    })
-  }
-
-  win.show()
-  win.focus()
+  loadRendererEntry(win, 'workspace-window', { windowId })
+  win.once('ready-to-show', () => {
+    if (!win.isDestroyed()) {
+      win.show()
+      win.focus()
+    }
+  })
 
   return {
     id: windowId,
@@ -240,11 +227,7 @@ export function _clearWorkspaceWindowsForTests(): void {
   for (const state of [...byId.values()]) {
     if (!state.win.isDestroyed()) {
       state.win.removeAllListeners('closed')
-      try {
-        state.win.destroy()
-      } catch {
-        /* ignore */
-      }
+      state.win.destroy()
     }
   }
   byId.clear()

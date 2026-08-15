@@ -23,8 +23,26 @@ export function IntegrationsPanel(): React.JSX.Element {
   }, [])
 
   useEffect(() => {
-    void refresh()
-  }, [refresh])
+    let cancelled = false
+    void (async () => {
+      try {
+        const [nextStatus, nextClients, lastToken] = await Promise.all([
+          window.consoleri.control.getStatus(),
+          window.consoleri.control.listClients(),
+          window.consoleri.control.getLastToken()
+        ])
+        if (cancelled) return
+        setStatus(nextStatus)
+        setClients(nextClients)
+        if (lastToken) setToken(lastToken)
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : String(err))
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const enable = async (): Promise<void> => {
     setBusy(true)

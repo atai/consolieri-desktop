@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid'
 import type { OpenSessionRequest, PaneBinding, Workspace, WorkspaceState } from '../../shared/types'
 import { getDatabase } from '../db/database'
+import { reportBestEffortFailure } from '../../shared/bestEffort'
 
 export class WorkspaceRepository {
   getActiveWorkspace(): Workspace {
@@ -57,8 +58,8 @@ export class WorkspaceRepository {
           panes: (parsed.panes ?? []).map((pane) => this.migratePaneBinding(pane))
         }
       }
-    } catch {
-      /* fall through */
+    } catch (error) {
+      reportBestEffortFailure('parse workspace layout_json', error)
     }
     return { layout: null, panes: [] }
   }

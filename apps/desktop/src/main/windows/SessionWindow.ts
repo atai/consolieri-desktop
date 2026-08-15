@@ -1,21 +1,23 @@
-import { BrowserWindow } from 'electron'
-import { join } from 'path'
-import { is } from '@electron-toolkit/utils'
-import { APP_NAME, appIconPath } from '../appBranding'
-import { sessionManager } from '../sessions/SessionManager'
-import { hostRepository } from '../hosts/HostRepository'
+import type { BrowserWindow } from 'electron'
+import { APP_NAME } from '../appBranding'
+import { sessionManager, hostRepository } from '../compositionRoot'
 import { formatSessionWindowTitle, joinWindowTitle, pinBrowserWindowTitle } from '../windowTitles'
-import { CHROME_BG_HEX } from '../../shared/chromeHex'
 import {
   registerSessionWindow,
   getRegisteredSessionWindow,
   markAsSessionWindow,
   unregisterAllForWindow
 } from './SessionWindowRegistry'
+import {
+  getHostWindow,
+  registerHostWindow,
+  unregisterHostWindow
+} from './HostWindowRegistry'
+import { createAppBrowserWindow } from './createAppBrowserWindow'
+import { loadRendererEntry } from './loadRendererEntry'
+import { attachWindowDiagnostics } from './attachWindowDiagnostics'
 
 export { getRegisteredSessionWindow as getSessionWindow }
-
-const hostWindows = new Map<string, BrowserWindow>()
 
 export function openSessionWindow(sessionId: string): BrowserWindow {
   const existing = getRegisteredSessionWindow(sessionId)
@@ -47,8 +49,8 @@ export function openSessionWindow(sessionId: string): BrowserWindow {
 }
 
 export function openHostSessionWindow(hostId: string): BrowserWindow {
-  const existing = hostWindows.get(hostId)
-  if (existing && !existing.isDestroyed()) {
+  const existing = getHostWindow(hostId)
+  if (existing) {
     existing.focus()
     return existing
   }
@@ -60,7 +62,7 @@ export function openHostSessionWindow(hostId: string): BrowserWindow {
 
   const win = createSessionBrowserWindow(title)
   markAsSessionWindow(win)
-  hostWindows.set(hostId, win)
+  registerHostWindow(hostId, win)
 
   pinBrowserWindowTitle(win, () => {
     const h = hostRepository.getHost(hostId)
@@ -68,7 +70,7 @@ export function openHostSessionWindow(hostId: string): BrowserWindow {
   })
 
   win.on('closed', () => {
-    if (hostWindows.get(hostId) === win) hostWindows.delete(hostId)
+    unregisterHostWindow(hostId, win)
     sessionManager.closeSessionsForWindow(win)
     unregisterAllForWindow(win)
   })
@@ -87,41 +89,31 @@ export function closeSessionWindow(sessionId: string): void {
 }
 
 function createSessionBrowserWindow(title: string): BrowserWindow {
-  return new BrowserWindow({
+  const win = createAppBrowserWindow({
     width: 960,
     height: 640,
     minWidth: 400,
     minHeight: 300,
     title,
-    icon: appIconPath(),
-    backgroundColor: CHROME_BG_HEX,
-    autoHideMenuBar: true,
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: false
+    show: false,
+    preload: 'index'
+  })
+  attachWindowDiagnostics(win, { name: 'session-window' })
+  win.once('ready-to-show', () => {
+    if (!win.isDestroyed()) {
+      win.show()
+      win.focus()
     }
   })
+  return win
 }
 
 function loadSessionWindow(
   win: BrowserWindow,
   query: { sessionId?: string; hostId?: string }
 ): void {
-  const params = new URLSearchParams()
-  if (query.sessionId) params.set('sessionId', query.sessionId)
-  if (query.hostId) params.set('hostId', query.hostId)
-  const qs = `?${params.toString()}`
-
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/session-window/index.html${qs}`)
-  } else {
-    const fileQuery: Record<string, string> = {}
-    if (query.sessionId) fileQuery.sessionId = query.sessionId
-    if (query.hostId) fileQuery.hostId = query.hostId
-    win.loadFile(join(__dirname, '../renderer/session-window/index.html'), {
-      query: fileQuery
-    })
-  }
+  const params: Record<string, string> = {}
+  if (query.sessionId) params.sessionId = query.sessionId
+  if (query.hostId) params.hostId = query.hostId
+  loadRendererEntry(win, 'session-window', params)
 }
