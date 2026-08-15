@@ -1,3 +1,4 @@
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { parseControlWindowRecipe, RecipeValidationError, recipeHasCommand } from './recipes'
 
@@ -15,7 +16,7 @@ describe('control recipes', () => {
       ]
     })
     expect(recipe.key).toBe('dev-manager:demo')
-    expect(recipe.panes[0].cwd).toBe('/tmp/api')
+    expect(recipe.panes[0].cwd).toBe(resolve('/tmp/api'))
     expect(recipeHasCommand(recipe)).toBe(false)
   })
 
