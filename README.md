@@ -62,13 +62,17 @@ npm run test
 
 ## Documentation
 
+Built docs are on GitHub Pages: [https://atai.github.io/consolieri-desktop/](https://atai.github.io/consolieri-desktop/) (updated on each release). Sources: [`docs/source/`](docs/source/).
+
+To preview locally:
+
 ```bash
 python3 -m venv docs/.venv
 docs/.venv/bin/pip install -r docs/requirements.txt
 cd docs && make html
 ```
 
-Open `docs/build/html/index.html`. Agent and contributor notes live in [`docs/source/agent.rst`](docs/source/agent.rst). Release and CI signing secrets: [`docs/source/release.rst`](docs/source/release.rst), [`docs/source/ci-secrets.rst`](docs/source/ci-secrets.rst).
+Then open `docs/build/html/index.html`. Agent and contributor notes: [`docs/source/agent.rst`](docs/source/agent.rst). Release and CI signing secrets: [`docs/source/release.rst`](docs/source/release.rst), [`docs/source/ci-secrets.rst`](docs/source/ci-secrets.rst).
 
 ## Release
 
