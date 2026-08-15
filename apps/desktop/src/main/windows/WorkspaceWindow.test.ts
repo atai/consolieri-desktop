@@ -14,6 +14,20 @@ vi.mock('../compositionRoot', () => ({
   }
 }))
 
+vi.mock('../sessions/sessionManagerInstance', () => ({
+  sessionManager: {
+    open: vi.fn((request: { title?: string; protocol?: string }) => ({
+      id: `sess-${request.title ?? 'x'}`,
+      protocol: request.protocol ?? 'local_pty',
+      title: request.title ?? 'Terminal',
+      status: 'connecting',
+      hostId: null,
+      profileId: null
+    })),
+    closeSessionsForWindow: vi.fn()
+  }
+}))
+
 vi.mock('./SessionWindowRegistry', () => ({
   registerSessionWindow: vi.fn(),
   unregisterAllForWindow: vi.fn()

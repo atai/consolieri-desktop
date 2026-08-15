@@ -35,10 +35,6 @@ const {
   mockLogRemoveSession: vi.fn()
 }))
 
-vi.mock('./SessionFactory', () => ({
-  sessionFactory: { createTransport: mockCreateTransport }
-}))
-
 vi.mock('./ConnectionLog', () => ({
   connectionLog: {
     append: mockLogAppend,
@@ -52,6 +48,12 @@ vi.mock('./ConnectionLog', () => ({
 vi.mock('../hosts/HostRepository', () => ({
   hostRepository: {
     getHost: vi.fn(() => null),
+    getProfile: vi.fn(() => null)
+  }
+}))
+
+vi.mock('../hosts/ProfileRepository', () => ({
+  profileRepository: {
     getProfile: vi.fn(() => null)
   }
 }))
@@ -76,6 +78,12 @@ vi.mock('../windows/SessionWindowRegistry', () => ({
 // ── Helpers ───────────────────────────────────────────────────────────────────
 import { SessionManager } from './SessionManager'
 import { IPC_CHANNELS } from '../../shared/types'
+import { hostRepository } from '../hosts/HostRepository'
+import { profileRepository } from '../hosts/ProfileRepository'
+import { credentialResolver } from '../services/CredentialResolver'
+import { connectionLog } from './ConnectionLog'
+
+const sessionFactory = { createTransport: mockCreateTransport }
 
 function makeFakeTransport(): ITransport {
   const emitter = new EventEmitter() as ITransport
@@ -133,7 +141,13 @@ beforeEach(() => {
     message: '',
     timestamp: ''
   })
-  manager = new SessionManager()
+  manager = new SessionManager(
+    hostRepository as never,
+    profileRepository as never,
+    credentialResolver as never,
+    connectionLog as never,
+    sessionFactory as never
+  )
 })
 
 afterEach(() => {

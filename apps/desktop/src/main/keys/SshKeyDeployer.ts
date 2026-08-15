@@ -9,7 +9,7 @@ import {
 import type { DeployKeyRequest, DeployKeyResult } from '../../shared/types'
 import { hostRepository } from '../hosts/HostRepository'
 import { profileRepository } from '../hosts/ProfileRepository'
-import { sessionManager } from '../sessions/SessionManager'
+import { sessionManager } from '../sessions/sessionManagerInstance'
 import { credentialResolver, findSshProfile } from '../services/CredentialResolver'
 import {
   connectSshClient,

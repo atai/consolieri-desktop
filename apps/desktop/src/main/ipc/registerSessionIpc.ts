@@ -10,7 +10,7 @@ import {
   OpenSessionRequestSchema
 } from '../../shared/ipcSchemas'
 import { createHandler } from './createHandler'
-import { sessionManager } from '../sessions/SessionManager'
+import { sessionManager } from '../sessions/sessionManagerInstance'
 import { workspaceRepository } from '../hosts/WorkspaceRepository'
 import { listWslDistros } from '../sessions/shellUtils'
 import { openLogWindow } from '../windows/LogWindow'

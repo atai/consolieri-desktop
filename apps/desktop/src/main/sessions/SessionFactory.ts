@@ -11,15 +11,12 @@ import type {
   Protocol,
   LocalShellType
 } from '../../shared/types'
-import { hostRepository } from '../hosts/HostRepository'
-import { profileRepository } from '../hosts/ProfileRepository'
-import { uxProfileRepository } from '../ux/UxProfileRepository'
-import {
-  credentialResolver,
-  findSshProfile,
-  resolveHostAndProfile
-} from '../services/CredentialResolver'
-import { connectionLog, type ConnectionLog } from './ConnectionLog'
+import type { HostRepository } from '../hosts/HostRepository'
+import type { ProfileRepository } from '../hosts/ProfileRepository'
+import type { UxProfileRepository } from '../ux/UxProfileRepository'
+import type { CredentialResolver } from '../services/CredentialResolver'
+import { findSshProfile, resolveHostAndProfile } from '../services/CredentialResolver'
+import type { ConnectionLog } from './ConnectionLog'
 import { PtySession } from './PtySession'
 import { RdpProxy, RdpSession } from './rdp/RdpProxy'
 import { SshSession } from './SshSession'
@@ -38,11 +35,11 @@ export interface SessionTransportResult {
 
 export class SessionFactory {
   constructor(
-    private readonly _hostRepository = hostRepository,
-    private readonly _profileRepository = profileRepository,
-    private readonly _uxProfileRepository = uxProfileRepository,
-    private readonly _credentialResolver = credentialResolver,
-    private readonly log: ConnectionLog = connectionLog
+    private readonly _hostRepository: HostRepository,
+    private readonly _profileRepository: ProfileRepository,
+    private readonly _uxProfileRepository: UxProfileRepository,
+    private readonly _credentialResolver: CredentialResolver,
+    private readonly log: ConnectionLog
   ) {}
 
   private defaultLocalShell(): Exclude<LocalShellType, 'wsl'> {
@@ -238,5 +235,3 @@ export class SessionFactory {
     }
   }
 }
-
-export const sessionFactory = new SessionFactory()

@@ -1,6 +1,7 @@
 import type { BrowserWindow } from 'electron'
 import { APP_NAME } from '../appBranding'
-import { sessionManager, hostRepository } from '../compositionRoot'
+import { hostRepository } from '../hosts/HostRepository'
+import { sessionManager } from '../sessions/sessionManagerInstance'
 import { formatSessionWindowTitle, joinWindowTitle, pinBrowserWindowTitle } from '../windowTitles'
 import {
   registerSessionWindow,

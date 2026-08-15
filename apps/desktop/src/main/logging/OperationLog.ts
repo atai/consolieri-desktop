@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid'
 import type { LogLevel } from '../../shared/types'
 import { OperationalError } from '../errors/OperationalError'
 import { connectionLog } from '../sessions/ConnectionLog'
-import { sessionManager } from '../sessions/SessionManager'
+import { sessionManager } from '../sessions/sessionManagerInstance'
 import { registerLogContext, type LogWindowContext } from '../windows/LogWindow'
 
 export interface OperationLogHandle {

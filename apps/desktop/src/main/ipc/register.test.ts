@@ -195,6 +195,8 @@ vi.mock('../vault/VaultOidcLogin', () => ({
   startVaultOidcLogin: mockStartVaultOidcLogin,
   logoutVaultOidc: mockLogoutVaultOidc
 }))
+vi.mock('../sessions/sessionManagerInstance', () => ({ sessionManager: mockSessionManager }))
+vi.mock('../compositionRoot', () => ({ sessionManager: mockSessionManager }))
 vi.mock('../sessions/SessionManager', () => ({ sessionManager: mockSessionManager }))
 vi.mock('../sessions/shellUtils', () => ({ listWslDistros: vi.fn(() => []) }))
 vi.mock('../sessions/localShellsService', () => ({

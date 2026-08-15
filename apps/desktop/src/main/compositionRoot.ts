@@ -3,9 +3,9 @@
  * instantiated and wired together with explicit dependencies.
  *
  * Import from this module (rather than individual files) whenever you need
- * a fully-wired instance.  Individual files still export their own singletons
- * (created with their default constructor parameters) so that existing
- * vi.mock()-based tests continue to work without modification.
+ * a fully-wired instance. SessionManager / SessionFactory are constructed
+ * only here — never as module-level singletons — to avoid circular TDZ crashes
+ * when the main bundle evaluates window + session modules.
  *
  * Dependency order: leaf nodes first, composite nodes last.
  */
@@ -24,6 +24,7 @@ import { ConnectionLog } from './sessions/ConnectionLog'
 import { UxProfileRepository } from './ux/UxProfileRepository'
 import { SessionFactory } from './sessions/SessionFactory'
 import { SessionManager } from './sessions/SessionManager'
+import { bindSessionManager } from './sessions/sessionManagerInstance'
 import { AppPreferencesRepository } from './preferences/AppPreferencesRepository'
 import { appImportExportService as _appIE } from './settings/appImportExportServiceInstance'
 import { reportRepository } from './reports/ReportRepository'
@@ -68,6 +69,7 @@ export const sessionManager = new SessionManager(
   connectionLog,
   sessionFactory
 )
+bindSessionManager(sessionManager)
 
 export const secretsRepository = new SecretsRepository()
 

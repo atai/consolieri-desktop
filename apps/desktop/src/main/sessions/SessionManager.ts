@@ -9,11 +9,11 @@ import type {
   SessionStatus
 } from '../../shared/types'
 import { IPC_CHANNELS } from '../../shared/types'
-import { hostRepository } from '../hosts/HostRepository'
-import { profileRepository } from '../hosts/ProfileRepository'
-import { credentialResolver } from '../services/CredentialResolver'
-import { connectionLog } from './ConnectionLog'
-import { sessionFactory } from './SessionFactory'
+import type { HostRepository } from '../hosts/HostRepository'
+import type { ProfileRepository } from '../hosts/ProfileRepository'
+import type { CredentialResolver } from '../services/CredentialResolver'
+import type { ConnectionLog } from './ConnectionLog'
+import type { SessionFactory } from './SessionFactory'
 import type { ITransport } from './Transport'
 import { PtySession } from './PtySession'
 import { RdpProxy } from './rdp/RdpProxy'
@@ -51,11 +51,11 @@ export class SessionManager {
   private logWindow: BrowserWindow | null = null
 
   constructor(
-    private readonly _hostRepository = hostRepository,
-    private readonly _profileRepository = profileRepository,
-    private readonly _credentialResolver = credentialResolver,
-    private readonly _connectionLog = connectionLog,
-    private readonly _sessionFactory = sessionFactory
+    private readonly _hostRepository: HostRepository,
+    private readonly _profileRepository: ProfileRepository,
+    private readonly _credentialResolver: CredentialResolver,
+    private readonly _connectionLog: ConnectionLog,
+    private readonly _sessionFactory: SessionFactory
   ) {}
 
   setWindow(win: BrowserWindow): void {
@@ -362,5 +362,3 @@ export class SessionManager {
     return this._credentialResolver.resolvePassword(profile)
   }
 }
-
-export const sessionManager = new SessionManager()

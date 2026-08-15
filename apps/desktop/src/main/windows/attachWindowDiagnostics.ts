@@ -43,9 +43,10 @@ export function attachWindowDiagnostics(
     console.error(`[${label}] Window became unresponsive`)
   })
 
-  win.webContents.on('console-message', (_event, level, message, line, sourceId) => {
-    if (level < 2) return // 0=debug, 1=info, 2=warning, 3=error
-    const prefix = level >= 3 ? 'error' : 'warn'
-    console[prefix](`[${label}:renderer] ${message} (${sourceId}:${line})`)
+  win.webContents.on('console-message', (event) => {
+    const { level, message, lineNumber, sourceId } = event
+    if (level === 'debug' || level === 'info') return
+    const prefix = level === 'error' ? 'error' : 'warn'
+    console[prefix](`[${label}:renderer] ${message} (${sourceId}:${lineNumber})`)
   })
 }

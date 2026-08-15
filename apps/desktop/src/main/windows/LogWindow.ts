@@ -1,6 +1,6 @@
 import type { BrowserWindow } from 'electron'
 import { appIconPath } from '../appBranding'
-import { sessionManager } from '../compositionRoot'
+import { sessionManager } from '../sessions/sessionManagerInstance'
 import { formatLogWindowTitle, pinBrowserWindowTitle, type LogWindowKind } from '../windowTitles'
 import { createAppBrowserWindow } from './createAppBrowserWindow'
 import { loadRendererEntry } from './loadRendererEntry'

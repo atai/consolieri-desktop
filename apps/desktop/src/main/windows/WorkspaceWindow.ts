@@ -2,7 +2,7 @@ import type { BrowserWindow } from 'electron'
 import { nanoid } from 'nanoid'
 import { insertPaneIntoLayout, type MosaicNode } from '@consoleri/core'
 import { APP_NAME } from '../appBranding'
-import { sessionManager } from '../compositionRoot'
+import { sessionManager } from '../sessions/sessionManagerInstance'
 import { joinWindowTitle, pinBrowserWindowTitle } from '../windowTitles'
 import type {
   ControlWindowInfo,
