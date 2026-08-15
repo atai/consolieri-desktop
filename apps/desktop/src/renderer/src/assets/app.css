@@ -25,6 +25,15 @@ body,
   left: 0;
 }
 
+/* The pane wrapper sits between .mosaic-tile and .mosaic-window, so the vendor
+   rule `.mosaic-tile > * { height: 100% }` no longer reaches the window and it
+   would collapse to content height. */
+.consoleri-mosaic .consoleri-pane,
+.consoleri-mosaic .consoleri-pane > .mosaic-window {
+  height: 100%;
+  width: 100%;
+}
+
 .consoleri-mosaic.mosaic .mosaic-window .mosaic-window-toolbar,
 .consoleri-mosaic.mosaic .mosaic-preview .mosaic-window-toolbar {
   background: var(--surface);
