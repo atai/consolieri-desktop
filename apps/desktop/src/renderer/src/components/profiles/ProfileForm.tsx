@@ -10,7 +10,8 @@ import { VncProfileFields } from './fields/VncProfileFields'
 import { WslProfileFields } from './fields/WslProfileFields'
 import { PickProfileDialog } from './PickProfileDialog'
 
-const PROTOCOLS: Protocol[] = ['ssh', 'rdp', 'vnc', 'wsl']
+const PROTOCOLS: Protocol[] = ['ssh', 'rdp', 'vnc', 'wsl', 'local_pty']
+const LOCAL_SHELLS = ['zsh', 'bash', 'sh', 'pwsh', 'powershell', 'cmd'] as const
 const AUTH_METHODS = ['password', 'key', 'none'] as const
 
 interface ProfileFormProps {
@@ -170,13 +171,15 @@ export function ProfileForm({
             )}
           </FormField>
 
-          <FormField label="Username">
-            <input
-              className={INPUT_CLASS}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </FormField>
+          {protocol !== 'local_pty' && protocol !== 'wsl' && (
+            <FormField label="Username">
+              <input
+                className={INPUT_CLASS}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </FormField>
+          )}
 
           {supportsAuth && (
             <LabeledSelect
@@ -219,6 +222,16 @@ export function ProfileForm({
               onShellChange={setShell}
               onJumpHostChange={setJumpHostId}
             />
+          )}
+
+          {protocol === 'local_pty' && (
+            <LabeledSelect label="Shell" value={shell || 'zsh'} onChange={setShell}>
+              {LOCAL_SHELLS.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </LabeledSelect>
           )}
 
           {protocol === 'rdp' && (

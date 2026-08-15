@@ -7,6 +7,8 @@ import type {
   HostFilter,
   HostGroup,
   HostInput,
+  HostSessionPreset,
+  HostSessionPresetInput,
   LogEntry,
   OpenSessionRequest,
   ProfileInput,
@@ -38,8 +40,14 @@ import type {
   CloudLoginResult,
   ScpTransferRequest,
   ScpTransferResult,
-  ScpRecentEntry
+  ScpRecentEntry,
+  ControlServerStatus,
+  ControlClientInfo,
+  ControlConfirmRequest,
+  ControlConfirmDecision,
+  PaneBinding
 } from '../shared/types'
+import type { MosaicNode } from '@consoleri/core'
 import type { HostsExportDocument, AppExportDocument } from '@consoleri/core'
 
 export interface ConsoleriAPI {
@@ -105,10 +113,20 @@ export interface ConsoleriAPI {
     ) => Promise<void>
     openLogWindow: (sessionId: string) => Promise<void>
     openSessionWindow: (sessionId: string) => Promise<void>
+    openHostWindow: (hostId: string) => Promise<void>
+    getCwd: (sessionId: string) => Promise<string | null>
     onData: (cb: (payload: { id: string; data: string }) => void) => () => void
     onExit: (cb: (payload: { id: string; code: number }) => void) => () => void
     onStatus: (cb: (payload: { id: string; status: string; error?: string }) => void) => () => void
     onLog: (cb: (entry: LogEntry) => void) => () => void
+  }
+  hostPresets: {
+    get: (hostId: string) => Promise<HostSessionPreset | null>
+    save: (hostId: string, input: HostSessionPresetInput) => Promise<HostSessionPreset>
+    delete: (hostId: string) => Promise<void>
+  }
+  shellHistory: {
+    deletePane: (hostId: string, paneId: string) => Promise<void>
   }
   wsl: {
     list: () => Promise<WslDistro[]>
@@ -212,6 +230,27 @@ export interface ConsoleriAPI {
     getRecent: (profileId: string) => Promise<ScpRecentEntry | null>
     setRecent: (profileId: string, entry: ScpRecentEntry) => Promise<void>
   }
+  control: {
+    getStatus: () => Promise<ControlServerStatus>
+    enable: () => Promise<{ port: number; token: string }>
+    disable: () => Promise<void>
+    rotateToken: () => Promise<{ token: string }>
+    getLastToken: () => Promise<string | null>
+    listClients: () => Promise<ControlClientInfo[]>
+    revokeClient: (clientId: string) => Promise<{ ok: boolean }>
+    setClientAlwaysAllow: (
+      clientId: string,
+      alwaysAllow: boolean
+    ) => Promise<ControlClientInfo | null>
+    getWorkspaceWindow: (windowId: string) => Promise<{
+      layout: MosaicNode<string> | null
+      panes: PaneBinding[]
+      sessions: SessionInfo[]
+      title: string
+    } | null>
+    onConfirmRequest: (cb: (request: ControlConfirmRequest) => void) => () => void
+    respondConfirm: (requestId: string, decision: ControlConfirmDecision) => Promise<void>
+  }
 }
 
 const consoleri: ConsoleriAPI = {
@@ -269,6 +308,9 @@ const consoleri: ConsoleriAPI = {
       ipcRenderer.invoke(IPC_CHANNELS.sessionsLogOpenWindow, sessionId),
     openSessionWindow: (sessionId: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.sessionsOpenSessionWindow, sessionId),
+    openHostWindow: (hostId: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.sessionsOpenHostWindow, hostId),
+    getCwd: (sessionId: string) => ipcRenderer.invoke(IPC_CHANNELS.sessionsGetCwd, sessionId),
     onData: (cb) => {
       const listener = (_: unknown, payload: { id: string; data: string }): void => {
         cb(payload)
@@ -300,6 +342,15 @@ const consoleri: ConsoleriAPI = {
       ipcRenderer.on(IPC_CHANNELS.sessionLog, listener)
       return () => ipcRenderer.removeListener(IPC_CHANNELS.sessionLog, listener)
     }
+  },
+  hostPresets: {
+    get: (hostId) => ipcRenderer.invoke(IPC_CHANNELS.hostPresetsGet, hostId),
+    save: (hostId, input) => ipcRenderer.invoke(IPC_CHANNELS.hostPresetsSave, hostId, input),
+    delete: (hostId) => ipcRenderer.invoke(IPC_CHANNELS.hostPresetsDelete, hostId)
+  },
+  shellHistory: {
+    deletePane: (hostId, paneId) =>
+      ipcRenderer.invoke(IPC_CHANNELS.shellHistoryDeletePane, hostId, paneId)
   },
   wsl: {
     list: () => ipcRenderer.invoke(IPC_CHANNELS.wslList)
@@ -419,6 +470,28 @@ const consoleri: ConsoleriAPI = {
     transfer: (request) => ipcRenderer.invoke(IPC_CHANNELS.scpTransfer, request),
     getRecent: (profileId) => ipcRenderer.invoke(IPC_CHANNELS.scpGetRecent, profileId),
     setRecent: (profileId, entry) => ipcRenderer.invoke(IPC_CHANNELS.scpSetRecent, profileId, entry)
+  },
+  control: {
+    getStatus: () => ipcRenderer.invoke(IPC_CHANNELS.controlGetStatus),
+    enable: () => ipcRenderer.invoke(IPC_CHANNELS.controlEnable),
+    disable: () => ipcRenderer.invoke(IPC_CHANNELS.controlDisable),
+    rotateToken: () => ipcRenderer.invoke(IPC_CHANNELS.controlRotateToken),
+    getLastToken: () => ipcRenderer.invoke(IPC_CHANNELS.controlGetLastToken),
+    listClients: () => ipcRenderer.invoke(IPC_CHANNELS.controlListClients),
+    revokeClient: (clientId) => ipcRenderer.invoke(IPC_CHANNELS.controlRevokeClient, clientId),
+    setClientAlwaysAllow: (clientId, alwaysAllow) =>
+      ipcRenderer.invoke(IPC_CHANNELS.controlSetClientAlwaysAllow, clientId, alwaysAllow),
+    getWorkspaceWindow: (windowId) =>
+      ipcRenderer.invoke(IPC_CHANNELS.controlGetWorkspaceWindow, windowId),
+    onConfirmRequest: (cb) => {
+      const listener = (_: unknown, request: ControlConfirmRequest): void => {
+        cb(request)
+      }
+      ipcRenderer.on(IPC_CHANNELS.controlConfirmRequest, listener)
+      return () => ipcRenderer.removeListener(IPC_CHANNELS.controlConfirmRequest, listener)
+    },
+    respondConfirm: (requestId, decision) =>
+      ipcRenderer.invoke(IPC_CHANNELS.controlConfirmResponse, requestId, decision)
   }
 }
 

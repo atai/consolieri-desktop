@@ -31,11 +31,12 @@ export const HostFilterSchema = z
 
 // ── HostInput ─────────────────────────────────────────────────────────────────
 
-export const HostInputSchema = z.object({
+export const HostInputObjectSchema = z.object({
   name: NonEmptyString,
-  hostname: NonEmptyString,
-  port: z.number().int().min(1).max(65535).optional(),
+  hostname: z.string().optional(),
+  port: z.number().int().min(0).max(65535).optional(),
   osType: OsTypeSchema.optional(),
+  kind: z.enum(['remote', 'local']).optional(),
   tags: z.array(z.string()).optional(),
   groupId: z.string().nullable().optional(),
   notes: z.string().optional(),
@@ -45,6 +46,27 @@ export const HostInputSchema = z.object({
   relatedHostIds: z.array(z.string()).optional(),
   gatewayHostId: z.string().nullable().optional(),
   httpEndpoint: z.string().nullable().optional()
+})
+
+export const HostInputSchema = HostInputObjectSchema.superRefine((val, ctx) => {
+  if ((val.kind ?? 'remote') === 'remote' && !(val.hostname ?? '').trim()) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Hostname is required', path: ['hostname'] })
+  }
+})
+
+export const HostSessionPresetPaneSchema = z.object({
+  paneId: z.string().min(1),
+  title: z.string(),
+  protocol: ProtocolSchema,
+  localShell: z.enum(['powershell', 'pwsh', 'cmd', 'bash', 'zsh', 'sh', 'wsl']).optional(),
+  wslDistro: z.string().optional(),
+  cwd: z.string().nullable().optional(),
+  profileId: z.string().optional()
+})
+
+export const HostSessionPresetInputSchema = z.object({
+  layout: z.unknown(),
+  panes: z.array(HostSessionPresetPaneSchema)
 })
 
 // ── ProfileInput ──────────────────────────────────────────────────────────────
@@ -126,7 +148,11 @@ export const OpenSessionRequestSchema = z.object({
   protocol: ProtocolSchema.optional(),
   title: z.string().optional(),
   localShell: z.enum(['powershell', 'pwsh', 'cmd', 'bash', 'zsh', 'sh', 'wsl']).optional(),
-  wslDistro: z.string().optional()
+  wslDistro: z.string().optional(),
+  cwd: z.string().optional(),
+  command: z.string().optional(),
+  paneId: z.string().optional(),
+  histFile: z.string().optional()
 })
 
 // ── DeployKeyRequest ──────────────────────────────────────────────────────────

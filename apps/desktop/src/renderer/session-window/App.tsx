@@ -10,19 +10,33 @@ import {
 } from '../src/session/mosaic/sessionMosaicOps'
 import { applySessionStatusUpdate } from '../src/session/applySessionStatus'
 import { useUxProfileStore } from '../src/stores/uxProfileStore'
+import { usePreferencesStore } from '../src/stores/preferencesStore'
 import { releaseTerminal } from '../src/terminal/TerminalPool'
+import {
+  createLocalProjectHost,
+  isLocalOnlyLayout,
+  restoreHostPresetSessions,
+  savePresetToHost
+} from '../src/session/localProject'
+import { SaveLocalProjectDialog } from '../src/components/hosts/SaveLocalProjectDialog'
 
-function getSessionIdFromUrl(): string {
-  return new URLSearchParams(window.location.search).get('sessionId') ?? ''
+function getQueryParam(name: string): string {
+  return new URLSearchParams(window.location.search).get(name) ?? ''
 }
 
 export function SessionWindowApp(): React.JSX.Element {
-  const sessionId = getSessionIdFromUrl()
+  const sessionId = getQueryParam('sessionId')
+  const hostId = getQueryParam('hostId')
   const refreshUxProfiles = useUxProfileStore((s) => s.refresh)
+  const refreshPreferences = usePreferencesStore((s) => s.refresh)
   const [layout, setLayout] = useState<MosaicNode<string> | null>(null)
   const [panes, setPanes] = useState<PaneBinding[]>([])
   const [sessions, setSessions] = useState<SessionInfo[]>([])
+  const [boundHostId, setBoundHostId] = useState<string | null>(hostId || null)
+  const [boundHostName, setBoundHostName] = useState<string | null>(null)
   const [initError, setInitError] = useState<string | null>(null)
+  const [showSaveAs, setShowSaveAs] = useState(false)
+  const [saving, setSaving] = useState(false)
   const getSessions = useEffectEvent(() => sessions)
 
   const upsertSession = useCallback((session: SessionInfo): void => {
@@ -35,9 +49,51 @@ export function SessionWindowApp(): React.JSX.Element {
 
   useEffect(() => {
     void refreshUxProfiles()
-  }, [refreshUxProfiles])
+    void refreshPreferences()
+  }, [refreshUxProfiles, refreshPreferences])
 
   useEffect(() => {
+    if (hostId) {
+      const initHost = async (): Promise<void> => {
+        const host = await window.consoleri.hosts.get(hostId)
+        if (!host) {
+          setInitError('Host not found')
+          return
+        }
+        setBoundHostId(host.id)
+        setBoundHostName(host.name)
+        const preset = await window.consoleri.hostPresets.get(host.id)
+        if (!preset || preset.panes.length === 0) {
+          // Fallback: single local shell
+          const request: OpenSessionRequest = {
+            hostId: host.id,
+            profileId: host.defaultProfileId ?? undefined,
+            title: host.name,
+            protocol: 'local_pty'
+          }
+          const session = await window.consoleri.sessions.open(request)
+          const paneId = nanoid()
+          const binding: PaneBinding = {
+            paneId,
+            sessionId: session.id,
+            protocol: session.protocol,
+            title: session.title,
+            connectRequest: { ...request, paneId }
+          }
+          setPanes([binding])
+          setLayout(paneId)
+          setSessions([session])
+          return
+        }
+        const restored = await restoreHostPresetSessions(host, preset)
+        setPanes(restored.panes)
+        setLayout(restored.layout)
+        setSessions(restored.sessions)
+      }
+      void initHost()
+      return
+    }
+
     if (!sessionId) return
 
     const init = async (): Promise<void> => {
@@ -57,13 +113,19 @@ export function SessionWindowApp(): React.JSX.Element {
           title: session.title
         } satisfies OpenSessionRequest)
 
+      if (connectRequest.hostId) {
+        setBoundHostId(connectRequest.hostId)
+        const host = await window.consoleri.hosts.get(connectRequest.hostId)
+        if (host) setBoundHostName(host.name)
+      }
+
       const paneId = nanoid()
       const binding: PaneBinding = {
         paneId,
         sessionId: session.id,
         protocol: session.protocol,
         title: session.title,
-        connectRequest
+        connectRequest: { ...connectRequest, paneId }
       }
 
       setPanes([binding])
@@ -72,10 +134,10 @@ export function SessionWindowApp(): React.JSX.Element {
     }
 
     void init()
-  }, [sessionId])
+  }, [sessionId, hostId])
 
   useEffect(() => {
-    if (!sessionId) return
+    if (!sessionId && !hostId) return
 
     const unsubStatus = window.consoleri.sessions.onStatus(({ id, status, error }) => {
       void applySessionStatusUpdate(
@@ -96,7 +158,7 @@ export function SessionWindowApp(): React.JSX.Element {
       unsubStatus()
       unsubExit()
     }
-  }, [sessionId, upsertSession])
+  }, [sessionId, hostId, upsertSession])
 
   const handleSplitPane = async (paneId: string, direction: 'row' | 'column'): Promise<void> => {
     const result = await splitMosaicPane(layout, panes, paneId, direction)
@@ -114,6 +176,10 @@ export function SessionWindowApp(): React.JSX.Element {
   }
 
   const handleClosePane = (paneId: string): void => {
+    const binding = panes.find((p) => p.paneId === paneId)
+    if (binding?.connectRequest.hostId) {
+      void window.consoleri.shellHistory.deletePane(binding.connectRequest.hostId, paneId)
+    }
     const { layout: nextLayout, panes: nextPanes } = closeMosaicPane(layout, panes, paneId)
     setLayout(nextLayout)
     setPanes(nextPanes)
@@ -129,7 +195,46 @@ export function SessionWindowApp(): React.JSX.Element {
     }
   }
 
-  if (!sessionId) {
+  const canSave = isLocalOnlyLayout(panes)
+
+  const handleSave = async (): Promise<void> => {
+    if (!canSave) return
+    if (boundHostId) {
+      setSaving(true)
+      try {
+        await savePresetToHost(boundHostId, layout, panes)
+      } finally {
+        setSaving(false)
+      }
+      return
+    }
+    setShowSaveAs(true)
+  }
+
+  const handleSaveAs = async (name: string, tags: string[]): Promise<void> => {
+    setSaving(true)
+    try {
+      const host = await createLocalProjectHost({ name, tags, layout, panes })
+      setBoundHostId(host.id)
+      setBoundHostName(host.name)
+      setPanes((prev) =>
+        prev.map((p) => ({
+          ...p,
+          connectRequest: {
+            ...p.connectRequest,
+            hostId: host.id,
+            profileId: host.defaultProfileId ?? p.connectRequest.profileId,
+            paneId: p.paneId
+          }
+        }))
+      )
+      setShowSaveAs(false)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (!sessionId && !hostId) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted">No session</div>
     )
@@ -149,23 +254,57 @@ export function SessionWindowApp(): React.JSX.Element {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <SessionMosaic
-        layout={layout}
-        panes={panes}
-        sessions={sessions}
-        onLayoutChange={(next) => setLayout(next)}
-        onPanesChange={setPanes}
-        onSessionUpdated={upsertSession}
-        onSessionRemoved={(id) => setSessions((prev) => prev.filter((s) => s.id !== id))}
-        onSplitPane={handleSplitPane}
-        onConnectPane={handleConnectPane}
-        onClosePane={handleClosePane}
-        emptyLayoutView={
-          <div className="flex h-full items-center justify-center text-sm text-muted">
-            No session
-          </div>
-        }
-      />
+      {canSave && (
+        <div className="flex shrink-0 items-center gap-2 border-b border-border bg-surface px-2 py-1">
+          <span className="min-w-0 flex-1 truncate text-xs text-muted">
+            {boundHostName ? `Project: ${boundHostName}` : 'Unsaved local session'}
+          </span>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => void handleSave()}
+            className="rounded border border-border px-2 py-0.5 text-xs text-fg hover:bg-surface-raised disabled:opacity-50"
+          >
+            {boundHostId ? 'Save' : 'Save as host…'}
+          </button>
+          {boundHostId && (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => setShowSaveAs(true)}
+              className="rounded border border-border px-2 py-0.5 text-xs text-muted hover:bg-surface-raised disabled:opacity-50"
+            >
+              Save as…
+            </button>
+          )}
+        </div>
+      )}
+      <div className="min-h-0 flex-1">
+        <SessionMosaic
+          layout={layout}
+          panes={panes}
+          sessions={sessions}
+          onLayoutChange={(next) => setLayout(next)}
+          onPanesChange={setPanes}
+          onSessionUpdated={upsertSession}
+          onSessionRemoved={(id) => setSessions((prev) => prev.filter((s) => s.id !== id))}
+          onSplitPane={handleSplitPane}
+          onConnectPane={handleConnectPane}
+          onClosePane={handleClosePane}
+          emptyLayoutView={
+            <div className="flex h-full items-center justify-center text-sm text-muted">
+              No session
+            </div>
+          }
+        />
+      </div>
+      {showSaveAs && (
+        <SaveLocalProjectDialog
+          onCancel={() => setShowSaveAs(false)}
+          onSave={(name, tags) => void handleSaveAs(name, tags)}
+          saving={saving}
+        />
+      )}
     </div>
   )
 }

@@ -1,5 +1,11 @@
 import { create } from 'zustand'
-import type { AppSettings, SessionOpenMode } from '@shared/types'
+import {
+  mergeKeybindings,
+  type Accelerator,
+  type AppSettings,
+  type KeybindingId,
+  type SessionOpenMode
+} from '@consoleri/core'
 
 export type { SessionOpenMode }
 
@@ -7,7 +13,9 @@ const LEGACY_SETTINGS_KEY = 'consoleri.settings'
 
 const DEFAULT_SETTINGS: AppSettings = {
   autoOpenConnectionLog: false,
-  sessionOpenMode: 'workspace'
+  sessionOpenMode: 'workspace',
+  keybindings: mergeKeybindings(),
+  externalControl: { enabled: false }
 }
 
 interface PreferencesState {
@@ -16,10 +24,12 @@ interface PreferencesState {
   refresh: () => Promise<void>
   setAutoOpenConnectionLog: (value: boolean) => Promise<void>
   setSessionOpenMode: (mode: SessionOpenMode) => Promise<void>
+  setKeybinding: (id: KeybindingId, accelerator: Accelerator) => Promise<void>
+  resetKeybindings: () => Promise<void>
 }
 
 export const usePreferencesStore = create<PreferencesState>((set) => ({
-  settings: { ...DEFAULT_SETTINGS },
+  settings: { ...DEFAULT_SETTINGS, keybindings: mergeKeybindings() },
   loaded: false,
 
   refresh: async () => {
@@ -37,16 +47,37 @@ export const usePreferencesStore = create<PreferencesState>((set) => ({
     }
 
     const settings = await window.consoleri.preferences.getAppSettings()
-    set({ settings, loaded: true })
+    set({
+      settings: {
+        ...settings,
+        keybindings: mergeKeybindings(settings.keybindings)
+      },
+      loaded: true
+    })
   },
 
   setAutoOpenConnectionLog: async (autoOpenConnectionLog) => {
     const settings = await window.consoleri.preferences.setAppSettings({ autoOpenConnectionLog })
-    set({ settings })
+    set({ settings: { ...settings, keybindings: mergeKeybindings(settings.keybindings) } })
   },
 
   setSessionOpenMode: async (sessionOpenMode) => {
     const settings = await window.consoleri.preferences.setAppSettings({ sessionOpenMode })
-    set({ settings })
+    set({ settings: { ...settings, keybindings: mergeKeybindings(settings.keybindings) } })
+  },
+
+  setKeybinding: async (id, accelerator) => {
+    const current = usePreferencesStore.getState().settings.keybindings
+    const settings = await window.consoleri.preferences.setAppSettings({
+      keybindings: { ...current, [id]: accelerator }
+    })
+    set({ settings: { ...settings, keybindings: mergeKeybindings(settings.keybindings) } })
+  },
+
+  resetKeybindings: async () => {
+    const settings = await window.consoleri.preferences.setAppSettings({
+      keybindings: mergeKeybindings()
+    })
+    set({ settings: { ...settings, keybindings: mergeKeybindings(settings.keybindings) } })
   }
 }))

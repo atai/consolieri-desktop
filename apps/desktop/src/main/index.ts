@@ -170,6 +170,9 @@ if (!gotSingleInstanceLock) {
         startServices: () => {
           registerIpcHandlers(() => mainWindow)
           backupService.startScheduler()
+          void import('./control/server').then(({ syncControlServerWithSettings }) =>
+            syncControlServerWithSettings()
+          )
         },
         createMainWindow: () => {
           createWindow()
@@ -203,6 +206,7 @@ if (!gotSingleInstanceLock) {
 
   app.on('before-quit', () => {
     backupService.stopScheduler()
+    void import('./control/server').then(({ stopControlServer }) => stopControlServer())
     sessionManager.closeAll()
     closeDatabase()
   })

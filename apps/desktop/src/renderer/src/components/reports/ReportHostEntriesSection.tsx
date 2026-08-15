@@ -21,7 +21,7 @@ export function ReportHostEntriesSection({
 
   useEffect(() => {
     void (async () => {
-      const hostList = await window.consoleri.hosts.list()
+      const hostList = (await window.consoleri.hosts.list()).filter((h) => h.kind !== 'local')
       setHosts(hostList)
       const map = new Map<string, ConnectionProfile[]>()
       const hostIds = new Set(entries.map((e) => e.hostId))

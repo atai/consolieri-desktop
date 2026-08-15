@@ -7,11 +7,17 @@ const mockPreferencesGetHostListView = vi.fn()
 const mockPreferencesGetMapView = vi.fn()
 const mockPreferencesGetAppSettings = vi
   .fn()
-  .mockResolvedValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace' })
+  .mockResolvedValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace', keybindings: {}, externalControl: { enabled: false } })
 const mockPreferencesSetAppSettings = vi
   .fn()
   .mockImplementation((patch: Record<string, unknown>) =>
-    Promise.resolve({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace', ...patch })
+    Promise.resolve({
+      autoOpenConnectionLog: false,
+      sessionOpenMode: 'workspace',
+      externalControl: { enabled: false },
+      keybindings: {},
+      ...patch
+    })
   )
 const mockWorkspaceSave = vi.fn().mockResolvedValue(undefined)
 const mockHostsList = vi.fn().mockResolvedValue([])
@@ -240,12 +246,31 @@ describe('settings load/persist', () => {
   it('refresh loads settings from IPC', async () => {
     mockPreferencesGetAppSettings.mockResolvedValueOnce({
       autoOpenConnectionLog: true,
-      sessionOpenMode: 'window'
+      sessionOpenMode: 'window',
+      keybindings: {}
     })
     const { usePreferencesStore } = await freshPreferencesStore()
     await usePreferencesStore.getState().refresh()
     expect(usePreferencesStore.getState().settings.autoOpenConnectionLog).toBe(true)
     expect(usePreferencesStore.getState().settings.sessionOpenMode).toBe('window')
+    expect(usePreferencesStore.getState().settings.keybindings.toggleMaximizePane).toEqual({
+      mod: true,
+      shift: true,
+      key: 'm'
+    })
+  })
+
+  it('setKeybinding patches a single binding', async () => {
+    const { usePreferencesStore } = await freshPreferencesStore()
+    await usePreferencesStore.getState().setKeybinding('toggleMaximizePane', {
+      ctrl: true,
+      key: 'f11'
+    })
+    expect(mockPreferencesSetAppSettings).toHaveBeenCalledWith({
+      keybindings: expect.objectContaining({
+        toggleMaximizePane: { ctrl: true, key: 'f11' }
+      })
+    })
   })
 
   it('setAutoOpenConnectionLog calls setAppSettings IPC', async () => {

@@ -11,6 +11,7 @@ export function hostInputFromCopy(source: Host): HostInput {
     hostname: source.hostname,
     port: source.port,
     osType: source.osType,
+    kind: source.kind,
     tags: [...source.tags],
     groupId: source.groupId,
     notes: source.notes,

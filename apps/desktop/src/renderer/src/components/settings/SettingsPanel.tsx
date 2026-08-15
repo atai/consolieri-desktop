@@ -4,16 +4,20 @@ import { UxProfileManager } from '../ux/UxProfileManager'
 import { VaultSettingsPanel } from '../vault/VaultSettingsPanel'
 import { BackupSettingsPanel } from './BackupSettingsPanel'
 import { CloudSettingsPanel } from './CloudSettingsPanel'
+import { HotkeysTab } from './HotkeysTab'
+import { IntegrationsPanel } from './IntegrationsPanel'
 import { SessionOpenModeToggle } from '../hosts/SessionOpenModeToggle'
 
-type SettingsTab = 'general' | 'appearance' | 'vault' | 'backup' | 'cloud'
+type SettingsTab = 'general' | 'hotkeys' | 'appearance' | 'vault' | 'backup' | 'cloud' | 'integrations'
 
 const TABS: Array<{ id: SettingsTab; label: string }> = [
   { id: 'general', label: 'General' },
+  { id: 'hotkeys', label: 'Hotkeys' },
   { id: 'appearance', label: 'Appearance' },
   { id: 'vault', label: 'Vault' },
   { id: 'backup', label: 'Backup' },
-  { id: 'cloud', label: 'Cloud' }
+  { id: 'cloud', label: 'Cloud' },
+  { id: 'integrations', label: 'Integrations' }
 ]
 
 function GeneralTab(): React.JSX.Element {
@@ -96,10 +100,12 @@ export function SettingsPanel(): React.JSX.Element {
       {/* Right content */}
       <div className="min-h-0 flex-1 overflow-hidden">
         {activeTab === 'general' && <GeneralTab />}
+        {activeTab === 'hotkeys' && <HotkeysTab />}
         {activeTab === 'appearance' && <UxProfileManager />}
         {activeTab === 'vault' && <VaultSettingsPanel />}
         {activeTab === 'backup' && <BackupSettingsPanel />}
         {activeTab === 'cloud' && <CloudSettingsPanel />}
+        {activeTab === 'integrations' && <IntegrationsPanel />}
       </div>
     </div>
   )

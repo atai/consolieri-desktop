@@ -13,30 +13,32 @@ export interface ResolveLocalShellOptions {
   platform: NodeJS.Platform
   existsSync: (path: string) => boolean
   homeDir?: string
+  cwd?: string
 }
 
 export function resolveLocalShell(options: ResolveLocalShellOptions): ShellSpawnSpec {
-  const { shell, wslDistro, wslShell = '/bin/bash', platform, existsSync } = options
+  const { shell, wslDistro, wslShell = '/bin/bash', platform, existsSync, cwd } = options
+  const withCwd = (spec: ShellSpawnSpec): ShellSpawnSpec => (cwd ? { ...spec, cwd } : spec)
 
   switch (shell) {
     case 'pwsh':
-      return { file: platform === 'win32' ? 'pwsh.exe' : 'pwsh', args: [] }
+      return withCwd({ file: platform === 'win32' ? 'pwsh.exe' : 'pwsh', args: [] })
     case 'powershell':
-      return { file: 'powershell.exe', args: [] }
+      return withCwd({ file: 'powershell.exe', args: [] })
     case 'cmd':
-      return { file: 'cmd.exe', args: [] }
+      return withCwd({ file: 'cmd.exe', args: [] })
     case 'bash': {
       const candidates =
         platform === 'win32'
           ? ['C:\\Program Files\\Git\\bin\\bash.exe', 'C:\\Program Files\\Git\\usr\\bin\\bash.exe']
           : ['/bin/bash', '/usr/bin/bash']
       const bash = candidates.find((p) => existsSync(p)) ?? 'bash'
-      return { file: bash, args: ['--login', '-i'] }
+      return withCwd({ file: bash, args: ['--login', '-i'] })
     }
     case 'zsh': {
       const candidates = platform === 'win32' ? [] : ['/bin/zsh', '/usr/bin/zsh']
       const zsh = candidates.find((p) => existsSync(p)) ?? 'zsh'
-      return { file: zsh, args: ['-l', '-i'] }
+      return withCwd({ file: zsh, args: ['-l', '-i'] })
     }
     case 'sh': {
       const candidates =
@@ -44,14 +46,14 @@ export function resolveLocalShell(options: ResolveLocalShellOptions): ShellSpawn
           ? []
           : ['/bin/sh', '/usr/bin/sh']
       const sh = candidates.find((p) => existsSync(p)) ?? 'sh'
-      return { file: sh, args: ['-l'] }
+      return withCwd({ file: sh, args: ['-l'] })
     }
     case 'wsl':
-      return {
+      return withCwd({
         file: 'wsl.exe',
         args: wslDistro ? ['-d', wslDistro, '--', wslShell, '-l'] : ['--', wslShell, '-l']
-      }
+      })
     default:
-      return { file: platform === 'win32' ? 'powershell.exe' : 'bash', args: [] }
+      return withCwd({ file: platform === 'win32' ? 'powershell.exe' : 'bash', args: [] })
   }
 }

@@ -52,10 +52,20 @@ function makeSession(overrides: Partial<SessionInfo> = {}): SessionInfo {
 }
 
 function makePreferencesState(overrides: object = {}): {
-  settings: { autoOpenConnectionLog: boolean; sessionOpenMode: string }
+  settings: {
+    autoOpenConnectionLog: boolean
+    sessionOpenMode: string
+    keybindings: object
+    externalControl: { enabled: boolean }
+  }
 } {
   return {
-    settings: { autoOpenConnectionLog: false, sessionOpenMode: 'workspace' },
+    settings: {
+      autoOpenConnectionLog: false,
+      sessionOpenMode: 'workspace',
+      keybindings: {},
+      externalControl: { enabled: false }
+    },
     ...overrides
   }
 }
@@ -90,7 +100,7 @@ describe('createPaneBinding', () => {
     expect(binding.sessionId).toBe('sess-42')
     expect(binding.protocol).toBe('rdp')
     expect(binding.title).toBe('win01')
-    expect(binding.connectRequest).toEqual(request)
+    expect(binding.connectRequest).toEqual({ ...request, paneId: binding.paneId })
   })
 
   it('each call produces a unique paneId', () => {
@@ -105,7 +115,7 @@ describe('createPaneBinding', () => {
     const session = makeSession()
     const request = { hostId: 'h1', protocol: 'ssh' as const }
     const binding = createPaneBinding(session, request)
-    expect(binding.connectRequest).toEqual(request)
+    expect(binding.connectRequest).toEqual({ ...request, paneId: binding.paneId })
     expect(binding.connectRequest).not.toBe(request)
   })
 })

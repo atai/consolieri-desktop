@@ -16,6 +16,7 @@ function makeHost(overrides: Partial<Host> & Pick<Host, 'id' | 'name'>): Host {
     hostname: 'host.example',
     port: 22,
     osType: 'linux',
+    kind: 'remote',
     tags: [],
     groupId: null,
     notes: '',

@@ -40,6 +40,16 @@ describe('resolveLocalShell', () => {
     expect(spec.args).toEqual(['-l', '-i'])
   })
 
+  it('passes cwd when provided', () => {
+    const spec = resolveLocalShell({
+      shell: 'zsh',
+      platform: 'darwin',
+      existsSync: (p) => p === '/bin/zsh',
+      cwd: '/Users/ra/git/consoleri'
+    })
+    expect(spec.cwd).toBe('/Users/ra/git/consoleri')
+  })
+
   it('resolves sh on linux', () => {
     const spec = resolveLocalShell({
       shell: 'sh',

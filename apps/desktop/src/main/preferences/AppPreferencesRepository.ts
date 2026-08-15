@@ -1,5 +1,6 @@
 import {
   mergeHostListViewSettings,
+  mergeKeybindings,
   mergeMapViewSettings,
   normalizeHostListViewSettings,
   normalizeMapViewSettings,
@@ -19,7 +20,9 @@ const SCP_RECENT_KEY = 'scp_recent'
 
 const DEFAULT_APP_SETTINGS: AppSettings = {
   autoOpenConnectionLog: false,
-  sessionOpenMode: 'workspace'
+  sessionOpenMode: 'workspace',
+  keybindings: mergeKeybindings(),
+  externalControl: { enabled: false }
 }
 
 function serializeHostListView(settings: HostListViewSettings): string {
@@ -105,22 +108,40 @@ export class AppPreferencesRepository {
     const pref = db
       .prepare('SELECT value FROM app_preferences WHERE key = ?')
       .get(APP_SETTINGS_KEY) as { value: string } | undefined
-    if (!pref?.value) return { ...DEFAULT_APP_SETTINGS }
+    if (!pref?.value) return { ...DEFAULT_APP_SETTINGS, keybindings: mergeKeybindings() }
     try {
       const parsed = JSON.parse(pref.value) as Partial<AppSettings>
       return {
         autoOpenConnectionLog:
           parsed.autoOpenConnectionLog ?? DEFAULT_APP_SETTINGS.autoOpenConnectionLog,
         sessionOpenMode:
-          parsed.sessionOpenMode === 'window' ? 'window' : DEFAULT_APP_SETTINGS.sessionOpenMode
+          parsed.sessionOpenMode === 'window' ? 'window' : DEFAULT_APP_SETTINGS.sessionOpenMode,
+        keybindings: mergeKeybindings(parsed.keybindings),
+        externalControl: {
+          enabled: parsed.externalControl?.enabled === true
+        }
       }
     } catch {
-      return { ...DEFAULT_APP_SETTINGS }
+      return { ...DEFAULT_APP_SETTINGS, keybindings: mergeKeybindings() }
     }
   }
 
   setAppSettings(patch: Partial<AppSettings>): AppSettings {
-    const merged: AppSettings = { ...this.getAppSettings(), ...patch }
+    const current = this.getAppSettings()
+    const merged: AppSettings = {
+      ...current,
+      ...patch,
+      keybindings:
+        patch.keybindings !== undefined
+          ? mergeKeybindings({ ...current.keybindings, ...patch.keybindings })
+          : current.keybindings,
+      externalControl: {
+        enabled:
+          patch.externalControl?.enabled !== undefined
+            ? patch.externalControl.enabled
+            : current.externalControl.enabled
+      }
+    }
     getDatabase()
       .prepare(
         `INSERT INTO app_preferences (key, value) VALUES (?, ?)

@@ -13,9 +13,10 @@ export function HostMapView(): React.JSX.Element {
   const [search, setSearch] = useState('')
 
   const filteredHosts = useMemo(() => {
+    const remote = allHosts.filter((h) => h.kind !== 'local')
     const q = search.trim().toLowerCase()
-    if (!q) return allHosts
-    return allHosts.filter(
+    if (!q) return remote
+    return remote.filter(
       (h) =>
         h.name.toLowerCase().includes(q) ||
         h.hostname.toLowerCase().includes(q) ||

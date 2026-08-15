@@ -51,6 +51,37 @@ export class SessionFactory {
     return 'bash'
   }
 
+  private resolveShellFromProfile(
+    request: OpenSessionRequest,
+    profile: ConnectionProfile | null
+  ): LocalShellType {
+    if (request.localShell) return request.localShell
+    const fromProfile = profile?.shell
+    const known: LocalShellType[] = ['powershell', 'pwsh', 'cmd', 'bash', 'zsh', 'sh', 'wsl']
+    if (fromProfile && (known as string[]).includes(fromProfile)) {
+      return fromProfile as LocalShellType
+    }
+    return this.defaultLocalShell()
+  }
+
+  private createPty(
+    request: OpenSessionRequest,
+    shell: LocalShellType,
+    cols: number,
+    rows: number,
+    wslShell?: string
+  ): PtySession {
+    return new PtySession({
+      shell,
+      cols,
+      rows,
+      wslDistro: request.wslDistro,
+      wslShell,
+      cwd: request.cwd,
+      histFile: request.histFile
+    })
+  }
+
   resolveContext(request: OpenSessionRequest): {
     host: Host | null
     profile: ConnectionProfile | null
@@ -102,13 +133,16 @@ export class SessionFactory {
         shell === 'wsl' ? `WSL${request.wslDistro ? ` (${request.wslDistro})` : ''}` : shell
       this.log.append(sessionId, 'info', `Spawning local shell: ${shell}`)
       return {
-        transport: new PtySession(shell, cols, rows, request.wslDistro),
+        transport: this.createPty(request, shell, cols, rows),
         protocol: localProtocol,
         title: localTitle
       }
     }
 
     if (!host) throw new Error('Host not found')
+
+    // Prefer pane title from request when restoring a local project preset
+    const paneTitle = request.title ?? title
 
     switch (protocol) {
       case 'ssh': {
@@ -142,7 +176,7 @@ export class SessionFactory {
           sessionId,
           shellPrompt: uxProfile.terminal.shellPrompt
         })
-        return { transport, protocol, title }
+        return { transport, protocol, title: paneTitle }
       }
       case 'rdp': {
         const rdpProxy = new RdpProxy()
@@ -155,7 +189,7 @@ export class SessionFactory {
         return {
           transport: new RdpSession(proxy.proxyUrl, rdpProxy),
           protocol,
-          title,
+          title: paneTitle,
           proxyUrl: proxy.proxyUrl,
           rdpDestination,
           rdpProxy
@@ -169,7 +203,7 @@ export class SessionFactory {
         return {
           transport: new VncSession(proxy.proxyUrl, vncProxy),
           protocol,
-          title,
+          title: paneTitle,
           proxyUrl: proxy.proxyUrl,
           vncProxy
         }
@@ -181,24 +215,24 @@ export class SessionFactory {
           `Opening WSL${request.wslDistro ? ` (${request.wslDistro})` : ''}`
         )
         return {
-          transport: new PtySession(
+          transport: this.createPty(
+            request,
             'wsl',
             cols,
             rows,
-            request.wslDistro,
             profile?.shell ?? '/bin/bash'
           ),
           protocol: 'wsl',
-          title
+          title: paneTitle
         }
       case 'local_pty':
       default: {
-        const shell = request.localShell ?? this.defaultLocalShell()
+        const shell = this.resolveShellFromProfile(request, profile)
         this.log.append(sessionId, 'info', `Opening local shell: ${shell}`)
         return {
-          transport: new PtySession(shell, cols, rows),
+          transport: this.createPty(request, shell, cols, rows),
           protocol: 'local_pty',
-          title
+          title: paneTitle
         }
       }
     }

@@ -6,6 +6,7 @@ import type {
   HostGroupLike,
   HostProfileLinkExport,
   HostsExportDocument,
+  HostSessionPresetExport,
   ProfileExportItem
 } from './types'
 import { HOSTS_BUNDLE_VERSION } from './types'
@@ -17,9 +18,16 @@ export function sanitizeCredentialRefForExport(credentialRef: string | null): st
   return credentialRef
 }
 
-export function hostToExportItem(host: Host): HostExportItem {
+export function hostToExportItem(
+  host: Host,
+  sessionPreset?: HostSessionPresetExport | null
+): HostExportItem {
   const { id, createdAt, updatedAt, ...data } = host
-  return { exportId: id, ...data }
+  return {
+    exportId: id,
+    ...data,
+    sessionPreset: sessionPreset ?? null
+  }
 }
 
 export function profileToExportItem(profile: ConnectionProfile): ProfileExportItem {
@@ -41,13 +49,14 @@ export function buildHostsExportDocument(
   hosts: Host[],
   profiles: ConnectionProfile[],
   links: HostProfileLinkExport[],
-  exportedAt: string = new Date().toISOString()
+  exportedAt: string = new Date().toISOString(),
+  presetsByHostId: ReadonlyMap<string, HostSessionPresetExport> = new Map()
 ): HostsExportDocument {
   return {
     version: HOSTS_BUNDLE_VERSION,
     exportedAt,
     groups: groups.map(groupToExportItem),
-    hosts: hosts.map(hostToExportItem),
+    hosts: hosts.map((h) => hostToExportItem(h, presetsByHostId.get(h.id) ?? null)),
     profiles: profiles.map(profileToExportItem),
     links: links.map((link) => ({
       hostId: link.hostId,

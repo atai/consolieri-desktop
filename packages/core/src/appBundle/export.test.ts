@@ -18,7 +18,9 @@ import { createBuiltinUxProfile } from '../ux/defaults'
 
 const sampleAppSettings: AppSettings = {
   autoOpenConnectionLog: false,
-  sessionOpenMode: 'workspace'
+  sessionOpenMode: 'workspace',
+  keybindings: {},
+  externalControl: { enabled: false }
 }
 
 const sampleHostListView: HostListViewSettings = {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { MosaicNode } from 'react-mosaic-component'
 import type { SessionInfo } from '@shared/types'
 import { flushWorkspacePersist, useSessionWorkspaceStore } from '../../stores/sessionWorkspaceStore'
@@ -9,12 +9,37 @@ import {
   splitMosaicPane
 } from '../../session/mosaic/sessionMosaicOps'
 import { serializeAll } from '../../terminal/TerminalPool'
+import {
+  createLocalProjectHost,
+  isLocalOnlyLayout,
+  savePresetToHost
+} from '../../session/localProject'
+import { SaveLocalProjectDialog } from '../hosts/SaveLocalProjectDialog'
 
 export function MosaicWorkspace(): React.JSX.Element {
   const { workspace, sessions, persistWorkspace, addSession, updateSession, removeSession } =
     useSessionWorkspaceStore()
+  const [showSaveAs, setShowSaveAs] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [boundHostId, setBoundHostId] = useState<string | null>(null)
+  const [boundHostName, setBoundHostName] = useState<string | null>(null)
 
   const layout = workspace.layout as MosaicNode<string> | null
+  const canSave = isLocalOnlyLayout(workspace.panes)
+
+  useEffect(() => {
+    const hostIds = new Set(
+      workspace.panes.map((p) => p.connectRequest.hostId).filter((id): id is string => Boolean(id))
+    )
+    if (hostIds.size === 1) {
+      const id = [...hostIds][0]!
+      setBoundHostId(id)
+      void window.consoleri.hosts.get(id).then((h) => setBoundHostName(h?.name ?? null))
+    } else {
+      setBoundHostId(null)
+      setBoundHostName(null)
+    }
+  }, [workspace.panes])
 
   useEffect(() => {
     const saveOnExit = (): void => {
@@ -77,18 +102,87 @@ export function MosaicWorkspace(): React.JSX.Element {
     updateSession(session.id, session)
   }
 
+  const handleSave = async (): Promise<void> => {
+    if (!canSave) return
+    if (boundHostId) {
+      setSaving(true)
+      try {
+        await savePresetToHost(boundHostId, layout, workspace.panes)
+      } finally {
+        setSaving(false)
+      }
+      return
+    }
+    setShowSaveAs(true)
+  }
+
+  const handleSaveAs = async (name: string, tags: string[]): Promise<void> => {
+    setSaving(true)
+    try {
+      const host = await createLocalProjectHost({
+        name,
+        tags,
+        layout,
+        panes: workspace.panes
+      })
+      setBoundHostId(host.id)
+      setBoundHostName(host.name)
+      persistWorkspace(
+        layout,
+        workspace.panes.map((p) => ({
+          ...p,
+          connectRequest: {
+            ...p.connectRequest,
+            hostId: host.id,
+            profileId: host.defaultProfileId ?? p.connectRequest.profileId,
+            paneId: p.paneId
+          }
+        }))
+      )
+      setShowSaveAs(false)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
-    <SessionMosaic
-      layout={layout}
-      panes={workspace.panes}
-      sessions={sessions}
-      onLayoutChange={handleLayoutChange}
-      onPanesChange={(panes) => persistWorkspace(layout, panes)}
-      onSessionUpdated={handleSessionUpdated}
-      onSessionRemoved={removeSession}
-      onSplitPane={handleSplitPane}
-      onConnectPane={handleConnectPane}
-      onClosePane={handleClosePane}
-    />
+    <div className="flex h-full min-h-0 flex-col">
+      {canSave && (
+        <div className="flex shrink-0 items-center gap-2 border-b border-border bg-surface px-2 py-1">
+          <span className="min-w-0 flex-1 truncate text-xs text-muted">
+            {boundHostName ? `Project: ${boundHostName}` : 'Local sessions'}
+          </span>
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => void handleSave()}
+            className="rounded border border-border px-2 py-0.5 text-xs text-fg hover:bg-surface-raised disabled:opacity-50"
+          >
+            {boundHostId ? 'Save' : 'Save as host…'}
+          </button>
+        </div>
+      )}
+      <div className="min-h-0 flex-1">
+        <SessionMosaic
+          layout={layout}
+          panes={workspace.panes}
+          sessions={sessions}
+          onLayoutChange={handleLayoutChange}
+          onPanesChange={(panes) => persistWorkspace(layout, panes)}
+          onSessionUpdated={handleSessionUpdated}
+          onSessionRemoved={removeSession}
+          onSplitPane={handleSplitPane}
+          onConnectPane={handleConnectPane}
+          onClosePane={handleClosePane}
+        />
+      </div>
+      {showSaveAs && (
+        <SaveLocalProjectDialog
+          onCancel={() => setShowSaveAs(false)}
+          onSave={(name, tags) => void handleSaveAs(name, tags)}
+          saving={saving}
+        />
+      )}
+    </div>
   )
 }

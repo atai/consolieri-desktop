@@ -27,6 +27,30 @@ describe('rowToHost', () => {
     expect(host.relatedHostIds).toEqual(['db'])
     expect(host.gatewayHostId).toBe('gw1')
     expect(host.httpEndpoint).toBe('https://alb.example/health')
+    expect(host.kind).toBe('remote')
+  })
+
+  it('maps local kind', () => {
+    const host = rowToHost({
+      id: 'h2',
+      name: 'local',
+      hostname: 'localhost',
+      port: 0,
+      os_type: 'macos',
+      kind: 'local',
+      tags_json: '[]',
+      group_id: null,
+      notes: '',
+      default_profile_id: null,
+      ux_profile_id: null,
+      log_verbosity: 'info',
+      related_hosts_json: '[]',
+      gateway_host_id: null,
+      http_endpoint: null,
+      created_at: '2024-01-01',
+      updated_at: '2024-01-02'
+    })
+    expect(host.kind).toBe('local')
   })
 })
 

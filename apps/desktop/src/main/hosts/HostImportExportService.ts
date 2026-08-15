@@ -11,13 +11,15 @@ import {
   resolveHostProfileLink,
   serializeHostsExportDocument,
   sortGroupsForImport,
-  type HostsExportDocument
+  type HostsExportDocument,
+  type HostSessionPresetExport
 } from '@consoleri/core'
-import type { Host } from '../../shared/types'
+import type { Host, LocalShellType, Protocol } from '../../shared/types'
 import { getDatabase } from '../db/database'
 import { uxProfileRepository } from '../ux/UxProfileRepository'
 import type { HostRepository } from './HostRepository'
 import type { ProfileRepository } from './ProfileRepository'
+import { hostSessionPresetRepository } from './HostSessionPresetRepository'
 
 export class HostImportExportService {
   constructor(
@@ -30,7 +32,14 @@ export class HostImportExportService {
     const hosts = this.hostRepo.listHosts()
     const profiles = this.profileRepo.listProfiles()
     const links = this.profileRepo.listAllProfileLinks()
-    return buildHostsExportDocument(groups, hosts, profiles, links)
+    const presetsByHostId = new Map<string, HostSessionPresetExport>()
+    for (const host of hosts) {
+      const preset = hostSessionPresetRepository.get(host.id)
+      if (preset) {
+        presetsByHostId.set(host.id, { layout: preset.layout, panes: preset.panes })
+      }
+    }
+    return buildHostsExportDocument(groups, hosts, profiles, links, undefined, presetsByHostId)
   }
 
   async exportHostsToFile(): Promise<{ path: string } | { canceled: true }> {
@@ -86,6 +95,20 @@ export class HostImportExportService {
       const created = this.hostRepo.createHost(planned.input)
       hostIdMap.set(planned.exportId, created.id)
       createdHosts.push(created)
+      if (planned.sessionPreset) {
+        hostSessionPresetRepository.save(created.id, {
+          layout: planned.sessionPreset.layout,
+          panes: planned.sessionPreset.panes.map((p) => ({
+            paneId: p.paneId,
+            title: p.title,
+            protocol: p.protocol as Protocol,
+            localShell: p.localShell as LocalShellType | undefined,
+            wslDistro: p.wslDistro,
+            cwd: p.cwd,
+            profileId: p.profileId
+          }))
+        })
+      }
     }
 
     for (const profile of doc.profiles) {
@@ -124,7 +147,7 @@ export class HostImportExportService {
     const validUxProfileIds = new Set(uxProfileRepository.list().map((p) => p.id))
 
     db.exec(
-      'DELETE FROM host_profile_links; DELETE FROM connection_profiles; DELETE FROM hosts; DELETE FROM host_groups'
+      'DELETE FROM host_session_presets; DELETE FROM host_profile_links; DELETE FROM connection_profiles; DELETE FROM hosts; DELETE FROM host_groups'
     )
 
     for (const group of sortGroupsForImport(doc.groups)) {
@@ -137,16 +160,17 @@ export class HostImportExportService {
     for (const host of doc.hosts) {
       const uxProfileId = validUxProfileIds.has(host.uxProfileId ?? '') ? host.uxProfileId : null
       db.prepare(
-        `INSERT INTO hosts (id, name, hostname, port, os_type, tags_json, group_id, notes,
+        `INSERT INTO hosts (id, name, hostname, port, os_type, kind, tags_json, group_id, notes,
           default_profile_id, ux_profile_id, log_verbosity, related_hosts_json,
           gateway_host_id, http_endpoint, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).run(
         host.exportId,
         host.name,
         host.hostname,
         host.port,
         host.osType,
+        host.kind ?? 'remote',
         JSON.stringify(host.tags),
         host.groupId ?? null,
         host.notes,
@@ -159,6 +183,20 @@ export class HostImportExportService {
         now,
         now
       )
+      if (host.sessionPreset) {
+        hostSessionPresetRepository.save(host.exportId, {
+          layout: host.sessionPreset.layout,
+          panes: host.sessionPreset.panes.map((p) => ({
+            paneId: p.paneId,
+            title: p.title,
+            protocol: p.protocol as Protocol,
+            localShell: p.localShell as LocalShellType | undefined,
+            wslDistro: p.wslDistro,
+            cwd: p.cwd,
+            profileId: p.profileId
+          }))
+        })
+      }
     }
 
     for (const profile of doc.profiles) {

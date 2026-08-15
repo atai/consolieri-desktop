@@ -14,8 +14,13 @@ import { sessionManager } from '../sessions/SessionManager'
 import { workspaceRepository } from '../hosts/WorkspaceRepository'
 import { listWslDistros } from '../sessions/shellUtils'
 import { openLogWindow } from '../windows/LogWindow'
-import { openSessionWindow } from '../windows/SessionWindow'
-import { isRegisteredSessionWindow, registerSessionWindow } from '../windows/SessionWindowRegistry'
+import { openHostSessionWindow, openSessionWindow } from '../windows/SessionWindow'
+import {
+  isRegisteredSessionWindow,
+  markAsSessionWindow,
+  registerSessionWindow
+} from '../windows/SessionWindowRegistry'
+import { deletePaneShellHistory, ensureShellHistoryFile } from '../sessions/shellHistory'
 
 export function registerSessionIpc(getWindow: () => BrowserWindow | null): void {
   // ── sessions ───────────────────────────────────────────────────────────────
@@ -26,11 +31,22 @@ export function registerSessionIpc(getWindow: () => BrowserWindow | null): void 
       const request = OpenSessionRequestSchema.parse(rawRequest)
       const win = getWindow()
       if (win) sessionManager.setWindow(win)
-      const session = sessionManager.open(request, cols, rows)
+
+      const enriched = { ...request }
+      if (request.hostId && request.paneId && !request.histFile) {
+        enriched.histFile = ensureShellHistoryFile(request.hostId, request.paneId)
+      }
+
+      const session = sessionManager.open(enriched, cols, rows)
 
       const senderWindow = BrowserWindow.fromWebContents(event.sender)
-      if (senderWindow && isRegisteredSessionWindow(senderWindow)) {
+      const mainWindow = getWindow()
+      if (
+        senderWindow &&
+        (isRegisteredSessionWindow(senderWindow) || (mainWindow && senderWindow !== mainWindow))
+      ) {
         registerSessionWindow(session.id, senderWindow)
+        markAsSessionWindow(senderWindow)
       }
 
       return session
@@ -72,6 +88,11 @@ export function registerSessionIpc(getWindow: () => BrowserWindow | null): void 
     createHandler(Id, (sessionId: string) =>
       Promise.resolve(sessionManager.getConnectRequest(sessionId))
     )
+  )
+
+  ipcMain.handle(
+    IPC_CHANNELS.sessionsGetCwd,
+    createHandler(Id, (sessionId: string) => sessionManager.getCwd(sessionId))
   )
 
   // Credential retrieval is restricted to non-empty profileId (no arbitrary lookup)
@@ -125,6 +146,22 @@ export function registerSessionIpc(getWindow: () => BrowserWindow | null): void 
     IPC_CHANNELS.sessionsOpenSessionWindow,
     createHandler(Id, (sessionId: string) => {
       openSessionWindow(sessionId)
+      return Promise.resolve()
+    })
+  )
+
+  ipcMain.handle(
+    IPC_CHANNELS.sessionsOpenHostWindow,
+    createHandler(Id, (hostId: string) => {
+      openHostSessionWindow(hostId)
+      return Promise.resolve()
+    })
+  )
+
+  ipcMain.handle(
+    IPC_CHANNELS.shellHistoryDeletePane,
+    createHandler(z.tuple([Id, Id]), ([hostId, paneId]: [string, string]) => {
+      deletePaneShellHistory(hostId, paneId)
       return Promise.resolve()
     })
   )

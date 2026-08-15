@@ -21,7 +21,8 @@ export { resolveLocalShell }
 export function resolveLocalShellSpawn(
   shell: 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'zsh' | 'sh' | 'wsl',
   wslDistro?: string,
-  wslShell = '/bin/bash'
+  wslShell = '/bin/bash',
+  cwd?: string
 ): { file: string; args: string[]; cwd?: string } {
   return resolveLocalShell({
     shell,
@@ -29,6 +30,7 @@ export function resolveLocalShellSpawn(
     wslShell,
     platform: process.platform,
     existsSync,
-    homeDir: process.env.HOME ?? process.env.USERPROFILE
+    homeDir: process.env.HOME ?? process.env.USERPROFILE,
+    cwd
   })
 }

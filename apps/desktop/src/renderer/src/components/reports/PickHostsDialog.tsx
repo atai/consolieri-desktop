@@ -33,7 +33,7 @@ export function PickHostsDialog({
     void (async () => {
       setLoading(true)
       try {
-        const hostList = await window.consoleri.hosts.list()
+        const hostList = (await window.consoleri.hosts.list()).filter((h) => h.kind !== 'local')
         setHosts(hostList)
         const map = new Map<string, ConnectionProfile[]>()
         await Promise.all(

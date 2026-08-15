@@ -7,6 +7,7 @@ export const sampleHost: Host = {
   hostname: '10.0.0.1',
   port: 22,
   osType: 'linux',
+  kind: 'remote',
   tags: ['prod'],
   groupId: 'g1',
   notes: 'note',

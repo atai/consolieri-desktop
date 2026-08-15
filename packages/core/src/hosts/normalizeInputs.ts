@@ -1,4 +1,4 @@
-import type { OsType, Protocol, AuthMethod } from '../types'
+import type { HostKind, OsType, Protocol, AuthMethod } from '../types'
 import { normalizeHostLogVerbosity } from '../logging/verbosity'
 
 // ── Input types ───────────────────────────────────────────────────────────────
@@ -8,6 +8,7 @@ export interface HostFormInput {
   hostname: string
   port?: number
   osType?: string
+  kind?: string
   tags?: string[]
   groupId?: string | null
   notes?: string
@@ -24,6 +25,7 @@ export interface NormalizedHostInput {
   hostname: string
   port: number
   osType: OsType
+  kind: HostKind
   tags: string[]
   groupId: string | null
   notes: string
@@ -60,6 +62,7 @@ export interface NormalizedProfileInput {
 // ── Validation constants ──────────────────────────────────────────────────────
 
 const VALID_OS_TYPES: ReadonlySet<string> = new Set(['windows', 'linux', 'macos', 'unknown'])
+const VALID_HOST_KINDS: ReadonlySet<string> = new Set(['remote', 'local'])
 const VALID_PROTOCOLS: ReadonlySet<string> = new Set(['ssh', 'rdp', 'vnc', 'local_pty', 'wsl'])
 const VALID_AUTH_METHODS: ReadonlySet<string> = new Set(['password', 'key', 'none'])
 
@@ -73,15 +76,25 @@ export function normalizeHostInput(
   const name = (input.name ?? '').trim()
   if (!name) errors.name = 'Name is required'
 
-  const hostname = (input.hostname ?? '').trim()
+  const kind = input.kind ?? 'remote'
+  if (!VALID_HOST_KINDS.has(kind)) {
+    errors.kind = `Invalid host kind "${kind}"`
+  }
+  const isLocal = kind === 'local'
+
+  const hostname = (input.hostname ?? (isLocal ? 'localhost' : '')).trim()
   if (!hostname) errors.hostname = 'Hostname is required'
 
-  const port = input.port ?? 22
-  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+  const port = input.port ?? (isLocal ? 0 : 22)
+  if (isLocal) {
+    if (!Number.isInteger(port) || port < 0 || port > 65535) {
+      errors.port = 'Port must be an integer between 0 and 65535'
+    }
+  } else if (!Number.isInteger(port) || port < 1 || port > 65535) {
     errors.port = 'Port must be an integer between 1 and 65535'
   }
 
-  const osType = input.osType ?? 'unknown'
+  const osType = input.osType ?? (isLocal ? 'macos' : 'unknown')
   if (!VALID_OS_TYPES.has(osType)) {
     errors.osType = `Invalid OS type "${osType}"`
   }
@@ -102,18 +115,19 @@ export function normalizeHostInput(
     errors: {},
     normalized: {
       name,
-      hostname,
-      port,
+      hostname: isLocal ? 'localhost' : hostname,
+      port: isLocal ? 0 : port,
       osType: osType as OsType,
+      kind: kind as HostKind,
       tags,
       groupId: input.groupId ?? null,
       notes: (input.notes ?? '').trim(),
       defaultProfileId: input.defaultProfileId ?? null,
       uxProfileId: input.uxProfileId ?? null,
       logVerbosity: normalizeHostLogVerbosity(input.logVerbosity),
-      relatedHostIds: input.relatedHostIds ?? [],
-      gatewayHostId: input.gatewayHostId ?? null,
-      httpEndpoint: input.httpEndpoint ?? null
+      relatedHostIds: isLocal ? [] : (input.relatedHostIds ?? []),
+      gatewayHostId: isLocal ? null : (input.gatewayHostId ?? null),
+      httpEndpoint: isLocal ? null : (input.httpEndpoint ?? null)
     }
   }
 }

@@ -7,7 +7,7 @@ const minimalDoc = {
   version: APP_BUNDLE_VERSION,
   exportedAt: '2026-01-01T00:00:00.000Z',
   settings: {
-    app: { autoOpenConnectionLog: false, sessionOpenMode: 'workspace' },
+    app: { autoOpenConnectionLog: false, sessionOpenMode: 'workspace', keybindings: {}, externalControl: { enabled: false } },
     hostListView: { version: 1, groupBy: 'none', selectedTags: [], selectedGroupId: 'all', selectedHostId: null, collapsedSections: [], sortBy: 'name', sortDir: 'asc' },
     mapView: { version: 1, appView: 'list', mapMode: 'logical' },
     vault: { enabled: false, address: '', namespace: '', defaultKvMount: 'secret', secretPathPrefix: 'consoleri', defaultBackend: 'local', auth: { method: 'token', hasToken: false }, tlsSkipVerify: false },

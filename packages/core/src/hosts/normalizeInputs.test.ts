@@ -59,6 +59,18 @@ describe('normalizeHostInput', () => {
     expect(normalizeHostInput({ name: 'h', hostname: 'h', osType: 'dos' as never }).errors.osType).toBeTruthy()
   })
 
+  it('accepts local project hosts without hostname', () => {
+    const result = normalizeHostInput({ name: 'consoleri', kind: 'local' })
+    expect(result.errors).toEqual({})
+    expect(result.normalized?.kind).toBe('local')
+    expect(result.normalized?.hostname).toBe('localhost')
+    expect(result.normalized?.port).toBe(0)
+  })
+
+  it('defaults kind to remote', () => {
+    expect(normalizeHostInput({ name: 'h', hostname: 'h' }).normalized?.kind).toBe('remote')
+  })
+
   // Tags
   it('defaults tags to empty array', () => {
     expect(normalizeHostInput({ name: 'h', hostname: 'h' }).normalized?.tags).toEqual([])

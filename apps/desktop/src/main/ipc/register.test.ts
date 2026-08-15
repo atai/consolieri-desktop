@@ -105,10 +105,20 @@ const {
     setMapView: vi.fn(),
     getAppSettings: vi
       .fn()
-      .mockReturnValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace' }),
+      .mockReturnValue({
+        autoOpenConnectionLog: false,
+        sessionOpenMode: 'workspace',
+        keybindings: {},
+        externalControl: { enabled: false }
+      }),
     setAppSettings: vi
       .fn()
-      .mockReturnValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace' }),
+      .mockReturnValue({
+        autoOpenConnectionLog: false,
+        sessionOpenMode: 'workspace',
+        keybindings: {},
+        externalControl: { enabled: false }
+      }),
     getScpRecent: vi.fn(),
     setScpRecent: vi.fn()
   },
@@ -158,6 +168,18 @@ vi.mock('electron', () => ({
 vi.mock('../hosts/HostRepository', () => ({ hostRepository: mockHostRepo }))
 vi.mock('../hosts/ProfileRepository', () => ({ profileRepository: mockHostRepo }))
 vi.mock('../hosts/WorkspaceRepository', () => ({ workspaceRepository: mockHostRepo }))
+vi.mock('../hosts/HostSessionPresetRepository', () => ({
+  hostSessionPresetRepository: {
+    get: vi.fn(),
+    save: vi.fn(),
+    delete: vi.fn()
+  }
+}))
+vi.mock('../sessions/shellHistory', () => ({
+  deleteHostShellHistory: vi.fn(),
+  deletePaneShellHistory: vi.fn(),
+  ensureShellHistoryFile: vi.fn((hostId: string, paneId: string) => `/tmp/${hostId}/${paneId}`)
+}))
 vi.mock('../hosts/hostImportExportServiceInstance', () => ({
   hostImportExportService: {
     importHosts: mockHostRepo.importHosts,
@@ -240,6 +262,29 @@ vi.mock('../cloud/CloudSyncCoordinator', () => ({
   cloudSyncCoordinator: mockCloudSync,
   scheduleCloudUpload: vi.fn()
 }))
+vi.mock('../control/server', () => ({
+  getControlServerStatus: vi.fn(() => ({
+    enabled: false,
+    listening: false,
+    host: '127.0.0.1',
+    port: null
+  })),
+  enableControlApi: vi.fn(),
+  disableControlApi: vi.fn(),
+  rotateControlToken: vi.fn(),
+  getLastIssuedControlToken: vi.fn(() => null),
+  listControlClients: vi.fn(() => []),
+  revokeControlClient: vi.fn(() => false),
+  setClientAlwaysAllow: vi.fn(() => null),
+  syncControlServerWithSettings: vi.fn()
+}))
+vi.mock('../control/confirm', () => ({
+  registerControlConfirmIpc: vi.fn(),
+  setControlConfirmWindowGetter: vi.fn()
+}))
+vi.mock('../windows/WorkspaceWindow', () => ({
+  getWorkspaceWindowSnapshot: vi.fn(() => null)
+}))
 
 // ── Setup ─────────────────────────────────────────────────────────────────────
 import { registerIpcHandlers } from './register'
@@ -301,6 +346,12 @@ describe('IPC channel inventory', () => {
     IPC_CHANNELS.sessionsLogAppend,
     IPC_CHANNELS.sessionsLogOpenWindow,
     IPC_CHANNELS.sessionsOpenSessionWindow,
+    IPC_CHANNELS.sessionsOpenHostWindow,
+    IPC_CHANNELS.sessionsGetCwd,
+    IPC_CHANNELS.hostPresetsGet,
+    IPC_CHANNELS.hostPresetsSave,
+    IPC_CHANNELS.hostPresetsDelete,
+    IPC_CHANNELS.shellHistoryDeletePane,
     IPC_CHANNELS.keysList,
     IPC_CHANNELS.keysAdd,
     IPC_CHANNELS.keysRemove,
@@ -363,8 +414,19 @@ describe('IPC channel inventory', () => {
     IPC_CHANNELS.scpPickDir,
     IPC_CHANNELS.scpTransfer,
     IPC_CHANNELS.scpGetRecent,
-    IPC_CHANNELS.scpSetRecent
+    IPC_CHANNELS.scpSetRecent,
+    IPC_CHANNELS.controlGetStatus,
+    IPC_CHANNELS.controlEnable,
+    IPC_CHANNELS.controlDisable,
+    IPC_CHANNELS.controlRotateToken,
+    IPC_CHANNELS.controlGetLastToken,
+    IPC_CHANNELS.controlListClients,
+    IPC_CHANNELS.controlRevokeClient,
+    IPC_CHANNELS.controlSetClientAlwaysAllow,
+    IPC_CHANNELS.controlGetWorkspaceWindow
   ] as const
+
+  // controlConfirmResponse is also registered via registerControlConfirmIpc mock (no-op)
 
   const EXPECTED_ON_CHANNELS = [IPC_CHANNELS.sessionsWrite, IPC_CHANNELS.sessionsResize] as const
 
@@ -416,12 +478,41 @@ describe('hosts routing', () => {
   it('hosts:create → hostRepository.createHost', async () => {
     const input = { name: 'web01', hostname: '10.0.0.1' }
     await handleMap.get(IPC_CHANNELS.hostsCreate)!(FAKE_EVENT, input)
-    expect(mockHostRepo.createHost).toHaveBeenCalledWith(input)
+    expect(mockHostRepo.createHost).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'web01',
+        hostname: '10.0.0.1',
+        kind: 'remote',
+        port: 22
+      })
+    )
   })
 
   it('hosts:update → hostRepository.updateHost', async () => {
+    vi.mocked(mockHostRepo.getHost).mockReturnValue({
+      id: 'h1',
+      name: 'old',
+      hostname: '10.0.0.1',
+      port: 22,
+      osType: 'linux',
+      kind: 'remote',
+      tags: [],
+      groupId: null,
+      notes: '',
+      defaultProfileId: null,
+      uxProfileId: null,
+      logVerbosity: 'info',
+      relatedHostIds: [],
+      gatewayHostId: null,
+      httpEndpoint: null,
+      createdAt: '',
+      updatedAt: ''
+    })
     await handleMap.get(IPC_CHANNELS.hostsUpdate)!(FAKE_EVENT, 'h1', { name: 'new' })
-    expect(mockHostRepo.updateHost).toHaveBeenCalledWith('h1', { name: 'new' })
+    expect(mockHostRepo.updateHost).toHaveBeenCalledWith(
+      'h1',
+      expect.objectContaining({ name: 'new', hostname: '10.0.0.1' })
+    )
   })
 
   it('hosts:delete → hostRepository.deleteHost', async () => {

@@ -1,11 +1,12 @@
 export type OsType = 'windows' | 'linux' | 'macos' | 'unknown'
 export type Protocol = 'ssh' | 'local_pty' | 'rdp' | 'vnc' | 'wsl'
 export type AuthMethod = 'password' | 'key' | 'none'
+export type HostKind = 'remote' | 'local'
 export type LocalShellType = 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'zsh' | 'sh' | 'wsl'
 export type LocalShellExecutableType = Exclude<LocalShellType, 'wsl'>
 export type LocalShellAvailability = Record<LocalShellExecutableType, boolean>
 
-export type { SessionOpenMode, AppSettings } from '@consoleri/core'
+export type { SessionOpenMode, AppSettings, Accelerator, KeybindingId, Keybindings } from '@consoleri/core'
 export type SessionStatus = 'connecting' | 'connected' | 'disconnected' | 'error'
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 export type AboutWindowMode = 'splash' | 'about'
@@ -77,6 +78,7 @@ export interface Host {
   hostname: string
   port: number
   osType: OsType
+  kind: HostKind
   tags: string[]
   groupId: string | null
   notes: string
@@ -148,6 +150,68 @@ export interface OpenSessionRequest {
   title?: string
   localShell?: LocalShellType
   wslDistro?: string
+  cwd?: string
+  /** Optional one-shot command written after the session connects (with trailing newline). */
+  command?: string
+  paneId?: string
+  histFile?: string
+}
+
+export interface ExternalControlSettings {
+  enabled: boolean
+}
+
+export interface ControlWindowPaneSpec {
+  title: string
+  localShell?: LocalShellType
+  wslDistro?: string
+  cwd: string
+  command?: string
+}
+
+export interface ControlWindowRecipe {
+  key?: string
+  title: string
+  layout?: unknown
+  panes: ControlWindowPaneSpec[]
+}
+
+export interface ControlWindowInfo {
+  id: string
+  key: string | null
+  title: string
+  status: 'open' | 'pending_confirmation'
+  paneCount: number
+}
+
+export interface ControlConfirmRequest {
+  requestId: string
+  clientName: string
+  title: string
+  panes: Array<{
+    title: string
+    localShell?: string
+    cwd: string
+    command?: string
+  }>
+  hasCommand: boolean
+}
+
+export type ControlConfirmDecision = 'allow_once' | 'always_allow' | 'deny'
+
+export interface ControlClientInfo {
+  id: string
+  name: string
+  alwaysAllow: boolean
+  createdAt: string
+  lastUsedAt: string | null
+}
+
+export interface ControlServerStatus {
+  enabled: boolean
+  listening: boolean
+  host: string
+  port: number | null
 }
 
 export interface HostFilter {
@@ -161,6 +225,7 @@ export interface HostInput {
   hostname: string
   port?: number
   osType?: OsType
+  kind?: HostKind
   tags?: string[]
   groupId?: string | null
   notes?: string
@@ -170,6 +235,28 @@ export interface HostInput {
   relatedHostIds?: string[]
   gatewayHostId?: string | null
   httpEndpoint?: string | null
+}
+
+export interface HostSessionPresetPane {
+  paneId: string
+  title: string
+  protocol: Protocol
+  localShell?: LocalShellType
+  wslDistro?: string
+  cwd?: string | null
+  profileId?: string
+}
+
+export interface HostSessionPreset {
+  hostId: string
+  layout: unknown
+  panes: HostSessionPresetPane[]
+  updatedAt: string
+}
+
+export interface HostSessionPresetInput {
+  layout: unknown
+  panes: HostSessionPresetPane[]
 }
 
 export interface ProfileInput {
@@ -315,6 +402,12 @@ export const IPC_CHANNELS = {
   sessionsLogAppend: 'sessions:log:append',
   sessionsLogOpenWindow: 'sessions:log:openWindow',
   sessionsOpenSessionWindow: 'sessions:openSessionWindow',
+  sessionsOpenHostWindow: 'sessions:openHostWindow',
+  sessionsGetCwd: 'sessions:get-cwd',
+  hostPresetsGet: 'host-presets:get',
+  hostPresetsSave: 'host-presets:save',
+  hostPresetsDelete: 'host-presets:delete',
+  shellHistoryDeletePane: 'shell-history:delete-pane',
   keysList: 'keys:list',
   keysAdd: 'keys:add',
   keysRemove: 'keys:remove',
@@ -389,7 +482,18 @@ export const IPC_CHANNELS = {
   scpPickDir: 'scp:pickDir',
   scpTransfer: 'scp:transfer',
   scpGetRecent: 'scp:getRecent',
-  scpSetRecent: 'scp:setRecent'
+  scpSetRecent: 'scp:setRecent',
+  controlGetStatus: 'control:get-status',
+  controlEnable: 'control:enable',
+  controlDisable: 'control:disable',
+  controlRotateToken: 'control:rotate-token',
+  controlGetLastToken: 'control:get-last-token',
+  controlListClients: 'control:list-clients',
+  controlRevokeClient: 'control:revoke-client',
+  controlSetClientAlwaysAllow: 'control:set-client-always-allow',
+  controlConfirmRequest: 'control:confirm-request',
+  controlConfirmResponse: 'control:confirm-response',
+  controlGetWorkspaceWindow: 'control:get-workspace-window'
 } as const
 
 export interface BackupSettings {

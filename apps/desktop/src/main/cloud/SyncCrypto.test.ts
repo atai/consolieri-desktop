@@ -16,7 +16,12 @@ function sampleDoc(): AppExportDocument {
     version: APP_BUNDLE_VERSION,
     exportedAt: '2026-01-01T00:00:00.000Z',
     settings: {
-      app: { autoOpenConnectionLog: false, sessionOpenMode: 'workspace' },
+      app: {
+        autoOpenConnectionLog: false,
+        sessionOpenMode: 'workspace',
+        keybindings: {},
+        externalControl: { enabled: false }
+      },
       hostListView: {
         version: 1,
         groupBy: 'none',

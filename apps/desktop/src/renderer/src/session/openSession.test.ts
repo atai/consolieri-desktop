@@ -81,10 +81,20 @@ function makeWorkspaceState(overrides: object = {}): {
 }
 
 function makePrefsState(overrides: object = {}): {
-  settings: { autoOpenConnectionLog: boolean; sessionOpenMode: string }
+  settings: {
+    autoOpenConnectionLog: boolean
+    sessionOpenMode: string
+    keybindings: object
+    externalControl: { enabled: boolean }
+  }
 } {
   return {
-    settings: { autoOpenConnectionLog: false, sessionOpenMode: 'workspace' },
+    settings: {
+      autoOpenConnectionLog: false,
+      sessionOpenMode: 'workspace',
+      keybindings: {},
+      externalControl: { enabled: false }
+    },
     ...overrides
   }
 }

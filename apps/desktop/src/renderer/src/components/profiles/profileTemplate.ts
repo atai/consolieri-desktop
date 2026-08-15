@@ -50,7 +50,11 @@ export function profileInputFromTemplate(source: ConnectionProfile): ProfileInpu
     name: template.name,
     protocol: template.protocol,
     shell:
-      template.protocol === 'ssh' || template.protocol === 'wsl' ? template.shell || null : null,
+      template.protocol === 'ssh' ||
+      template.protocol === 'wsl' ||
+      template.protocol === 'local_pty'
+        ? template.shell || null
+        : null,
     username: template.username || null,
     authMethod: template.authMethod,
     jumpHostId: template.protocol === 'ssh' && template.jumpHostId ? template.jumpHostId : null,

@@ -1,13 +1,15 @@
-import type { ConnectionProfile, Host, OsType } from '../types'
+import type { ConnectionProfile, Host, HostKind, OsType } from '../types'
 import { normalizeHostLogVerbosity } from '../logging/verbosity'
 
 export function rowToHost(row: Record<string, unknown>): Host {
+  const kind = (row.kind as HostKind | undefined) ?? 'remote'
   return {
     id: row.id as string,
     name: row.name as string,
     hostname: row.hostname as string,
     port: row.port as number,
     osType: row.os_type as OsType,
+    kind: kind === 'local' ? 'local' : 'remote',
     tags: JSON.parse((row.tags_json as string) || '[]'),
     groupId: (row.group_id as string) || null,
     notes: (row.notes as string) || '',

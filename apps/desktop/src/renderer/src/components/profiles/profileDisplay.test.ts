@@ -9,6 +9,7 @@ const hosts: Host[] = [
     hostname: 'bastion.example.com',
     port: 22,
     osType: 'linux',
+    kind: 'remote',
     tags: [],
     groupId: null,
     notes: '',

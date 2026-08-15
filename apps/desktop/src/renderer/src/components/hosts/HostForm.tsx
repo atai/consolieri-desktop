@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useState } from 'react'
 import type {
   ConnectionProfile,
   Host,
+  HostKind,
   HostLogVerbosity,
   OsType,
   ProfileInput,
@@ -59,10 +60,12 @@ export function HostForm({
   const source = host ?? copyFrom
   const isCopyMode = Boolean(copyFrom)
   const [name, setName] = useState(host?.name ?? (copyFrom ? hostCopyName(copyFrom) : ''))
+  const [kind, setKind] = useState<HostKind>(source?.kind ?? 'remote')
   const [hostname, setHostname] = useState(source?.hostname ?? '')
   const [httpEndpoint, setHttpEndpoint] = useState(source?.httpEndpoint ?? '')
   const [port, setPort] = useState(source?.port ?? 22)
   const [osType, setOsType] = useState<OsType>(source?.osType ?? 'linux')
+  const [localShell, setLocalShell] = useState('zsh')
   const [tags, setTags] = useState(source?.tags.join(', ') ?? '')
   const [notes, setNotes] = useState(source?.notes ?? '')
   const [logVerbosity, setLogVerbosity] = useState<HostLogVerbosity>(source?.logVerbosity ?? 'info')
@@ -79,8 +82,9 @@ export function HostForm({
   const [relatedHostIds, setRelatedHostIds] = useState<string[]>(source?.relatedHostIds ?? [])
   const [gatewayHostId, setGatewayHostId] = useState(source?.gatewayHostId ?? '')
 
+  const isLocal = kind === 'local'
   const excludeHostId = host?.id ?? copyFrom?.id
-  const otherHosts = allHosts.filter((h) => h.id !== excludeHostId)
+  const otherHosts = allHosts.filter((h) => h.id !== excludeHostId && h.kind !== 'local')
   const gatewayOptions = otherHosts.filter((h) => h.gatewayHostId !== excludeHostId)
 
   useEffect(() => {
@@ -93,27 +97,30 @@ export function HostForm({
     e.preventDefault()
     setFormErrors({})
     setHttpEndpointError(null)
-    let normalizedHttpEndpoint: string | null
-    try {
-      normalizedHttpEndpoint = normalizeHttpEndpoint(httpEndpoint)
-    } catch (err) {
-      setHttpEndpointError(err instanceof Error ? err.message : String(err))
-      return
+    let normalizedHttpEndpoint: string | null = null
+    if (!isLocal) {
+      try {
+        normalizedHttpEndpoint = normalizeHttpEndpoint(httpEndpoint)
+      } catch (err) {
+        setHttpEndpointError(err instanceof Error ? err.message : String(err))
+        return
+      }
     }
     setSaving(true)
     try {
       const rawHostInput: HostFormInput = {
         name,
-        hostname,
-        port,
-        osType,
+        hostname: isLocal ? 'localhost' : hostname,
+        port: isLocal ? 0 : port,
+        osType: isLocal ? (localShell === 'powershell' || localShell === 'pwsh' || localShell === 'cmd' ? 'windows' : 'macos') : osType,
+        kind,
         tags: parseTagsInput(tags),
         notes,
         logVerbosity,
         uxProfileId: uxProfileId || null,
-        relatedHostIds,
-        gatewayHostId: gatewayHostId || null,
-        httpEndpoint: normalizedHttpEndpoint,
+        relatedHostIds: isLocal ? [] : relatedHostIds,
+        gatewayHostId: isLocal ? null : gatewayHostId || null,
+        httpEndpoint: isLocal ? null : normalizedHttpEndpoint,
         groupId: copyFrom?.groupId ?? null
       }
 
@@ -127,17 +134,28 @@ export function HostForm({
         await window.consoleri.hosts.update(host.id, normalizedHost)
       } else {
         const savedHost = await window.consoleri.hosts.create(normalizedHost)
-        await applyPendingProfiles(pendingProfiles, savedHost.id)
+        if (isLocal) {
+          const profile = await window.consoleri.profiles.create({
+            name: localShell,
+            protocol: localShell === 'wsl' ? 'wsl' : 'local_pty',
+            shell: localShell,
+            authMethod: 'none',
+            linkHostId: savedHost.id
+          })
+          await window.consoleri.hosts.update(savedHost.id, { defaultProfileId: profile.id })
+        } else {
+          await applyPendingProfiles(pendingProfiles, savedHost.id)
 
-        const sourceDefaultProfileId = copyFrom?.defaultProfileId
-        if (sourceDefaultProfileId) {
-          const linkedProfileIds = new Set(
-            pendingProfiles.flatMap((p) => (p.kind === 'picked' ? [p.profile.id] : []))
-          )
-          if (linkedProfileIds.has(sourceDefaultProfileId)) {
-            await window.consoleri.hosts.update(savedHost.id, {
-              defaultProfileId: sourceDefaultProfileId
-            })
+          const sourceDefaultProfileId = copyFrom?.defaultProfileId
+          if (sourceDefaultProfileId) {
+            const linkedProfileIds = new Set(
+              pendingProfiles.flatMap((p) => (p.kind === 'picked' ? [p.profile.id] : []))
+            )
+            if (linkedProfileIds.has(sourceDefaultProfileId)) {
+              await window.consoleri.hosts.update(savedHost.id, {
+                defaultProfileId: sourceDefaultProfileId
+              })
+            }
           }
         }
       }
@@ -232,59 +250,93 @@ export function HostForm({
               required
             />
           </label>
-          <label className="block">
-            <span className="text-muted">Hostname / IP</span>
-            <input
-              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-              value={hostname}
-              onChange={(e) => setHostname(e.target.value)}
-              required
-            />
-          </label>
-          <label className="block">
-            <span className="text-muted">HTTP Endpoint</span>
-            <input
-              type="url"
-              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-              value={httpEndpoint}
-              onChange={(e) => {
-                setHttpEndpoint(e.target.value)
-                if (httpEndpointError) setHttpEndpointError(null)
-              }}
-              placeholder="https://alb.example/health"
-            />
-            <span className="mt-1 block text-xs text-muted">
-              Optional. For HTTP(S) traffic through ALB terminating on this host.
-            </span>
-            {httpEndpointError && (
-              <span className="mt-1 block text-xs text-danger">{httpEndpointError}</span>
-            )}
-          </label>
-          <div className="grid grid-cols-2 gap-2">
+          {!host && (
             <label className="block">
-              <span className="text-muted">Port</span>
-              <input
-                type="number"
-                className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-                value={port}
-                onChange={(e) => setPort(Number(e.target.value))}
-              />
-            </label>
-            <label className="block">
-              <span className="text-muted">OS</span>
+              <span className="text-muted">Type</span>
               <select
                 className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
-                value={osType}
-                onChange={(e) => setOsType(e.target.value as OsType)}
+                value={kind}
+                onChange={(e) => setKind(e.target.value as HostKind)}
               >
-                {OS_OPTIONS.map((o) => (
-                  <option key={o} value={o}>
-                    {o}
-                  </option>
-                ))}
+                <option value="remote">Remote host</option>
+                <option value="local">Local project</option>
               </select>
             </label>
-          </div>
+          )}
+          {isLocal ? (
+            !host && (
+              <label className="block">
+                <span className="text-muted">Shell</span>
+                <select
+                  className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+                  value={localShell}
+                  onChange={(e) => setLocalShell(e.target.value)}
+                >
+                  {['zsh', 'bash', 'sh', 'pwsh', 'powershell', 'cmd'].map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )
+          ) : (
+            <>
+              <label className="block">
+                <span className="text-muted">Hostname / IP</span>
+                <input
+                  className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+                  value={hostname}
+                  onChange={(e) => setHostname(e.target.value)}
+                  required
+                />
+              </label>
+              <label className="block">
+                <span className="text-muted">HTTP Endpoint</span>
+                <input
+                  type="url"
+                  className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+                  value={httpEndpoint}
+                  onChange={(e) => {
+                    setHttpEndpoint(e.target.value)
+                    if (httpEndpointError) setHttpEndpointError(null)
+                  }}
+                  placeholder="https://alb.example/health"
+                />
+                <span className="mt-1 block text-xs text-muted">
+                  Optional. For HTTP(S) traffic through ALB terminating on this host.
+                </span>
+                {httpEndpointError && (
+                  <span className="mt-1 block text-xs text-danger">{httpEndpointError}</span>
+                )}
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="block">
+                  <span className="text-muted">Port</span>
+                  <input
+                    type="number"
+                    className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+                    value={port}
+                    onChange={(e) => setPort(Number(e.target.value))}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-muted">OS</span>
+                  <select
+                    className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+                    value={osType}
+                    onChange={(e) => setOsType(e.target.value as OsType)}
+                  >
+                    {OS_OPTIONS.map((o) => (
+                      <option key={o} value={o}>
+                        {o}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </>
+          )}
 
           <label className="block">
             <span className="text-muted">Log verbosity</span>
@@ -323,7 +375,7 @@ export function HostForm({
             </label>
           )}
 
-          {!host && (
+          {!host && !isLocal && (
             <div>
               <div className="mb-1.5 flex items-center justify-between">
                 <span className="text-xs font-medium uppercase tracking-wide text-muted">
@@ -397,7 +449,7 @@ export function HostForm({
             />
           </label>
 
-          {(host || isCopyMode) && otherHosts.length > 0 && (
+          {!isLocal && (host || isCopyMode) && otherHosts.length > 0 && (
             <div className="block">
               <span className="text-muted">Related hosts</span>
               <div className="mt-1 max-h-28 overflow-y-auto rounded border border-border bg-bg p-2">
@@ -422,7 +474,7 @@ export function HostForm({
             </div>
           )}
 
-          {(host || isCopyMode) && (
+          {!isLocal && (host || isCopyMode) && (
             <label className="block">
               <span className="text-muted">Gateway host</span>
               <select
@@ -461,7 +513,7 @@ export function HostForm({
         </form>
       </ScrollableFormShell>
 
-      {showPickDialog && !host && (
+      {showPickDialog && !host && !isLocal && (
         <PickProfileDialog
           targetHostLabel={name.trim() || 'new host'}
           excludeProfileIds={excludeProfileIds}

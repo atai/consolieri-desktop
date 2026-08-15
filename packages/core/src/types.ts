@@ -1,14 +1,24 @@
 export type OsType = 'windows' | 'linux' | 'macos' | 'unknown'
 export type Protocol = 'ssh' | 'local_pty' | 'rdp' | 'vnc' | 'wsl'
 export type AuthMethod = 'password' | 'key' | 'none'
+export type HostKind = 'remote' | 'local'
 export type { HostLogVerbosity } from './logging/verbosity'
 import type { HostLogVerbosity } from './logging/verbosity'
 
 export type SessionOpenMode = 'workspace' | 'window'
 
+export type { Accelerator, KeybindingId, Keybindings } from './hotkeys/types'
+import type { Keybindings } from './hotkeys/types'
+
+export interface ExternalControlSettings {
+  enabled: boolean
+}
+
 export interface AppSettings {
   autoOpenConnectionLog: boolean
   sessionOpenMode: SessionOpenMode
+  keybindings: Keybindings
+  externalControl: ExternalControlSettings
 }
 
 export interface Host {
@@ -17,6 +27,7 @@ export interface Host {
   hostname: string
   port: number
   osType: OsType
+  kind: HostKind
   tags: string[]
   groupId: string | null
   notes: string

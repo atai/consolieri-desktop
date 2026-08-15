@@ -42,8 +42,10 @@ describe('hostBundle export', () => {
       const item = hostToExportItem(sampleHost)
       const runtimeKeys = new Set(['id', 'createdAt', 'updatedAt'])
       const hostKeys = Object.keys(sampleHost).filter((k) => !runtimeKeys.has(k))
-      const exportKeys = Object.keys(item).filter((k) => k !== 'exportId')
+      const exportKeys = Object.keys(item).filter((k) => k !== 'exportId' && k !== 'sessionPreset')
       expect(new Set(exportKeys)).toEqual(new Set(hostKeys))
+      expect(item).toHaveProperty('sessionPreset')
+      expect(item).toHaveProperty('kind')
     })
   })
 

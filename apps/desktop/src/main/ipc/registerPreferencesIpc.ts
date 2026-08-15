@@ -53,12 +53,20 @@ export function registerPreferencesIpc(): void {
     createHandler(
       z.object({
         autoOpenConnectionLog: z.boolean().optional(),
-        sessionOpenMode: z.enum(['workspace', 'window']).optional()
+        sessionOpenMode: z.enum(['workspace', 'window']).optional(),
+        keybindings: z.record(z.string()).optional(),
+        externalControl: z
+          .object({
+            enabled: z.boolean()
+          })
+          .optional()
       }),
-      (patch) => {
+      async (patch) => {
         const next = appPreferencesRepository.setAppSettings(patch as Partial<AppSettings>)
         scheduleCloudUpload()
-        return Promise.resolve(next)
+        const { syncControlServerWithSettings } = await import('../control/server')
+        await syncControlServerWithSettings()
+        return next
       }
     )
   )

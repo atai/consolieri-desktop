@@ -11,12 +11,13 @@ export function createPaneBinding(
   session: SessionInfo,
   connectRequest: OpenSessionRequest
 ): PaneBinding {
+  const paneId = nanoid()
   return {
-    paneId: nanoid(),
+    paneId,
     sessionId: session.id,
     protocol: session.protocol,
     title: session.title,
-    connectRequest: { ...connectRequest }
+    connectRequest: { ...connectRequest, paneId }
   }
 }
 
@@ -114,6 +115,10 @@ export function closeMosaicPane(
 ): { layout: MosaicNode<string> | null; panes: PaneBinding[]; closedSessionId: string | null } {
   const binding = panes.find((p) => p.paneId === paneId)
   const closedSessionId = binding?.sessionId ?? null
+
+  if (binding?.connectRequest.hostId) {
+    void window.consoleri.shellHistory.deletePane(binding.connectRequest.hostId, paneId)
+  }
 
   if (binding?.sessionId) {
     window.consoleri.sessions.close(binding.sessionId)

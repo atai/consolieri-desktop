@@ -123,3 +123,33 @@ body,
   align-items: center;
   justify-content: center;
 }
+
+.consoleri-mosaic .mosaic-toolbar-btn-icon-only {
+  padding: 0 6px;
+  gap: 0;
+}
+
+.consoleri-mosaic .mosaic-toolbar-btn-caret {
+  font-size: 9px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+/* Temporary pane maximize: CSS overlay — layout tree and splitPercentages stay intact */
+.consoleri-mosaic--maximized .mosaic-split {
+  display: none !important;
+}
+
+.consoleri-mosaic--maximized .mosaic-tile {
+  visibility: hidden;
+}
+
+.consoleri-mosaic--maximized .mosaic-tile:has(.is-maximized) {
+  visibility: visible;
+  position: absolute !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  z-index: 10;
+  margin: 0;
+}

@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS hosts (
   hostname TEXT NOT NULL,
   port INTEGER NOT NULL DEFAULT 22,
   os_type TEXT NOT NULL DEFAULT 'unknown',
+  kind TEXT NOT NULL DEFAULT 'remote',
   tags_json TEXT NOT NULL DEFAULT '[]',
   group_id TEXT,
   notes TEXT NOT NULL DEFAULT '',
@@ -104,6 +105,14 @@ CREATE TABLE IF NOT EXISTS host_profile_links (
   FOREIGN KEY (profile_id) REFERENCES connection_profiles(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS host_session_presets (
+  host_id TEXT PRIMARY KEY,
+  layout_json TEXT NOT NULL,
+  panes_json TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (host_id) REFERENCES hosts(id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_hpl_profile ON host_profile_links(profile_id);
 
 CREATE TABLE IF NOT EXISTS vault_secrets (
@@ -129,6 +138,8 @@ function initializeDatabase(database: DatabaseSync): void {
   migrateUxProfiles(database)
   migrateHostRelations(database)
   migrateHostHttpEndpoint(database)
+  migrateHostKind(database)
+  migrateHostSessionPresets(database)
   migrateReports(database)
 
   const workspaceCount = database.prepare('SELECT COUNT(*) as c FROM workspaces').get() as {
@@ -240,6 +251,25 @@ function migrateHostHttpEndpoint(database: DatabaseSync): void {
   if (!columns.some((column) => column.name === 'http_endpoint')) {
     database.exec(`ALTER TABLE hosts ADD COLUMN http_endpoint TEXT`)
   }
+}
+
+function migrateHostKind(database: DatabaseSync): void {
+  const columns = database.prepare('PRAGMA table_info(hosts)').all() as Array<{ name: string }>
+  if (!columns.some((column) => column.name === 'kind')) {
+    database.exec(`ALTER TABLE hosts ADD COLUMN kind TEXT NOT NULL DEFAULT 'remote'`)
+  }
+}
+
+function migrateHostSessionPresets(database: DatabaseSync): void {
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS host_session_presets (
+      host_id TEXT PRIMARY KEY,
+      layout_json TEXT NOT NULL,
+      panes_json TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (host_id) REFERENCES hosts(id) ON DELETE CASCADE
+    );
+  `)
 }
 
 function migrateReports(database: DatabaseSync): void {

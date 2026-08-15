@@ -1,4 +1,4 @@
-import type { AuthMethod, OsType, Protocol } from '../../types'
+import type { AuthMethod, HostKind, OsType, Protocol } from '../../types'
 import type { normalizeHostLogVerbosity } from '../../logging/verbosity'
 
 export const HOSTS_BUNDLE_VERSION = 1
@@ -17,12 +17,26 @@ export interface GroupExportItem {
   sortOrder: number
 }
 
+export interface HostSessionPresetExport {
+  layout: unknown
+  panes: Array<{
+    paneId: string
+    title: string
+    protocol: Protocol
+    localShell?: string
+    wslDistro?: string
+    cwd?: string | null
+    profileId?: string
+  }>
+}
+
 export interface HostExportItem {
   exportId: string
   name: string
   hostname: string
   port: number
   osType: OsType
+  kind: HostKind
   tags: string[]
   groupId: string | null
   notes: string
@@ -32,6 +46,7 @@ export interface HostExportItem {
   relatedHostIds: string[]
   gatewayHostId: string | null
   httpEndpoint: string | null
+  sessionPreset?: HostSessionPresetExport | null
 }
 
 export interface ProfileExportItem {
@@ -67,6 +82,7 @@ export interface HostCreateFromExport {
     hostname: string
     port: number
     osType: OsType
+    kind: HostKind
     tags: string[]
     groupId: string | null
     notes: string
@@ -74,6 +90,7 @@ export interface HostCreateFromExport {
     logVerbosity: HostExportItem['logVerbosity']
     httpEndpoint: string | null
   }
+  sessionPreset?: HostSessionPresetExport | null
 }
 
 export interface HostRelationPatchFromExport {

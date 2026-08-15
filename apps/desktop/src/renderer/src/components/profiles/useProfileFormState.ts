@@ -169,7 +169,7 @@ export function useProfileFormState(options: UseProfileFormStateOptions): Profil
   ])
 
   const supportsAuth = protocol === 'ssh' || protocol === 'rdp' || protocol === 'vnc'
-  const jumpHostOptions = hosts.filter((h) => h.id !== linkHostId)
+  const jumpHostOptions = hosts.filter((h) => h.id !== linkHostId && h.kind !== 'local')
 
   const setSubmitError = (err: unknown): void => {
     const message = err instanceof Error ? err.message : String(err)
@@ -257,7 +257,7 @@ export function useProfileFormState(options: UseProfileFormStateOptions): Profil
             sshKeys
           }),
         protocol,
-        shell: protocol === 'ssh' || protocol === 'wsl' ? shell : null,
+        shell: protocol === 'ssh' || protocol === 'wsl' || protocol === 'local_pty' ? shell : null,
         username: username || undefined,
         authMethod: supportsAuth ? authMethod : 'none',
         jumpHostId: protocol === 'ssh' && jumpHostId ? jumpHostId : undefined,

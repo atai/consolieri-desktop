@@ -1,17 +1,19 @@
 import { isKeyFileRef } from '../../keys/credentialRef'
 import { normalizeHostLogVerbosity } from '../../logging/verbosity'
-import type { AuthMethod, OsType, Protocol } from '../../types'
+import type { AuthMethod, HostKind, OsType, Protocol } from '../../types'
 import { normalizeHttpEndpoint } from '../normalizeHttpEndpoint'
 import type {
   GroupExportItem,
   HostExportItem,
   HostProfileLinkExport,
   HostsExportDocument,
+  HostSessionPresetExport,
   ProfileExportItem
 } from './types'
 import { HOSTS_BUNDLE_VERSION } from './types'
 
 const OS_TYPES: OsType[] = ['windows', 'linux', 'macos', 'unknown']
+const HOST_KINDS: HostKind[] = ['remote', 'local']
 const PROTOCOLS: Protocol[] = ['ssh', 'local_pty', 'rdp', 'vnc', 'wsl']
 const AUTH_METHODS: AuthMethod[] = ['password', 'key', 'none']
 
@@ -24,6 +26,13 @@ function normalizeOsType(value: unknown): OsType {
     return value as OsType
   }
   return 'unknown'
+}
+
+function normalizeHostKind(value: unknown): HostKind {
+  if (typeof value === 'string' && HOST_KINDS.includes(value as HostKind)) {
+    return value as HostKind
+  }
+  return 'remote'
 }
 
 function normalizeProtocol(value: unknown): Protocol {
@@ -55,6 +64,29 @@ function normalizeExtra(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>
 }
 
+function normalizeSessionPreset(value: unknown): HostSessionPresetExport | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+  const entry = value as Record<string, unknown>
+  if (!Array.isArray(entry.panes)) return null
+  const panes = entry.panes.flatMap((p) => {
+    if (!p || typeof p !== 'object') return []
+    const pane = p as Record<string, unknown>
+    if (typeof pane.paneId !== 'string') return []
+    return [
+      {
+        paneId: pane.paneId,
+        title: typeof pane.title === 'string' ? pane.title : pane.paneId,
+        protocol: normalizeProtocol(pane.protocol),
+        localShell: typeof pane.localShell === 'string' ? pane.localShell : undefined,
+        wslDistro: typeof pane.wslDistro === 'string' ? pane.wslDistro : undefined,
+        cwd: typeof pane.cwd === 'string' ? pane.cwd : pane.cwd === null ? null : undefined,
+        profileId: typeof pane.profileId === 'string' ? pane.profileId : undefined
+      }
+    ]
+  })
+  return { layout: entry.layout ?? null, panes }
+}
+
 export function sanitizeCredentialRefForImport(credentialRef: string | null): string | null {
   if (!credentialRef) return null
   if (isKeyFileRef(credentialRef)) return credentialRef
@@ -77,15 +109,21 @@ export function normalizeGroupExportItem(raw: unknown): GroupExportItem | null {
 export function normalizeHostExportItem(raw: unknown): HostExportItem | null {
   if (!raw || typeof raw !== 'object') return null
   const entry = raw as Record<string, unknown>
-  if (!isNonEmptyString(entry.name) || !isNonEmptyString(entry.hostname)) return null
+  const kind = normalizeHostKind(entry.kind)
+  if (!isNonEmptyString(entry.name)) return null
+  if (kind === 'remote' && !isNonEmptyString(entry.hostname)) return null
 
+  const hostname = kind === 'local' ? 'localhost' : (entry.hostname as string)
   const exportId = isNonEmptyString(entry.exportId)
     ? entry.exportId
-    : `${entry.hostname}:${entry.port ?? 22}`
+    : `${hostname}:${entry.port ?? (kind === 'local' ? 0 : 22)}`
 
   let httpEndpoint: string | null = null
   try {
-    httpEndpoint = normalizeHttpEndpoint(entry.httpEndpoint as string | null | undefined)
+    httpEndpoint =
+      kind === 'local'
+        ? null
+        : normalizeHttpEndpoint(entry.httpEndpoint as string | null | undefined)
   } catch {
     return null
   }
@@ -93,18 +131,20 @@ export function normalizeHostExportItem(raw: unknown): HostExportItem | null {
   return {
     exportId,
     name: entry.name,
-    hostname: entry.hostname,
-    port: typeof entry.port === 'number' ? entry.port : 22,
+    hostname,
+    port: typeof entry.port === 'number' ? entry.port : kind === 'local' ? 0 : 22,
     osType: normalizeOsType(entry.osType),
+    kind,
     tags: normalizeStringArray(entry.tags),
     groupId: normalizeNullableString(entry.groupId),
     notes: typeof entry.notes === 'string' ? entry.notes : '',
     defaultProfileId: normalizeNullableString(entry.defaultProfileId),
     uxProfileId: normalizeNullableString(entry.uxProfileId),
     logVerbosity: normalizeHostLogVerbosity(entry.logVerbosity),
-    relatedHostIds: normalizeStringArray(entry.relatedHostIds),
-    gatewayHostId: normalizeNullableString(entry.gatewayHostId),
-    httpEndpoint
+    relatedHostIds: kind === 'local' ? [] : normalizeStringArray(entry.relatedHostIds),
+    gatewayHostId: kind === 'local' ? null : normalizeNullableString(entry.gatewayHostId),
+    httpEndpoint,
+    sessionPreset: normalizeSessionPreset(entry.sessionPreset)
   }
 }
 

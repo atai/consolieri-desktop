@@ -15,8 +15,10 @@ import { credentialResolver } from '../services/CredentialResolver'
 import { connectionLog } from './ConnectionLog'
 import { sessionFactory } from './SessionFactory'
 import type { ITransport } from './Transport'
+import { PtySession } from './PtySession'
 import { RdpProxy } from './rdp/RdpProxy'
 import { VncProxy } from './VncProxy'
+import { getProcessCwd } from './processCwd'
 import { formatSessionWindowTitle } from '../windowTitles'
 import {
   getRegisteredSessionWindow,
@@ -166,6 +168,16 @@ export class SessionManager {
     }
     this.updateStatus(sessionId, 'connected')
     this.updateSessionWindowTitle(sessionId)
+
+    const command = managed.reconnectMeta?.command?.trim()
+    if (command && isTerminalProtocol(result.protocol)) {
+      // Defer slightly so the shell prompt is ready before the one-shot command.
+      setTimeout(() => {
+        if (!this.sessions.has(sessionId)) return
+        const line = command.endsWith('\n') ? command : `${command}\n`
+        this.write(sessionId, line)
+      }, 250)
+    }
   }
 
   open(request: OpenSessionRequest, cols = 80, rows = 24): SessionInfo {
@@ -262,6 +274,15 @@ export class SessionManager {
       session.reconnectMeta.cols = cols
       session.reconnectMeta.rows = rows
     }
+  }
+
+  async getCwd(sessionId: string): Promise<string | null> {
+    const session = this.sessions.get(sessionId)
+    const transport = session?.transport
+    if (!transport || !(transport instanceof PtySession)) return null
+    const pid = transport.pid
+    if (pid == null) return null
+    return getProcessCwd(pid)
   }
 
   close(sessionId: string, options?: { closeWindow?: boolean }): void {

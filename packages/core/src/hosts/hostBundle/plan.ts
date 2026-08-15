@@ -58,13 +58,15 @@ export function hostCreateFromExportItem(
       hostname: host.hostname,
       port: host.port,
       osType: host.osType,
+      kind: host.kind,
       tags: host.tags,
       groupId: remapExportId(host.groupId, groupIdMap),
       notes: host.notes,
       uxProfileId: resolveUxProfileIdForImport(host.uxProfileId, validUxProfileIds),
       logVerbosity: host.logVerbosity,
       httpEndpoint: host.httpEndpoint
-    }
+    },
+    sessionPreset: host.sessionPreset ?? null
   }
 }
 

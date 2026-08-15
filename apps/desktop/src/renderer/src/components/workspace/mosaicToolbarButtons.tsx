@@ -1,4 +1,6 @@
+import { Maximize2, Minimize2 } from 'lucide-react'
 import { MosaicToolbarButton } from './MosaicToolbarButton'
+import { MosaicToolbarMenu } from './MosaicToolbarMenu'
 
 const iconSplitSideBySide = (
   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -11,6 +13,13 @@ const iconSplitStacked = (
   <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
     <rect x="3" y="2" width="10" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.25" />
     <rect x="3" y="8.5" width="10" height="5.5" rx="1" stroke="currentColor" strokeWidth="1.25" />
+  </svg>
+)
+
+const iconSplit = (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <rect x="2" y="3" width="5.5" height="10" rx="1" stroke="currentColor" strokeWidth="1.25" />
+    <rect x="8.5" y="3" width="5.5" height="10" rx="1" stroke="currentColor" strokeWidth="1.25" />
   </svg>
 )
 
@@ -50,28 +59,57 @@ const iconClose = (
   </svg>
 )
 
-export function splitSideBySideButton(onClick: () => void): React.JSX.Element {
+export function splitToolbarMenu(
+  onSideBySide: () => void,
+  onStacked: () => void
+): React.JSX.Element {
   return (
-    <MosaicToolbarButton
-      key="split-side-by-side"
-      className="split-side-by-side-button"
-      label="Side by side"
-      title="Split pane side by side"
-      onClick={onClick}
-      icon={iconSplitSideBySide}
+    <MosaicToolbarMenu
+      key="split"
+      className="split-menu"
+      label="Split"
+      title="Split pane"
+      icon={iconSplit}
+      items={[
+        {
+          key: 'side-by-side',
+          label: 'Side by side',
+          icon: iconSplitSideBySide,
+          onClick: onSideBySide
+        },
+        {
+          key: 'stacked',
+          label: 'Top & bottom',
+          icon: iconSplitStacked,
+          onClick: onStacked
+        }
+      ]}
     />
   )
 }
 
-export function splitStackedButton(onClick: () => void): React.JSX.Element {
+export function maximizeToolbarButton(
+  maximized: boolean,
+  onClick: () => void,
+  shortcutHint?: string
+): React.JSX.Element {
+  const label = maximized ? 'Restore' : 'Maximize'
+  const title = shortcutHint ? `${label} (${shortcutHint})` : label
   return (
     <MosaicToolbarButton
-      key="split-stacked"
-      className="split-stacked-button"
-      label="Top & bottom"
-      title="Split pane top and bottom"
+      key="maximize"
+      className="maximize-button"
+      label={label}
+      title={title}
       onClick={onClick}
-      icon={iconSplitStacked}
+      icon={
+        maximized ? (
+          <Minimize2 className="h-3.5 w-3.5" aria-hidden />
+        ) : (
+          <Maximize2 className="h-3.5 w-3.5" aria-hidden />
+        )
+      }
+      iconOnly
     />
   )
 }

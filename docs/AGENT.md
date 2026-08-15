@@ -131,7 +131,7 @@ The main window plus three detached windows — `LogWindow`, `SessionWindow`, `R
 
 **Workspace**
 
-`MosaicWorkspace` renders the session mosaic. Workspace state is loaded exactly once in `App.tsx`. Panes are inserted via `insertPaneIntoLayout` from core. `sessionMosaicOps.ts` contains the mosaic-aware session state helpers. Each pane toolbar has a **Log** button that opens a `LogWindow`. Failed sessions are never added to the mosaic.
+`MosaicWorkspace` renders the session mosaic. Workspace state is loaded exactly once in `App.tsx`. Panes are inserted via `insertPaneIntoLayout` from core. `sessionMosaicOps.ts` contains the mosaic-aware session state helpers. Each pane toolbar has a **Log** button that opens a `LogWindow`. Failed sessions are never added to the mosaic. Pane **maximize** is a CSS overlay (does not mutate `splitPercentages`); restore returns to the prior layout. Configurable hotkeys live under Settings → Hotkeys (default: Mod+Shift+M to toggle maximize).
 
 **Other main views**
 

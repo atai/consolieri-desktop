@@ -74,14 +74,15 @@ export class HostRepository {
     )
     const httpEndpoint = normalizeHttpEndpoint(input.httpEndpoint)
     db.prepare(
-      `INSERT INTO hosts (id, name, hostname, port, os_type, tags_json, group_id, notes, default_profile_id, ux_profile_id, log_verbosity, related_hosts_json, gateway_host_id, http_endpoint, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO hosts (id, name, hostname, port, os_type, kind, tags_json, group_id, notes, default_profile_id, ux_profile_id, log_verbosity, related_hosts_json, gateway_host_id, http_endpoint, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       id,
       input.name,
       input.hostname,
-      input.port ?? 22,
+      input.port ?? (input.kind === 'local' ? 0 : 22),
       input.osType ?? 'unknown',
+      input.kind ?? 'remote',
       JSON.stringify(input.tags ?? []),
       input.groupId ?? null,
       input.notes ?? '',
@@ -116,13 +117,14 @@ export class HostRepository {
         : existing.httpEndpoint
     getDatabase()
       .prepare(
-        `UPDATE hosts SET name=?, hostname=?, port=?, os_type=?, tags_json=?, group_id=?, notes=?, default_profile_id=?, ux_profile_id=?, log_verbosity=?, related_hosts_json=?, gateway_host_id=?, http_endpoint=?, updated_at=? WHERE id=?`
+        `UPDATE hosts SET name=?, hostname=?, port=?, os_type=?, kind=?, tags_json=?, group_id=?, notes=?, default_profile_id=?, ux_profile_id=?, log_verbosity=?, related_hosts_json=?, gateway_host_id=?, http_endpoint=?, updated_at=? WHERE id=?`
       )
       .run(
         input.name ?? existing.name,
         input.hostname ?? existing.hostname,
         input.port ?? existing.port,
         input.osType ?? existing.osType,
+        input.kind ?? existing.kind,
         JSON.stringify(input.tags ?? existing.tags),
         input.groupId !== undefined ? input.groupId : existing.groupId,
         input.notes ?? existing.notes,

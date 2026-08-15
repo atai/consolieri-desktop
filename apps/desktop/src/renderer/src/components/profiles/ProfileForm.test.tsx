@@ -77,6 +77,7 @@ function makeHost(overrides: Partial<Host> = {}): Host {
     hostname: '10.0.0.1',
     port: 22,
     osType: 'linux',
+    kind: 'remote',
     tags: [],
     groupId: null,
     notes: '',

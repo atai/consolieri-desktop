@@ -16,7 +16,16 @@ export default defineConfig({
     },
     build: {
       rollupOptions: {
-        external: ['node-pty', 'ssh2', 'cpu-features', 'node:sqlite']
+        external: [
+          'node-pty',
+          'ssh2',
+          'cpu-features',
+          'node:sqlite',
+          '@modelcontextprotocol/sdk',
+          '@modelcontextprotocol/sdk/server/mcp.js',
+          '@modelcontextprotocol/sdk/server/streamableHttp.js',
+          '@modelcontextprotocol/sdk/types.js'
+        ]
       }
     }
   },
@@ -52,6 +61,7 @@ export default defineConfig({
           index: resolve('src/renderer/index.html'),
           'log-window/index': resolve('src/renderer/log-window/index.html'),
           'session-window/index': resolve('src/renderer/session-window/index.html'),
+          'workspace-window/index': resolve('src/renderer/workspace-window/index.html'),
           'report-window/index': resolve('src/renderer/report-window/index.html'),
           'about-window/index': resolve('src/renderer/about-window/index.html')
         }
