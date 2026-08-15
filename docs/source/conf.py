@@ -18,14 +18,14 @@ extensions = [
     "sphinxcontrib.mermaid",
 ]
 
-templates_path = ["_templates"]
+templates_path = []
 exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "alabaster"
-html_static_path = ["_static"]
+html_static_path = []
 html_baseurl = "https://atai.github.io/consolieri-desktop/"
 html_context = {
     "display_github": True,
