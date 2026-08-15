@@ -1,6 +1,6 @@
 {
   "name": "consoleri",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "private": true,
   "description": "Consoleri — remote host console manager",
   "packageManager": "pnpm@10.34.5",

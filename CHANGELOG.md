@@ -5,6 +5,35 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.3] - 2026-08-15
+
+### Other
+
+- Enhance desktop application with new features and improvements
+
+- Update documentation and CI workflows for improved build and deployment processes
+
+- Enhance CSS for pane layout in desktop application
+
+- Bump nanoid from 5.1.11 to 5.1.16
+
+- Merge pull request #4 from atai/dependabot/npm_and_yarn/nanoid-5.1.16
+
+- Bump electron from 42.2.0 to 42.5.1
+
+- Merge pull request #3 from atai/dependabot/npm_and_yarn/electron-42.5.1
+
+- Merge branch 'main' of https://github.com/atai/consolieri-desktop
+
+- Update recipe test to use path resolution for current working directory
+
+- Update README.md with local documentation preview instructions and GitHub Pages link
+
+
+### Refactoring
+
+- Refactor session management and imports for improved structure
+
 ## [0.7.2] - 2026-08-15
 
 ### Other
