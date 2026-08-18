@@ -2,6 +2,8 @@
 
 Monorepo for Consoleri — a desktop host console manager (SSH, shells, RDP, VNC).
 
+**Cloud backend:** [https://consolieri.app/](https://consolieri.app/) — optional cloud companion for encrypted backups, settings sync across devices, and upcoming advanced features.
+
 **Documentation:** [https://atai.github.io/consolieri-desktop/](https://atai.github.io/consolieri-desktop/) (published on each release) · sources in [`docs/source/`](docs/source/)
 
 ## Structure
