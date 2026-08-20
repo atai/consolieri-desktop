@@ -26,3 +26,9 @@ future changelogs. Pass ``--no-test`` to skip the pre-release test run,
 The Release workflow builds installers for Windows, macOS, and Linux, publishes a
 GitHub Release, and deploys this documentation to GitHub Pages. Signing and
 notarization secrets are documented in :doc:`ci-secrets`.
+
+GitHub Pages uses the ``github-pages`` environment. That environment must allow
+deployments from the default branch (``main``) and from version tags matching
+``v*`` (Settings → Environments → github-pages → Deployment branches and tags).
+Without the ``v*`` tag rule, tag-triggered Release runs fail Pages deploy with
+“Tag is not allowed to deploy…”.

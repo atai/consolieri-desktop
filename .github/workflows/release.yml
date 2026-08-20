@@ -165,7 +165,7 @@ jobs:
         with:
           ref: ${{ needs.validate.outputs.tag }}
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -178,7 +178,7 @@ jobs:
         run: sphinx-build -W -b html docs/source docs/build/html
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs/build/html
 
@@ -192,7 +192,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   publish:
     name: Publish GitHub Release

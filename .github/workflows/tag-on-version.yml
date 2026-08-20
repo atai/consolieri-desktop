@@ -46,4 +46,6 @@ jobs:
           git push origin "refs/tags/${TAG}"
 
           echo "Dispatching Release workflow for ${TAG}"
-          gh workflow run release.yml --ref "${TAG}" -f "tag=${TAG}"
+          # Dispatch from the default branch so GITHUB_REF is a branch ref
+          # (github-pages environment allows main; tag pushes still need a v* tag policy).
+          gh workflow run release.yml --ref "${{ github.event.repository.default_branch }}" -f "tag=${TAG}"
