@@ -29,15 +29,7 @@ interface CloudPanelData {
 
 async function loadCloudPanelData(): Promise<CloudPanelData> {
   const status = await window.consoleri.cloud.getStatus()
-  if (!status.signedIn) {
-    return { status, backups: [] }
-  }
-  try {
-    const backups = await window.consoleri.cloud.listBackups()
-    return { status, backups }
-  } catch {
-    return { status, backups: [] }
-  }
+  return { status, backups: [] }
 }
 
 export function CloudSettingsPanel(): React.JSX.Element {
@@ -77,10 +69,6 @@ export function CloudSettingsPanel(): React.JSX.Element {
     try {
       const result = await window.consoleri.cloud.login()
       setStatus(result.status)
-      if (result.syncKeyCreated) {
-        const key = await window.consoleri.cloud.exportRecoveryKey()
-        setRecoveryModal({ mode: 'export', key })
-      }
       await refresh()
       setMessage({ text: 'Connected to Consolieri Cloud', kind: 'ok' })
     } catch (err) {
@@ -170,6 +158,20 @@ export function CloudSettingsPanel(): React.JSX.Element {
     })
   }
 
+  const handleRefreshBackups = async (): Promise<void> => {
+    if (!status?.signedIn) return
+    setBusy(true)
+    setMessage(null)
+    try {
+      const next = await window.consoleri.cloud.listBackups()
+      setBackups(next)
+    } catch (err) {
+      setMessage({ text: err instanceof Error ? err.message : String(err), kind: 'err' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
   if (loading || !status) {
     return (
       <div className="flex h-full items-center justify-center text-sm text-muted">Loading…</div>
@@ -182,12 +184,11 @@ export function CloudSettingsPanel(): React.JSX.Element {
         <section className="space-y-3">
           <h2 className="text-base font-semibold text-fg">Account</h2>
           <p className="text-xs text-muted">
-            Optional cloud sync. Your settings and passwords are end-to-end encrypted — the API
-            never sees plaintext secrets.
+            Optional Consolieri Cloud account (consolieri.app). Sign in with your account — no API
+            keys required.
           </p>
           <div className="rounded border border-border bg-bg px-3 py-2 text-xs text-muted">
             {status.signedIn ? `Signed in as ${status.email ?? 'unknown'}` : 'Not connected'}
-            {status.hasSyncKey ? ' · Sync key stored' : ' · No sync key'}
           </div>
           <div className="flex flex-wrap gap-2">
             {!status.signedIn ? (
@@ -300,8 +301,8 @@ export function CloudSettingsPanel(): React.JSX.Element {
             <Button
               variant="default"
               size="sm"
-              onClick={() => void refresh()}
-              disabled={!status.signedIn}
+              onClick={() => void handleRefreshBackups()}
+              disabled={!status.signedIn || busy}
             >
               Refresh
             </Button>

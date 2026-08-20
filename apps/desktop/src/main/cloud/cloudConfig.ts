@@ -5,8 +5,8 @@ export interface CloudConfig {
 }
 
 const DEFAULTS: CloudConfig = {
-  apiUrl: 'http://127.0.0.1:8080',
-  keycloakIssuer: 'http://127.0.0.1:8081/realms/consolieri',
+  apiUrl: 'https://api.consolieri.app',
+  keycloakIssuer: 'https://oauth.ecooz.net/realms/consolieri',
   clientId: 'consolieri-desktop'
 }
 
