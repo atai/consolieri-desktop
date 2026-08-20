@@ -6,6 +6,7 @@ import { getCloudConfig, resolveCloudConfig, clearCloudConfigCache } from './clo
 import { cloudSecureStorage } from './CloudSecureStorage'
 import { createPkcePair, generateSyncKey, syncKeyToBase64 } from './SyncCrypto'
 import { reportBestEffortFailure } from '../../shared/bestEffort'
+import { buildOAuthCallbackHtml } from '../oauthCallbackPage'
 
 export interface CloudUserInfo {
   id: string
@@ -290,8 +291,14 @@ export class CloudAuthService {
         const error = url.searchParams.get('error')
 
         if (error) {
-          res.writeHead(400, { 'Content-Type': 'text/plain' })
-          res.end('Login failed')
+          res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' })
+          res.end(
+            buildOAuthCallbackHtml({
+              kind: 'error',
+              product: 'Consolieri Desktop',
+              message: 'Login failed'
+            })
+          )
           if (!settled) {
             settled = true
             clearTimeout(timeout)
@@ -302,8 +309,14 @@ export class CloudAuthService {
         }
 
         if (!code || state !== expectedState) {
-          res.writeHead(400, { 'Content-Type': 'text/plain' })
-          res.end('Invalid authorization response')
+          res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' })
+          res.end(
+            buildOAuthCallbackHtml({
+              kind: 'error',
+              product: 'Consolieri Desktop',
+              message: 'Invalid authorization response'
+            })
+          )
           if (!settled) {
             settled = true
             clearTimeout(timeout)
@@ -313,9 +326,13 @@ export class CloudAuthService {
           return
         }
 
-        res.writeHead(200, { 'Content-Type': 'text/html' })
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
         res.end(
-          '<html><body><p>Consolieri Cloud login successful. You can close this tab.</p></body></html>'
+          buildOAuthCallbackHtml({
+            kind: 'success',
+            product: 'Consolieri Desktop',
+            message: 'Login successful. You can close this tab.'
+          })
         )
 
         if (!settled) {
