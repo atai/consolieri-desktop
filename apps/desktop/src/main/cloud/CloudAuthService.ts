@@ -2,7 +2,7 @@ import { createServer, type Server } from 'node:http'
 import { hostname } from 'node:os'
 import { shell } from 'electron'
 import { APP_VERSION } from '../../shared/appVersion'
-import { getCloudConfig } from './cloudConfig'
+import { getCloudConfig, resolveCloudConfig, clearCloudConfigCache } from './cloudConfig'
 import { cloudSecureStorage } from './CloudSecureStorage'
 import { createPkcePair, generateSyncKey, syncKeyToBase64 } from './SyncCrypto'
 import { reportBestEffortFailure } from '../../shared/bestEffort'
@@ -61,7 +61,7 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init)
   if (!response.ok) {
     const body = await response.text().catch(() => '')
-    throw new Error(`HTTP ${response.status}: ${body.slice(0, 200) || response.statusText}`)
+    throw new Error(`HTTP ${response.status}: ${body.slice(0, 500) || response.statusText}`)
   }
   return (await response.json()) as T
 }
@@ -95,7 +95,12 @@ export class CloudAuthService {
   }
 
   async login(): Promise<CloudSessionResult> {
-    const config = getCloudConfig()
+    const config = await resolveCloudConfig()
+    console.info('[cloud] OIDC login config', {
+      apiUrl: config.apiUrl,
+      keycloakIssuer: config.keycloakIssuer,
+      clientId: config.clientId
+    })
     const { verifier, challenge } = createPkcePair()
     const port = randomPort()
     const redirectUri = `http://127.0.0.1:${port}/callback`
@@ -131,21 +136,27 @@ export class CloudAuthService {
       throw new Error('Keycloak did not return an access token')
     }
 
-    const session = await fetchJson<SessionApiResponse>(`${config.apiUrl}/v1/auth/session`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accessToken: kcTokens.access_token,
-        device: deviceMeta()
+    try {
+      const session = await fetchJson<SessionApiResponse>(`${config.apiUrl}/v1/auth/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accessToken: kcTokens.access_token,
+          device: deviceMeta()
+        })
       })
-    })
 
-    await this.persistSession(session)
-    const syncKeyCreated = await this.ensureSyncKey()
+      await this.persistSession(session)
+      const syncKeyCreated = await this.ensureSyncKey()
 
-    return {
-      ...session,
-      syncKeyCreated
+      return {
+        ...session,
+        syncKeyCreated
+      }
+    } catch (err) {
+      // Stale discovery (Keycloak rebinding) must not stick across retries.
+      clearCloudConfigCache()
+      throw err
     }
   }
 

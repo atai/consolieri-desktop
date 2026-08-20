@@ -20,8 +20,13 @@ export function resolvePnpmCli() {
   return null
 }
 
-/** @returns {number} exit code */
-export function spawnPnpm(args, cwd = root) {
+/**
+ * @param {string[]} args
+ * @param {string} [cwd]
+ * @param {Record<string, string | undefined>} [envExtra]
+ * @returns {number} exit code
+ */
+export function spawnPnpm(args, cwd = root, envExtra) {
   const cli = resolvePnpmCli()
   if (!cli) {
     console.error('[pnpm] Not found in node_modules. Bootstrap with: npx pnpm install')
@@ -31,7 +36,8 @@ export function spawnPnpm(args, cwd = root) {
   const result = spawnSync(cli.command, [...cli.argsPrefix, ...args], {
     cwd,
     stdio: 'inherit',
-    shell: cli.argsPrefix.length === 0
+    shell: cli.argsPrefix.length === 0,
+    env: envExtra ? { ...process.env, ...envExtra } : process.env
   })
 
   return result.status ?? 1
