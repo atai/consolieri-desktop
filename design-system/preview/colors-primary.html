@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consolieri — Primary Colors</title>
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <style>
+    body { margin: 0; font-family: var(--consoleri-font-sans); background: var(--consoleri-bg); color: var(--consoleri-fg); }
+    main { width: min(960px, calc(100vw - 48px)); margin: 40px auto; display: grid; gap: 16px; }
+    h1 { font-size: var(--consoleri-font-size-display); margin: 0 0 8px; }
+    p.lead { color: var(--consoleri-muted); margin: 0 0 24px; max-width: 60ch; line-height: var(--consoleri-line-normal); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .swatch { border: 1px solid var(--consoleri-border); border-radius: var(--consoleri-radius-lg); overflow: hidden; background: var(--consoleri-surface); }
+    .swatch .fill { height: 72px; }
+    .swatch .meta { padding: 12px 14px; }
+    .swatch strong { display: block; font-size: var(--consoleri-font-size-md); margin-bottom: 4px; }
+    .swatch code { font-family: var(--consoleri-font-mono); font-size: var(--consoleri-font-size-sm); color: var(--consoleri-muted); }
+    .usage { border: 1px solid var(--consoleri-border); border-radius: var(--consoleri-radius-lg); padding: 16px; background: var(--consoleri-surface); }
+    .usage h2 { margin: 0 0 12px; font-size: var(--consoleri-font-size-xl); }
+    .btn-primary { background: var(--consoleri-accent); color: #fff; border: none; border-radius: var(--consoleri-radius-sm); padding: 10px 16px; font-weight: 600; cursor: pointer; }
+    .tab-active { display: inline-block; border-top: 2px solid var(--consoleri-tab-active); padding: 8px 16px; color: var(--consoleri-fg); }
+    .brand-hex { width: 40px; height: 40px; background: var(--consoleri-brand); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+  </style>
+</head>
+<body>
+  <main data-od-id="colors-primary">
+    <h1>Primary palette</h1>
+    <p class="lead">Consolieri production accents from v0.4.7 screenshots: electric blue for primary actions and active navigation, orange for tab indicators and brand mark, semantic green/red for report status.</p>
+    <div class="grid">
+      <article class="swatch" data-od-id="swatch-accent">
+        <div class="fill" style="background: var(--consoleri-accent)"></div>
+        <div class="meta"><strong>Accent blue</strong><code>--consoleri-accent</code><br>Primary buttons, active sidebar, links</div>
+      </article>
+      <article class="swatch" data-od-id="swatch-brand">
+        <div class="fill" style="background: var(--consoleri-brand)"></div>
+        <div class="meta"><strong>Brand orange</strong><code>--consoleri-brand</code><br>Logo hexagon, brand moments</div>
+      </article>
+      <article class="swatch" data-od-id="swatch-tab">
+        <div class="fill" style="background: var(--consoleri-tab-active)"></div>
+        <div class="meta"><strong>Tab active</strong><code>--consoleri-tab-active</code><br>Hosts/Profiles/Keys indicator</div>
+      </article>
+      <article class="swatch" data-od-id="swatch-success">
+        <div class="fill" style="background: var(--consoleri-success)"></div>
+        <div class="meta"><strong>Success</strong><code>--consoleri-success</code><br>Report OK status, healthy hosts</div>
+      </article>
+      <article class="swatch" data-od-id="swatch-danger">
+        <div class="fill" style="background: var(--consoleri-danger)"></div>
+        <div class="meta"><strong>Danger</strong><code>--consoleri-danger</code><br>FAIL status, Delete actions</div>
+      </article>
+      <article class="swatch" data-od-id="swatch-terminal">
+        <div class="fill" style="background: var(--consoleri-terminal-selection)"></div>
+        <div class="meta"><strong>Terminal gold</strong><code>--consoleri-terminal-selection</code><br>Layout toggle active border</div>
+      </article>
+    </div>
+    <section class="usage" data-od-id="primary-usage">
+      <h2>Applied in TabBar + HostList</h2>
+      <p style="color:var(--consoleri-muted);margin:0 0 16px">Active tab uses orange top border; <code>+ Host</code> button uses accent blue — matching <code>image.png</code> Hosts screen.</p>
+      <span class="tab-active">Hosts</span>
+      <button class="btn-primary" style="margin-left:12px">+ Host</button>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:16px">
+        <div class="brand-hex" aria-hidden="true"></div>
+        <span>Consolieri brand mark from network map screenshot</span>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,38 @@
+/**
+ * Hex references for canvas / xterm / non-Tailwind consumers.
+ * Keep in sync with design-system/hex.json and tokens.css `--hex-*`.
+ */
+export const HEX = {
+  bg: '#0c141f',
+  surface: '#151d2b',
+  surfaceRaised: '#1a2436',
+  accent: '#2b7fff',
+  brand: '#f59e0b',
+  success: '#10b981',
+  danger: '#ef4444',
+  warn: '#eab308',
+  fg: '#f1f5f9',
+  muted: '#8b9bb4',
+  border: '#2a3548',
+  borderStrong: '#3a4660',
+  terminalBg: '#0a1018',
+  terminalFg: '#c9d1d9',
+  terminalCursor: '#2b7fff',
+  terminalSelection: '#264f78',
+  terminalBlack: '#484f58',
+  terminalRed: '#ef4444',
+  terminalGreen: '#10b981',
+  terminalYellow: '#eab308',
+  terminalBlue: '#2b7fff',
+  terminalMagenta: '#a78bfa',
+  terminalCyan: '#22d3ee',
+  terminalWhite: '#b1bac4',
+  terminalBrightBlack: '#6e7681',
+  terminalBrightRed: '#f87171',
+  terminalBrightGreen: '#34d399',
+  terminalBrightYellow: '#fbbf24',
+  terminalBrightBlue: '#60a5fa',
+  terminalBrightMagenta: '#c4b5fd',
+  terminalBrightCyan: '#67e8f9',
+  terminalBrightWhite: '#f1f5f9'
+} as const

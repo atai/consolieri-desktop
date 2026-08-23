@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consolieri — Components</title>
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <style>
+    body { margin: 0; font-family: var(--consoleri-font-sans); background: var(--consoleri-bg); color: var(--consoleri-fg); }
+    main { width: min(960px, calc(100vw - 48px)); margin: 40px auto; display: grid; gap: 24px; }
+    h1 { margin: 0; font-size: var(--consoleri-font-size-display); }
+    h2 { margin: 0 0 12px; font-size: var(--consoleri-font-size-xl); color: var(--consoleri-accent); }
+    .card { border: 1px solid var(--consoleri-border); border-radius: var(--consoleri-radius-lg); padding: 20px; background: var(--consoleri-surface); }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn { border-radius: var(--consoleri-radius-sm); padding: 10px 16px; font-weight: 600; font-size: var(--consoleri-font-size-md); cursor: pointer; border: 1px solid var(--consoleri-border); background: var(--consoleri-surface-raised); color: var(--consoleri-fg); }
+    .btn-primary { background: var(--consoleri-accent); border-color: var(--consoleri-accent); color: #fff; }
+    .btn-ghost { background: transparent; color: var(--consoleri-muted); border-color: transparent; }
+    .btn-danger { background: transparent; color: var(--consoleri-danger); border-color: transparent; }
+    .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--consoleri-border); margin-bottom: 16px; }
+    .tab { padding: 10px 20px; color: var(--consoleri-muted); border-top: 2px solid transparent; font-size: var(--consoleri-font-size-md); }
+    .tab.active { color: var(--consoleri-fg); border-top-color: var(--consoleri-tab-active); }
+    .host-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--consoleri-border); }
+    .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #a855f7); }
+    .host-info strong { display: block; font-size: var(--consoleri-font-size-base); }
+    .host-info span { font-size: var(--consoleri-font-size-sm); color: var(--consoleri-muted); }
+    .badge { font-family: var(--consoleri-font-mono); font-size: 11px; padding: 3px 8px; border-radius: var(--consoleri-radius-pill); background: var(--consoleri-surface-raised); border: 1px solid var(--consoleri-border); color: var(--consoleri-muted); }
+    .profile-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--consoleri-border); }
+    .profile-row strong { font-size: var(--consoleri-font-size-base); }
+    .profile-actions { display: flex; gap: 8px; }
+    .icon-btn { width: 32px; height: 32px; border-radius: var(--consoleri-radius-sm); border: 1px solid var(--consoleri-border); background: var(--consoleri-surface-raised); color: var(--consoleri-accent); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .status-ok { color: var(--consoleri-success); font-weight: 700; font-family: var(--consoleri-font-mono); }
+    .status-fail { color: var(--consoleri-danger); font-weight: 700; font-family: var(--consoleri-font-mono); }
+  </style>
+</head>
+<body>
+  <main data-od-id="components-buttons">
+    <h1>Component library</h1>
+
+    <section class="card" data-od-id="tabbar-component">
+      <h2>TabBar</h2>
+      <p style="color:var(--consoleri-muted);margin:0 0 12px">Centered Hosts / Profiles / Keys tabs with orange active indicator from production screenshots.</p>
+      <div class="tabs">
+        <div class="tab active">Hosts</div>
+        <div class="tab">Profiles</div>
+        <div class="tab">Keys</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" data-od-id="btn-add-host">+ Host</button>
+        <button class="btn">+ Pick</button>
+        <button class="btn btn-ghost">Refresh</button>
+      </div>
+    </section>
+
+    <section class="card" data-od-id="hostlist-component">
+      <h2>HostList</h2>
+      <div class="host-row">
+        <div class="avatar"></div>
+        <div class="host-info"><strong>arcjenkins-test</strong><span>arcjenkins-test.mycorp.internal</span></div>
+        <span class="badge">jenkins</span>
+      </div>
+      <div class="host-row">
+        <div class="avatar"></div>
+        <div class="host-info"><strong>arc-grafana</strong><span>arc-grafana.mycorp.internal</span></div>
+        <span class="badge">grafana</span>
+      </div>
+    </section>
+
+    <section class="card" data-od-id="connectionpanel-component">
+      <h2>ConnectionPanel</h2>
+      <div class="profile-row">
+        <div><strong>Relauto key auth</strong> <span class="badge">SSH</span><div style="font-size:12px;color:var(--consoleri-muted);margin-top:4px">jenkins_rsa</div></div>
+        <div class="profile-actions">
+          <button class="icon-btn" title="Run">▶</button>
+          <button class="icon-btn" title="Edit">✎</button>
+          <button class="icon-btn" title="Delete" style="color:var(--consoleri-danger)">✕</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" data-od-id="statusbadge-component">
+      <h2>StatusBadge</h2>
+      <p style="color:var(--consoleri-muted);margin:0 0 12px">Report table status from image-5.png — OK in green, FAIL in red.</p>
+      <span class="status-ok">OK</span>
+      <span style="margin:0 16px;color:var(--consoleri-muted)">·</span>
+      <span class="status-fail">FAIL</span>
+      <div style="margin-top:12px">
+        <button class="btn btn-danger">Delete</button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

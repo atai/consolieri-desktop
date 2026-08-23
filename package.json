@@ -1,0 +1,34 @@
+{
+  "name": "consoleri",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Consolieri — remote host console manager",
+  "packageManager": "pnpm@10.34.5",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/pnpm.mjs --filter @consoleri/desktop build",
+    "package": "node scripts/pnpm.mjs --filter @consoleri/desktop build:win",
+    "lint": "node scripts/pnpm.mjs --filter @consoleri/desktop lint",
+    "typecheck": "node scripts/pnpm.mjs --filter @consoleri/desktop typecheck",
+    "check:design-tokens": "node scripts/check-design-tokens.mjs",
+    "test": "node scripts/check-design-tokens.mjs && node scripts/pnpm.mjs --filter @consoleri/core test && node scripts/pnpm.mjs --filter @consoleri/desktop test",
+    "install:deps": "node scripts/pnpm.mjs install",
+    "rebuild-native": "node scripts/rebuild-native.mjs",
+    "install:electron": "node node_modules/electron/install.js",
+    "postinstall": "node scripts/postinstall.mjs",
+    "version:patch": "node scripts/bump-version.mjs patch",
+    "version:minor": "node scripts/bump-version.mjs minor",
+    "version:major": "node scripts/bump-version.mjs major",
+    "version:set": "node scripts/bump-version.mjs",
+    "release": "bash scripts/release.sh",
+    "prepare": "husky"
+  },
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=10"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "pnpm": "10.34.5"
+  }
+}

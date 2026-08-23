@@ -1,0 +1,2 @@
+sphinx>=9.0,<10
+sphinxcontrib-mermaid>=1.0,<2

@@ -1,0 +1,3 @@
+/* Legacy shim — prefer tokens.css (+ tokens.app-extensions.css) going forward. */
+@import './tokens.css';
+@import './tokens.app-extensions.css';

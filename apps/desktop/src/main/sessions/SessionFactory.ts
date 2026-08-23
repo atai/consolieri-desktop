@@ -1,0 +1,237 @@
+import {
+  buildRdpDestination,
+  defaultPortForProtocol,
+  resolveRdpPort,
+  resolveUxProfile
+} from '@consoleri/core'
+import type {
+  ConnectionProfile,
+  Host,
+  OpenSessionRequest,
+  Protocol,
+  LocalShellType
+} from '../../shared/types'
+import type { HostRepository } from '../hosts/HostRepository'
+import type { ProfileRepository } from '../hosts/ProfileRepository'
+import type { UxProfileRepository } from '../ux/UxProfileRepository'
+import type { CredentialResolver } from '../services/CredentialResolver'
+import { findSshProfile, resolveHostAndProfile } from '../services/CredentialResolver'
+import type { ConnectionLog } from './ConnectionLog'
+import { PtySession } from './PtySession'
+import { RdpProxy, RdpSession } from './rdp/RdpProxy'
+import { SshSession } from './SshSession'
+import type { ITransport } from './Transport'
+import { VncProxy, VncSession } from './VncProxy'
+
+export interface SessionTransportResult {
+  transport: ITransport
+  protocol: Protocol
+  title: string
+  proxyUrl?: string
+  rdpDestination?: string
+  rdpProxy?: RdpProxy
+  vncProxy?: VncProxy
+}
+
+export class SessionFactory {
+  constructor(
+    private readonly _hostRepository: HostRepository,
+    private readonly _profileRepository: ProfileRepository,
+    private readonly _uxProfileRepository: UxProfileRepository,
+    private readonly _credentialResolver: CredentialResolver,
+    private readonly log: ConnectionLog
+  ) {}
+
+  private defaultLocalShell(): Exclude<LocalShellType, 'wsl'> {
+    if (process.platform === 'win32') return 'powershell'
+    if (process.platform === 'darwin') return 'zsh'
+    return 'bash'
+  }
+
+  private resolveShellFromProfile(
+    request: OpenSessionRequest,
+    profile: ConnectionProfile | null
+  ): LocalShellType {
+    if (request.localShell) return request.localShell
+    const fromProfile = profile?.shell
+    const known: LocalShellType[] = ['powershell', 'pwsh', 'cmd', 'bash', 'zsh', 'sh', 'wsl']
+    if (fromProfile && (known as string[]).includes(fromProfile)) {
+      return fromProfile as LocalShellType
+    }
+    return this.defaultLocalShell()
+  }
+
+  private createPty(
+    request: OpenSessionRequest,
+    shell: LocalShellType,
+    cols: number,
+    rows: number,
+    wslShell?: string
+  ): PtySession {
+    return new PtySession({
+      shell,
+      cols,
+      rows,
+      wslDistro: request.wslDistro,
+      wslShell,
+      cwd: request.cwd,
+      histFile: request.histFile
+    })
+  }
+
+  resolveContext(request: OpenSessionRequest): {
+    host: Host | null
+    profile: ConnectionProfile | null
+    protocol: Protocol
+    title: string
+  } {
+    const { host, profile } = resolveHostAndProfile(
+      request.hostId,
+      request.profileId,
+      (id) => this._hostRepository.getHost(id),
+      (id) => this._profileRepository.listProfiles(id)
+    )
+
+    let protocol: Protocol = request.protocol ?? profile?.protocol ?? 'local_pty'
+    let title = request.title ?? 'Terminal'
+
+    if (profile) protocol = profile.protocol
+    if (host) title = `${host.name} (${protocol})`
+
+    if (request.hostId && !profile && !request.localShell) {
+      throw new Error('No connection profile configured for this host')
+    }
+
+    if (host && protocol === 'ssh' && !profile) {
+      throw new Error('SSH requires a connection profile with credentials')
+    }
+
+    return { host, profile, protocol, title }
+  }
+
+  async createTransport(
+    sessionId: string,
+    request: OpenSessionRequest,
+    cols: number,
+    rows: number
+  ): Promise<SessionTransportResult> {
+    const { host, profile, protocol, title } = this.resolveContext(request)
+    if (host) {
+      this.log.setSessionVerbosity(sessionId, host.logVerbosity)
+    } else {
+      this.log.setSessionVerbosity(sessionId, 'info')
+    }
+    this.log.append(sessionId, 'info', `Starting ${protocol} session: ${title}`)
+
+    if (!request.hostId && !request.profileId) {
+      const shell = request.localShell ?? this.defaultLocalShell()
+      const localProtocol: Protocol = shell === 'wsl' ? 'wsl' : 'local_pty'
+      const localTitle =
+        shell === 'wsl' ? `WSL${request.wslDistro ? ` (${request.wslDistro})` : ''}` : shell
+      this.log.append(sessionId, 'info', `Spawning local shell: ${shell}`)
+      return {
+        transport: this.createPty(request, shell, cols, rows),
+        protocol: localProtocol,
+        title: localTitle
+      }
+    }
+
+    if (!host) throw new Error('Host not found')
+
+    // Prefer pane title from request when restoring a local project preset
+    const paneTitle = request.title ?? title
+
+    switch (protocol) {
+      case 'ssh': {
+        if (!profile) throw new Error('SSH profile required')
+        const credentials = await this._credentialResolver.resolveForProfile(profile)
+        let jumpHost: Host | null = null
+        let jumpCredentials: Awaited<
+          ReturnType<typeof this._credentialResolver.resolveForProfile>
+        > | null = null
+        if (profile.jumpHostId) {
+          jumpHost = this._hostRepository.getHost(profile.jumpHostId)
+          if (!jumpHost) throw new Error(`Jump host not found: ${profile.jumpHostId}`)
+          const jumpProfiles = this._profileRepository.listProfiles(profile.jumpHostId)
+          const jumpProfile = findSshProfile(jumpProfiles, null)
+          if (!jumpProfile) throw new Error('Jump host has no SSH profile')
+          jumpCredentials = await this._credentialResolver.resolveForProfile(jumpProfile)
+        }
+        const uxProfile = resolveUxProfile(this._uxProfileRepository.list(), {
+          hostUxProfileId: host.uxProfileId,
+          activeUxProfileId: this._uxProfileRepository.getActive().id
+        })
+        const transport = await SshSession.create({
+          host,
+          profile,
+          credentials,
+          jumpHost,
+          jumpCredentials,
+          cols,
+          rows,
+          log: this.log,
+          sessionId,
+          shellPrompt: uxProfile.terminal.shellPrompt
+        })
+        return { transport, protocol, title: paneTitle }
+      }
+      case 'rdp': {
+        const rdpProxy = new RdpProxy()
+        const rdpPort = resolveRdpPort(profile?.extra)
+        const rdpDestination = buildRdpDestination(host.hostname, rdpPort)
+        this.log.append(sessionId, 'info', `Starting RDP proxy → ${rdpDestination}`)
+        const proxy = await rdpProxy.start(host.hostname, rdpPort, (level, message) => {
+          this.log.append(sessionId, level, message)
+        })
+        return {
+          transport: new RdpSession(proxy.proxyUrl, rdpProxy),
+          protocol,
+          title: paneTitle,
+          proxyUrl: proxy.proxyUrl,
+          rdpDestination,
+          rdpProxy
+        }
+      }
+      case 'vnc': {
+        const vncProxy = new VncProxy()
+        const vncPort = (profile?.extra?.vncPort as number) ?? defaultPortForProtocol('vnc')
+        this.log.append(sessionId, 'info', `Starting VNC proxy → ${host.hostname}:${vncPort}`)
+        const proxy = await vncProxy.start(host.hostname, vncPort)
+        return {
+          transport: new VncSession(proxy.proxyUrl, vncProxy),
+          protocol,
+          title: paneTitle,
+          proxyUrl: proxy.proxyUrl,
+          vncProxy
+        }
+      }
+      case 'wsl':
+        this.log.append(
+          sessionId,
+          'info',
+          `Opening WSL${request.wslDistro ? ` (${request.wslDistro})` : ''}`
+        )
+        return {
+          transport: this.createPty(
+            request,
+            'wsl',
+            cols,
+            rows,
+            profile?.shell ?? '/bin/bash'
+          ),
+          protocol: 'wsl',
+          title: paneTitle
+        }
+      case 'local_pty':
+      default: {
+        const shell = this.resolveShellFromProfile(request, profile)
+        this.log.append(sessionId, 'info', `Opening local shell: ${shell}`)
+        return {
+          transport: this.createPty(request, shell, cols, rows),
+          protocol: 'local_pty',
+          title: paneTitle
+        }
+      }
+    }
+  }
+}

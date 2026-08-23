@@ -1,0 +1,137 @@
+/* App-owned C-extensions — not overwritten by a full Open Design re-export.
+ * Import after tokens.css. Keeps --consoleri-* aliases for legacy previews/kits.
+ */
+
+:root {
+  /* Raised / muted surfaces beyond charter --surface / --surface-warm */
+  --surface-raised: oklch(22% 0.014 250);
+  --border-strong: oklch(34% 0.02 250);
+
+  /* Brand amber (logo + active tab) — distinct from --accent blue */
+  --brand: oklch(68% 0.18 55);
+  --tab-active: oklch(72% 0.16 65);
+  --accent-muted: oklch(58% 0.19 255 / 0.16);
+
+  /* Soft shadow used by panels */
+  --elev-sm: 0 4px 12px oklch(0% 0 0 / 0.25);
+  --elev-panel: 0 -8px 32px oklch(0% 0 0 / 0.45);
+
+  /* Desktop chrome layout */
+  --sidebar-width: 52px;
+  --topbar-height: 40px;
+  --tabbar-height: 36px;
+  --row-height: 34px;
+  --row-height-dense: 28px;
+  --connection-panel-min: 240px;
+
+  /* Terminal palette */
+  --terminal-bg: oklch(12% 0.02 250);
+  --terminal-prompt: oklch(78% 0.14 145);
+  --terminal-path: oklch(68% 0.12 240);
+  --terminal-selection: oklch(78% 0.14 85);
+  --hex-terminal-bg: #0a1018;
+  --hex-terminal-fg: #c9d1d9;
+  --hex-terminal-cursor: #2b7fff;
+  --hex-terminal-selection: #264f78;
+
+  /* Light prototype (electron-viz) — opt-in only */
+  --light-bg: oklch(98% 0.005 250);
+  --light-surface: oklch(100% 0 0);
+  --light-fg: oklch(22% 0.02 240);
+  --light-accent: oklch(58% 0.16 145);
+
+  /* Legacy --consoleri-* aliases (previews, ui_kits, DESIGN.md) */
+  --consoleri-hex-bg: var(--hex-bg);
+  --consoleri-hex-surface: var(--hex-surface);
+  --consoleri-hex-accent: var(--hex-accent);
+  --consoleri-hex-brand: var(--hex-brand);
+  --consoleri-hex-success: var(--hex-success);
+  --consoleri-hex-danger: var(--hex-danger);
+
+  --consoleri-bg: var(--bg);
+  --consoleri-surface: var(--surface);
+  --consoleri-surface-raised: var(--surface-raised);
+  --consoleri-surface-muted: var(--surface-warm);
+  --consoleri-fg: var(--fg);
+  --consoleri-muted: var(--muted);
+  --consoleri-border: var(--border);
+  --consoleri-border-strong: var(--border-strong);
+
+  --consoleri-accent: var(--accent);
+  --consoleri-accent-hover: var(--accent-hover);
+  --consoleri-accent-muted: var(--accent-muted);
+  --consoleri-brand: var(--brand);
+  --consoleri-tab-active: var(--tab-active);
+
+  --consoleri-success: var(--success);
+  --consoleri-warn: var(--warn);
+  --consoleri-danger: var(--danger);
+
+  --consoleri-terminal-bg: var(--terminal-bg);
+  --consoleri-terminal-prompt: var(--terminal-prompt);
+  --consoleri-terminal-path: var(--terminal-path);
+  --consoleri-terminal-selection: var(--terminal-selection);
+
+  --consoleri-light-bg: var(--light-bg);
+  --consoleri-light-surface: var(--light-surface);
+  --consoleri-light-fg: var(--light-fg);
+  --consoleri-light-accent: var(--light-accent);
+
+  --consoleri-font-sans: var(--font-body);
+  --consoleri-font-mono: var(--font-mono);
+
+  --consoleri-font-size-xs: var(--text-xs);
+  --consoleri-font-size-sm: var(--text-sm);
+  --consoleri-font-size-md: 13px;
+  --consoleri-font-size-base: var(--text-base);
+  --consoleri-font-size-lg: var(--text-lg);
+  --consoleri-font-size-xl: var(--text-xl);
+  --consoleri-font-size-2xl: var(--text-2xl);
+  --consoleri-font-size-display: var(--text-3xl);
+
+  --consoleri-line-tight: var(--leading-tight);
+  --consoleri-line-normal: var(--leading-body);
+  --consoleri-line-relaxed: 1.55;
+
+  --consoleri-weight-regular: 400;
+  --consoleri-weight-medium: 500;
+  --consoleri-weight-semibold: 600;
+  --consoleri-weight-bold: 700;
+
+  --consoleri-space-1: var(--space-1);
+  --consoleri-space-2: var(--space-2);
+  --consoleri-space-3: var(--space-3);
+  --consoleri-space-4: var(--space-4);
+  --consoleri-space-5: var(--space-5);
+  --consoleri-space-6: var(--space-6);
+  --consoleri-space-8: var(--space-8);
+
+  --consoleri-radius-sm: var(--radius-sm);
+  --consoleri-radius-md: var(--radius-md);
+  --consoleri-radius-lg: var(--radius-lg);
+  --consoleri-radius-pill: var(--radius-pill);
+
+  --consoleri-shadow-sm: var(--elev-sm);
+  --consoleri-shadow-md: var(--elev-raised);
+  --consoleri-shadow-panel: var(--elev-panel);
+
+  --consoleri-sidebar-width: var(--sidebar-width);
+  --consoleri-topbar-height: var(--topbar-height);
+  --consoleri-tabbar-height: var(--tabbar-height);
+  --consoleri-row-height: var(--row-height);
+  --consoleri-row-height-dense: var(--row-height-dense);
+  --consoleri-connection-panel-min: var(--connection-panel-min);
+
+  --consoleri-ease-out: var(--ease-standard);
+  --consoleri-duration-fast: var(--motion-fast);
+  --consoleri-duration-normal: var(--motion-base);
+
+  --consoleri-focus-ring: 2px solid color-mix(in oklab, var(--accent), white 12%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --consoleri-duration-fast: 0ms;
+    --consoleri-duration-normal: 0ms;
+  }
+}

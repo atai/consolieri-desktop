@@ -1,0 +1,51 @@
+name: Tag version
+
+# When package.json version on main has no matching v* tag yet, create it and
+# start the Release workflow. (A tag push made with GITHUB_TOKEN alone would not
+# trigger other workflows — hence the explicit workflow_dispatch.)
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - package.json
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  tag:
+    name: Create release tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Create tag if missing and start Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG="v${VERSION}"
+
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null \
+            || git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "Tag ${TAG} already exists — nothing to do"
+            exit 0
+          fi
+
+          echo "Creating annotated tag ${TAG} on ${GITHUB_SHA}"
+          git tag -a "${TAG}" -m "Release ${TAG}" "${GITHUB_SHA}"
+          git push origin "refs/tags/${TAG}"
+
+          echo "Dispatching Release workflow for ${TAG}"
+          # Dispatch from the default branch so GITHUB_REF is a branch ref
+          # (github-pages environment allows main; tag pushes still need a v* tag policy).
+          gh workflow run release.yml --ref "${{ github.event.repository.default_branch }}" -f "tag=${TAG}"

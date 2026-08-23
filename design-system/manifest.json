@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "od-design-system-project/v1",
+  "id": "consoleri",
+  "name": "Consolieri",
+  "category": "Developer Tools",
+  "description": "Dark production design system for the Consolieri Electron SSH host manager — surfaces, accent blue, amber brand tab, dense host/terminal chrome.",
+  "source": {
+    "type": "local",
+    "origin": "Open Design project eff54ab4-aed5-4420-b27a-179fa6c1cedb + Consolieri v0.4.7 screenshots"
+  },
+  "files": {
+    "design": "DESIGN.md",
+    "tokens": "tokens.css",
+    "tailwind": "tailwind-v4.css"
+  },
+  "usage": "USAGE.md",
+  "assetsDir": "assets",
+  "preview": {
+    "dir": "preview",
+    "pages": [
+      {
+        "path": "preview/colors-primary.html",
+        "role": "colors",
+        "title": "Primary colors"
+      },
+      {
+        "path": "preview/colors-theme-dark.html",
+        "role": "colors",
+        "title": "Dark theme surfaces"
+      },
+      {
+        "path": "preview/typography-specimens.html",
+        "role": "typography",
+        "title": "Typography"
+      },
+      {
+        "path": "preview/spacing-tokens.html",
+        "role": "spacing",
+        "title": "Spacing"
+      },
+      {
+        "path": "preview/components-buttons.html",
+        "role": "components",
+        "title": "Components"
+      },
+      {
+        "path": "preview/applied-ui-surfaces.html",
+        "role": "app",
+        "title": "Applied UI surfaces"
+      },
+      {
+        "path": "preview/brand-assets.html",
+        "role": "brand",
+        "title": "Brand assets"
+      }
+    ]
+  }
+}

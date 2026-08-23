@@ -1,0 +1,45 @@
+# Coverity code quality check
+# Docs: templates/coverity-scan.yml in arc_automation/gitlab-ci-shared-library
+
+include:
+  - project: 'arc_automation/gitlab-ci-shared-library'
+    ref: main
+    file: '/templates/coverity-scan.yml'
+
+stages:
+  - coverity_scan_prepare
+  - coverity_scan
+  - coverity_scan_mr_check
+
+variables:
+  # ==========================================================
+  # CONFIGURE COVERITY SCAN
+  # ==========================================================
+  # Coverity Connect server hostname (without protocol and port).
+  COVERITY_SCAN_HOST: "us01-arc-coverity01"
+  # Project name in Coverity Connect.
+  COVERITY_SCAN_PROJECT_NAME: "consoleri"
+
+  # ==========================================================
+  # JOB TRIGGERS - which jobs are enabled
+  # ==========================================================
+  COVERITY_SCAN: "false"
+  COVERITY_SCAN_MR_CHECK: "false"
+  COVERITY_SCAN_BOT_MESSAGE: "false"
+
+  # ==========================================================
+  # REQUIRED
+  # ==========================================================
+  COVERITY_SCAN_USER: "your_user"
+  COVERITY_SCAN_TARGET: "your_coverity_target"
+  # Secrets must be set in GitLab CI/CD Variables (masked/protected), NOT in this file:
+  #   COVERITY_SCAN_TOKEN_SECRET  -> used as COVERITY_SCAN_TOKEN
+  #   COVERITY_SCAN_BOT_TOKEN
+  #   COVERITY_SCAN_TEMPLATES_REPOSITORY_KEY
+  #   COVERITY_SCAN_AUTH_FILE (type: File, required when FAST workflow = true)
+
+  # ==========================================================
+  # OPTIONAL - overrides template defaults when needed
+  # ==========================================================
+  COVERITY_SCAN_FAST_WORKFLOW: "true"
+  COVERITY_SCAN_MR_CHECK_ONLY_FOR_MR: "true"

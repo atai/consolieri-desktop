@@ -1,0 +1,71 @@
+import { resolve } from 'path'
+import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import { ironrdpWasmPlugin } from './src/renderer/plugins/ironrdpWasmPlugin'
+
+const coreSrc = resolve(__dirname, '../../packages/core/src')
+
+export default defineConfig({
+  main: {
+    plugins: [externalizeDepsPlugin({ exclude: ['@consoleri/core'] })],
+    resolve: {
+      alias: {
+        '@consoleri/core': coreSrc
+      }
+    },
+    build: {
+      rollupOptions: {
+        external: [
+          'node-pty',
+          'ssh2',
+          'cpu-features',
+          'node:sqlite',
+          '@modelcontextprotocol/sdk',
+          '@modelcontextprotocol/sdk/server/mcp.js',
+          '@modelcontextprotocol/sdk/server/streamableHttp.js',
+          '@modelcontextprotocol/sdk/types.js'
+        ]
+      }
+    }
+  },
+  preload: {
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      rollupOptions: {
+        input: {
+          index: resolve('src/preload/index.ts'),
+          log: resolve('src/preload/log.ts'),
+          report: resolve('src/preload/report.ts'),
+          about: resolve('src/preload/about.ts')
+        }
+      }
+    }
+  },
+  renderer: {
+    resolve: {
+      alias: {
+        '@renderer': resolve('src/renderer/src'),
+        '@shared': resolve('src/shared'),
+        '@consoleri/core': coreSrc
+      }
+    },
+    plugins: [ironrdpWasmPlugin(__dirname), react(), tailwindcss()],
+    optimizeDeps: {
+      exclude: ['ironrdp-wasm']
+    },
+    assetsInclude: ['**/*.wasm'],
+    build: {
+      rollupOptions: {
+        input: {
+          index: resolve('src/renderer/index.html'),
+          'log-window/index': resolve('src/renderer/log-window/index.html'),
+          'session-window/index': resolve('src/renderer/session-window/index.html'),
+          'workspace-window/index': resolve('src/renderer/workspace-window/index.html'),
+          'report-window/index': resolve('src/renderer/report-window/index.html'),
+          'about-window/index': resolve('src/renderer/about-window/index.html')
+        }
+      }
+    }
+  }
+})

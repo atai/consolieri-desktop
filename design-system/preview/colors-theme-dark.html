@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consolieri — Dark Theme</title>
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <style>
+    body { margin: 0; font-family: var(--consoleri-font-sans); background: var(--consoleri-bg); color: var(--consoleri-fg); }
+    main { width: min(960px, calc(100vw - 48px)); margin: 40px auto; display: grid; gap: 16px; }
+    h1 { font-size: var(--consoleri-font-size-display); margin: 0; }
+    p.lead { color: var(--consoleri-muted); line-height: var(--consoleri-line-normal); }
+    .stack { display: grid; gap: 8px; }
+    .surface { padding: 20px; border-radius: var(--consoleri-radius-md); border: 1px solid var(--consoleri-border); }
+    .surface strong { display: block; margin-bottom: 6px; }
+    .surface span { font-family: var(--consoleri-font-mono); font-size: var(--consoleri-font-size-sm); color: var(--consoleri-muted); }
+    .text-samples { display: grid; gap: 8px; padding: 20px; background: var(--consoleri-surface); border: 1px solid var(--consoleri-border); border-radius: var(--consoleri-radius-lg); }
+    .fg { color: var(--consoleri-fg); font-size: var(--consoleri-font-size-lg); font-weight: 600; }
+    .muted { color: var(--consoleri-muted); font-size: var(--consoleri-font-size-md); }
+    .mono { font-family: var(--consoleri-font-mono); font-size: var(--consoleri-font-size-sm); color: var(--consoleri-muted); }
+    .panel-demo { background: var(--consoleri-surface-raised); border-top: 1px solid var(--consoleri-border-strong); padding: 16px; border-radius: var(--consoleri-radius-lg) var(--consoleri-radius-lg) 0 0; box-shadow: var(--consoleri-shadow-panel); margin-top: 8px; }
+    .panel-demo .label { color: var(--consoleri-accent); font-size: var(--consoleri-font-size-sm); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <main data-od-id="colors-theme-dark">
+    <h1>Dark theme surfaces</h1>
+    <p class="lead">Production Consolieri UI uses near-black charcoal backgrounds with subtle surface elevation. ConnectionPanel and modals use raised surfaces — modeled from Hosts and Reports screenshots.</p>
+    <div class="stack">
+      <div class="surface" style="background:var(--consoleri-bg)"><strong>Background</strong><span>--consoleri-bg · app canvas, terminal backdrop</span></div>
+      <div class="surface" style="background:var(--consoleri-surface)"><strong>Surface</strong><span>--consoleri-surface · list rows, cards</span></div>
+      <div class="surface" style="background:var(--consoleri-surface-raised)"><strong>Surface raised</strong><span>--consoleri-surface-raised · ConnectionPanel, modals</span></div>
+      <div class="surface" style="background:var(--consoleri-surface); border-color:var(--consoleri-border)"><strong>Border</strong><span>--consoleri-border · dividers, inputs</span></div>
+    </div>
+    <div class="text-samples" data-od-id="text-hierarchy">
+      <div class="fg">arcjenkins-test</div>
+      <div class="muted">arcjenkins-test.mycorp.internal</div>
+      <div class="mono">SHA256:ab:cd:ef:12:34:56:78:90:ab:cd:ef:12:34:56:78:90</div>
+    </div>
+    <div class="panel-demo" data-od-id="connection-panel-surface">
+      <div class="label">Connect</div>
+      <div style="font-size:var(--consoleri-font-size-xl);font-weight:700;margin:8px 0">arcjenkins-test</div>
+      <div class="muted">ConnectionPanel raised surface from Hosts screen evidence</div>
+    </div>
+  </main>
+</body>
+</html>

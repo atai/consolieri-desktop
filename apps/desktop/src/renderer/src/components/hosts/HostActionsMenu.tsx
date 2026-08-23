@@ -1,0 +1,136 @@
+import { useEffect, useRef, useState } from 'react'
+import type { LocalShellAvailability, LocalShellExecutableType } from '@shared/types'
+
+const LOCAL_SHELL_ORDER: LocalShellExecutableType[] = [
+  'powershell',
+  'pwsh',
+  'cmd',
+  'bash',
+  'zsh',
+  'sh'
+]
+
+const LOCAL_SHELL_LABELS: Record<LocalShellExecutableType, string> = {
+  powershell: 'PowerShell',
+  pwsh: 'pwsh',
+  cmd: 'cmd',
+  bash: 'Bash',
+  zsh: 'zsh',
+  sh: 'sh'
+}
+
+interface HostActionsMenuProps {
+  onAddHost: () => void
+  onImport: () => void
+  onExport: () => void
+  onOpenLocalShell: (shell: LocalShellExecutableType) => void
+  availableLocalShells: Partial<LocalShellAvailability>
+  wslDistros: { name: string }[]
+  onOpenWsl: (distro: string) => void
+}
+
+export function HostActionsMenu({
+  onAddHost,
+  onImport,
+  onExport,
+  onOpenLocalShell,
+  availableLocalShells,
+  wslDistros,
+  onOpenWsl
+}: HostActionsMenuProps): React.JSX.Element {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef<HTMLDivElement>(null)
+  const visibleShells = LOCAL_SHELL_ORDER.filter((shell) => availableLocalShells[shell])
+
+  useEffect(() => {
+    if (!open) return
+    const onPointerDown = (event: MouseEvent): void => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onPointerDown)
+    return () => document.removeEventListener('mousedown', onPointerDown)
+  }, [open])
+
+  const run = (action: () => void): void => {
+    setOpen(false)
+    action()
+  }
+
+  return (
+    <div ref={rootRef} className="relative shrink-0">
+      <div className="flex overflow-hidden rounded border border-accent/80">
+        <button
+          type="button"
+          onClick={onAddHost}
+          className="bg-accent px-2 py-1 text-[11px] text-accent-on hover:bg-accent-hover"
+        >
+          + Host
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          className="border-l border-accent/60 bg-accent px-1.5 py-1 text-[10px] text-accent-on hover:bg-accent-hover"
+          aria-expanded={open}
+          aria-haspopup="menu"
+          title="More actions"
+        >
+          ▾
+        </button>
+      </div>
+
+      {open && (
+        <ul
+          role="menu"
+          className="absolute left-0 top-full z-30 mt-1 min-w-[9rem] overflow-hidden rounded border border-border bg-surface py-1 shadow-lg"
+        >
+          <li role="none">
+            <button
+              type="button"
+              role="menuitem"
+              className="block w-full px-3 py-1.5 text-left text-[11px] text-fg-2 hover:bg-surface-raised"
+              onClick={() => run(onImport)}
+            >
+              Import JSON…
+            </button>
+          </li>
+          <li role="none">
+            <button
+              type="button"
+              role="menuitem"
+              className="block w-full px-3 py-1.5 text-left text-[11px] text-fg-2 hover:bg-surface-raised"
+              onClick={() => run(onExport)}
+            >
+              Export JSON…
+            </button>
+          </li>
+          {visibleShells.map((shell) => (
+            <li key={shell} role="none">
+              <button
+                type="button"
+                role="menuitem"
+                className="block w-full px-3 py-1.5 text-left text-[11px] text-fg-2 hover:bg-surface-raised"
+                onClick={() => run(() => onOpenLocalShell(shell))}
+              >
+                {LOCAL_SHELL_LABELS[shell]}
+              </button>
+            </li>
+          ))}
+          {wslDistros.map((distro) => (
+            <li key={distro.name} role="none">
+              <button
+                type="button"
+                role="menuitem"
+                className="block w-full px-3 py-1.5 text-left text-[11px] text-fg-2 hover:bg-surface-raised"
+                onClick={() => run(() => onOpenWsl(distro.name))}
+              >
+                WSL: {distro.name}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}

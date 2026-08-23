@@ -1,0 +1,73 @@
+@import '@consoleri/design-system/tokens';
+@import '@consoleri/design-system/extensions';
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  background: var(--bg);
+  color: var(--fg);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+#log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+}
+
+.entry {
+  margin-bottom: 4px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.entry .ts {
+  color: var(--muted);
+  margin-right: 8px;
+}
+
+.entry.info .lvl {
+  color: var(--accent);
+}
+
+.entry.warn .lvl {
+  color: var(--warn);
+}
+
+.entry.error .lvl {
+  color: var(--danger);
+}
+
+.entry.debug .lvl {
+  color: var(--muted);
+}
+
+button {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--text-sm);
+}
+
+button:hover {
+  background: var(--border);
+}

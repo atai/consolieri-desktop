@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consolieri — Brand Assets</title>
+  <link rel="stylesheet" href="../colors_and_type.css" />
+  <style>
+    body { margin: 0; font-family: var(--consoleri-font-sans); background: var(--consoleri-bg); color: var(--consoleri-fg); }
+    main { width: min(1180px, calc(100vw - 48px)); margin: 40px auto; display: grid; gap: 28px; }
+    h1 { margin: 0; font-size: var(--consoleri-font-size-display); }
+    h2 { margin: 0 0 4px; font-size: var(--consoleri-font-size-xl); }
+    p { color: var(--consoleri-muted); line-height: var(--consoleri-line-normal); margin: 0; }
+    .note {
+      padding: 14px 16px; border-radius: var(--consoleri-radius-md);
+      border: 1px solid var(--consoleri-border); background: var(--consoleri-surface);
+      font-size: var(--consoleri-font-size-sm); color: var(--consoleri-muted);
+    }
+    .note strong { color: var(--consoleri-fg); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .grid-wide { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+    .card {
+      border: 1px solid var(--consoleri-border);
+      border-radius: var(--consoleri-radius-md);
+      overflow: hidden;
+      background: var(--consoleri-surface);
+    }
+    .card .stage {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 140px; padding: 20px; background: var(--consoleri-surface-muted);
+    }
+    .card .stage.tall { min-height: 180px; }
+    .card .stage img, .card .stage object { max-width: 100%; max-height: 120px; display: block; }
+    .card .stage.tall img { max-height: 160px; }
+    .card figcaption {
+      padding: 10px 12px; font-size: var(--consoleri-font-size-sm);
+      color: var(--consoleri-muted); border-top: 1px solid var(--consoleri-border);
+    }
+    .card figcaption strong { display: block; color: var(--consoleri-fg); margin-bottom: 2px; }
+    .lockup {
+      display: flex; gap: 20px; align-items: center; flex-wrap: wrap;
+      padding: 24px; background: var(--consoleri-surface);
+      border: 1px solid var(--consoleri-border); border-radius: var(--consoleri-radius-lg);
+    }
+    .lockup img { height: 56px; width: auto; }
+    .canon {
+      display: grid; grid-template-columns: 120px 1fr; gap: 20px; align-items: center;
+      padding: 24px; background: #0c141f; border-radius: var(--consoleri-radius-lg);
+      border: 1px solid var(--consoleri-border);
+    }
+    .canon img { width: 96px; height: 96px; }
+    .icon-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .icon-chip {
+      width: 40px; height: 40px; border-radius: 8px; display: grid; place-items: center;
+      background: var(--consoleri-accent-muted); border: 1px solid var(--consoleri-border);
+    }
+    .icon-chip img { width: 22px; height: 22px; }
+  </style>
+</head>
+<body>
+  <main data-od-id="brand-assets">
+    <div>
+      <h1 data-od-id="brand-assets-title">Brand assets</h1>
+      <p>One locked mark — orange hexagon + circular aperture — shared by every logo, icon, splash, and illustration.</p>
+    </div>
+
+    <div class="note" data-od-id="brand-system-note">
+      <strong>Canonical mark.</strong> Flat <code>#f59e0b</code> hexagon with center hole on <code>#0c141f</code>.
+      No alternate glyphs, no 3D network motifs, no C-stroke variants.
+      Rebuild rasters: <code>node assets/_brand/rebuild-rasters.cjs</code>
+    </div>
+
+    <section class="canon" data-od-id="canonical-mark">
+      <img src="../assets/logo.svg" alt="Canonical Consolieri mark" width="96" height="96" />
+      <div>
+        <strong style="font-size:var(--consoleri-font-size-xl)">Hexagon + aperture</strong>
+        <div style="color:var(--consoleri-muted);margin-top:6px;font-size:var(--consoleri-font-size-sm);line-height:1.45">
+          Derived from production title-bar / Windows app icon evidence.
+          All PNGs are SVG rasterizations of this geometry — not separate AI generations.
+        </div>
+      </div>
+    </section>
+
+    <section class="lockup" data-od-id="logo-lockup">
+      <img src="../assets/logo-on-dark.svg" alt="Tile mark" width="56" height="56" />
+      <img src="../assets/wordmark.svg" alt="Consolieri wordmark" height="48" />
+    </section>
+
+    <h2>Logo variants</h2>
+    <div class="grid" data-od-id="logo-variants">
+      <figure class="card"><div class="stage"><img src="../assets/logo.svg" alt="Color logo" /></div><figcaption><strong>logo.svg</strong>Primary color mark</figcaption></figure>
+      <figure class="card"><div class="stage"><img src="../assets/logo-mono.svg" alt="Mono logo" /></div><figcaption><strong>logo-mono.svg</strong>Light mono</figcaption></figure>
+      <figure class="card"><div class="stage"><img src="../assets/logo-on-dark.svg" alt="Logo on dark tile" /></div><figcaption><strong>logo-on-dark.svg</strong>App tile SVG</figcaption></figure>
+      <figure class="card"><div class="stage"><img src="../assets/logo-mark.png" alt="Rendered logo mark" /></div><figcaption><strong>logo-mark.png</strong>Same mark, soft shadow</figcaption></figure>
+    </div>
+
+    <h2>App &amp; tray icons</h2>
+    <div class="grid" data-od-id="app-icons">
+      <figure class="card"><div class="stage"><img src="../assets/icons/app-icon.png" alt="App icon" style="max-height:96px;border-radius:22px" /></div><figcaption><strong>icons/app-icon.png</strong>Electron app icon · <code>build/icons/icon.png</code></figcaption></figure>
+      <figure class="card"><div class="stage" style="background:#000"><img src="../assets/icons/tray-icon.png" alt="Tray icon" style="max-height:72px" /></div><figcaption><strong>icons/tray-icon.png</strong>Tray / status</figcaption></figure>
+      <figure class="card"><div class="stage"><img src="../assets/icons/store-tile.png" alt="Store tile" style="max-height:96px;border-radius:16px" /></div><figcaption><strong>icons/store-tile.png</strong>Store / installer</figcaption></figure>
+      <figure class="card"><div class="stage"><img src="../assets/icons/tray-icon.svg" alt="Tray SVG" width="48" height="48" /></div><figcaption><strong>icons/tray-icon.svg</strong>Vector tray</figcaption></figure>
+    </div>
+
+    <h2>Sidebar &amp; action icons</h2>
+    <div class="lockup" data-od-id="sidebar-icons">
+      <div class="icon-row">
+        <div class="icon-chip"><img src="../assets/icons/sidebar-hosts.svg" alt="Hosts" /></div>
+        <div class="icon-chip"><img src="../assets/icons/sidebar-profiles.svg" alt="Profiles" /></div>
+        <div class="icon-chip"><img src="../assets/icons/sidebar-network.svg" alt="Network" /></div>
+        <div class="icon-chip"><img src="../assets/icons/sidebar-settings.svg" alt="Settings" /></div>
+        <div class="icon-chip" style="background:transparent;border:none"><img src="../assets/icons/action-connect.svg" alt="Connect" /></div>
+      </div>
+    </div>
+
+    <h2>Empty states &amp; avatars</h2>
+    <div class="grid-wide" data-od-id="illustrations">
+      <figure class="card"><div class="stage tall"><img src="../assets/illustrations/empty-hosts.png" alt="Empty hosts" /></div><figcaption><strong>empty-hosts.png</strong>Hosts empty state</figcaption></figure>
+      <figure class="card"><div class="stage tall"><img src="../assets/illustrations/empty-keys.png" alt="Empty keys" /></div><figcaption><strong>empty-keys.png</strong>SSH Keys empty state</figcaption></figure>
+      <figure class="card"><div class="stage tall"><img src="../assets/illustrations/empty-network.png" alt="Empty network" /></div><figcaption><strong>empty-network.png</strong>Network map empty state</figcaption></figure>
+      <figure class="card"><div class="stage tall"><img src="../assets/illustrations/host-avatars.png" alt="Host avatars sheet" /></div><figcaption><strong>host-avatars.png</strong>Avatar sheet + SVG monograms</figcaption></figure>
+    </div>
+
+    <h2>Marketing &amp; splash</h2>
+    <div class="grid-wide" data-od-id="marketing">
+      <figure class="card"><div class="stage tall"><img src="../assets/marketing/splash.png" alt="Splash" /></div><figcaption><strong>splash.png</strong>Splash / launch</figcaption></figure>
+      <figure class="card"><div class="stage tall"><img src="../assets/marketing/about-panel.png" alt="About panel" /></div><figcaption><strong>about-panel.png</strong>About dialog panel</figcaption></figure>
+      <figure class="card"><div class="stage tall"><img src="../assets/marketing/hero-network.png" alt="Hero network" /></div><figcaption><strong>hero-network.png</strong>Marketing hero</figcaption></figure>
+      <figure class="card"><div class="stage tall"><img src="../assets/marketing/wordmark-lockup.png" alt="Wordmark lockup" /></div><figcaption><strong>wordmark-lockup.png</strong>Same tile mark + wordmark</figcaption></figure>
+    </div>
+
+    <h2>Production screenshots</h2>
+    <div class="grid-wide" data-od-id="screenshots">
+      <figure class="card"><div class="stage tall" style="padding:0"><img src="../assets/screenshots/image.png" alt="Hosts" style="max-height:none;width:100%" /></div><figcaption>Hosts + ConnectionPanel</figcaption></figure>
+      <figure class="card"><div class="stage tall" style="padding:0"><img src="../assets/screenshots/image-1.png" alt="Profiles" style="max-height:none;width:100%" /></div><figcaption>Profiles</figcaption></figure>
+      <figure class="card"><div class="stage tall" style="padding:0"><img src="../assets/screenshots/image-2.png" alt="Keys" style="max-height:none;width:100%" /></div><figcaption>SSH Keys</figcaption></figure>
+      <figure class="card"><div class="stage tall" style="padding:0"><img src="../assets/screenshots/image-6.png" alt="Network map" style="max-height:none;width:100%" /></div><figcaption>Network map</figcaption></figure>
+      <figure class="card"><div class="stage tall" style="padding:0"><img src="../assets/screenshots/image-4.png" alt="Terminal" style="max-height:none;width:100%" /></div><figcaption>Terminal split</figcaption></figure>
+      <figure class="card"><div class="stage tall" style="padding:0"><img src="../assets/screenshots/image-5.png" alt="Reports" style="max-height:none;width:100%" /></div><figcaption>Reports</figcaption></figure>
+    </div>
+  </main>
+</body>
+</html>

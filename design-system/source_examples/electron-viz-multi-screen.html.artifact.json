@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "source_examples/electron-viz-multi-screen.html",
+  "entry": "source_examples/electron-viz-multi-screen.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-07-29T09:42:01.850Z",
+  "updatedAt": "2026-07-29T09:42:01.850Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

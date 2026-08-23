@@ -1,0 +1,148 @@
+{
+  "name": "Consolieri",
+  "tagline": "SSH hosts, terminals, and infrastructure maps for DevOps fleets",
+  "description": "Consolieri is a Windows-first Electron desktop app for SSH host management, terminal multiplexing, connectivity reports, and network topology visualization. The design system captures the dark production UI from v0.4.7 plus the electron-viz density prototype.",
+  "sourceUrl": "",
+  "logo": {
+    "primary": "logos/primary.svg",
+    "alternates": [
+      "assets/logo.svg",
+      "logos/on-dark.svg",
+      "logos/mono.svg",
+      "logos/wordmark.svg",
+      "logos/mark.png",
+      "logos/app-icon.png",
+      "assets/logo-on-dark.svg",
+      "assets/wordmark.svg",
+      "assets/logo-mark.png",
+      "assets/icons/app-icon.png"
+    ],
+    "notes": "Locked mark: flat pointy-top hexagon #f59e0b with circular aperture on ink #0c141f. Same geometry in every SVG/PNG — rebuild via assets/_brand/rebuild-rasters.cjs. Never invent alternate glyphs."
+  },
+  "colors": [
+    {
+      "role": "background",
+      "hex": "#0c141f",
+      "oklch": "oklch(14% 0.018 250)",
+      "name": "Canvas",
+      "usage": "App canvas, terminal backdrop"
+    },
+    {
+      "role": "surface",
+      "hex": "#151d2b",
+      "oklch": "oklch(18% 0.016 250)",
+      "name": "Panel",
+      "usage": "Cards, list rows, modals, connection panel"
+    },
+    {
+      "role": "foreground",
+      "hex": "#f1f5f9",
+      "oklch": "oklch(96% 0.006 250)",
+      "name": "Ink",
+      "usage": "Primary text, host names, titles"
+    },
+    {
+      "role": "muted",
+      "hex": "#8b9bb4",
+      "oklch": "oklch(62% 0.02 250)",
+      "name": "Meta",
+      "usage": "FQDNs, paths, fingerprints, secondary labels"
+    },
+    {
+      "role": "border",
+      "hex": "#2a3548",
+      "oklch": "oklch(28% 0.018 250)",
+      "name": "Hairline",
+      "usage": "Dividers, input outlines, card borders"
+    },
+    {
+      "role": "accent",
+      "hex": "#2b7fff",
+      "oklch": "oklch(58% 0.19 255)",
+      "name": "Signal Blue",
+      "usage": "Primary buttons, active sidebar, links"
+    },
+    {
+      "role": "accent-secondary",
+      "hex": "#f59e0b",
+      "oklch": "oklch(68% 0.18 55)",
+      "name": "Brand Amber",
+      "usage": "Logo hexagon, active tab indicator, brand moments"
+    }
+  ],
+  "typography": {
+    "display": {
+      "family": "Segoe UI",
+      "fallbacks": ["-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+      "weights": [600, 700],
+      "notes": "App titles and section headers. Production uses system sans — no proprietary display face in evidence."
+    },
+    "body": {
+      "family": "Segoe UI",
+      "fallbacks": ["-apple-system", "BlinkMacSystemFont", "system-ui", "sans-serif"],
+      "weights": [400, 500, 600],
+      "notes": "Host lists, form labels, UI chrome. System UI stack by design (Windows-first Electron)."
+    },
+    "mono": {
+      "family": "JetBrains Mono",
+      "fallbacks": ["IBM Plex Mono", "ui-monospace", "Menlo", "Consolas", "monospace"],
+      "weights": [400, 700],
+      "googleFontsUrl": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap",
+      "notes": "Paths, fingerprints, table headers, terminal, KPIs. Stand-in web font — no .ttf/.otf shipped in source evidence."
+    }
+  },
+  "voice": {
+    "adjectives": ["technical", "direct", "dense", "utility-first"],
+    "tone": "Direct and technical — power-tool voice for DevOps engineers. No marketing fluff.",
+    "messagingPillars": [
+      "Fleet-scale host and profile management",
+      "Terminal multiplexing with clear session chrome",
+      "Connectivity reports and network topology at a glance"
+    ],
+    "vocabulary": {
+      "use": ["Connect", "Refresh", "Run", "Deploy", "Hosts", "Profiles", "Keys", "Consolieri"],
+      "avoid": ["Console alone", "delightful", "magic", "effortless", "AI-powered"]
+    }
+  },
+  "imagery": {
+    "style": "Dark utility UI, orange hexagon brand mark, production screenshots and empty states — never decorative stock.",
+    "subjects": [
+      "SSH host lists",
+      "Connection panels",
+      "Split terminals",
+      "Network topology maps",
+      "Empty states with the locked mark"
+    ],
+    "treatment": "High-contrast dark chrome; brand amber reserved for the mark and tab indicators; status greens/reds for OK/FAIL only.",
+    "avoid": [
+      "Purple SaaS gradients",
+      "Alternate logo glyphs (C-stroke, 3D cubes, network wireframes)",
+      "Emoji as feature icons",
+      "Light theme as default product chrome"
+    ],
+    "samples": [
+      { "file": "imagery/splash.png", "kind": "splash", "caption": "App splash with locked mark" },
+      { "file": "imagery/wordmark-lockup.png", "kind": "logo", "caption": "Mark + Consolieri wordmark" },
+      { "file": "imagery/hero-network.png", "kind": "hero", "caption": "Network map marketing frame" },
+      { "file": "imagery/about-panel.png", "kind": "product", "caption": "About panel brand surface" },
+      { "file": "imagery/empty-hosts.png", "kind": "illustration", "caption": "Empty Hosts state" },
+      { "file": "imagery/empty-keys.png", "kind": "illustration", "caption": "Empty Keys state" },
+      { "file": "imagery/empty-network.png", "kind": "illustration", "caption": "Empty Network state" },
+      { "file": "imagery/product-hosts.png", "kind": "product", "caption": "Hosts workspace screenshot" },
+      { "file": "imagery/product-terminal.png", "kind": "product", "caption": "Terminal split screenshot" },
+      { "file": "imagery/product-network-map.png", "kind": "product", "caption": "Network map screenshot" }
+    ]
+  },
+  "layout": {
+    "radius": "6px controls / 10px cards / 14px modals / 999px pills",
+    "borderWeight": "1px",
+    "spacing": "4 / 8 / 12 / 16 / 20 / 24 / 32 px",
+    "postureRules": [
+      "52px icon sidebar; active item gets solid accent fill",
+      "Orange 2px indicator on the active tab",
+      "Connection panel slides up from the bottom (min-height 240px)",
+      "Dense list rows ~34px (28px dense mode) — utility over whitespace",
+      "One accent color per screen for primary actions; status colors only for OK/FAIL"
+    ]
+  }
+}

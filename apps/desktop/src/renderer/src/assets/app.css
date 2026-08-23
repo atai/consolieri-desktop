@@ -1,0 +1,164 @@
+/* OD-derived entry: tokens + @theme — single bridge */
+@import '@consoleri/design-system/tailwind';
+@import 'react-mosaic-component/react-mosaic-component.css';
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+}
+
+/* App-only vendor overlays — CSS vars only, no palette hex */
+.consoleri-mosaic {
+  background: var(--bg);
+}
+
+.consoleri-mosaic .mosaic-root {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* The pane wrapper sits between .mosaic-tile and .mosaic-window, so the vendor
+   rule `.mosaic-tile > * { height: 100% }` no longer reaches the window and it
+   would collapse to content height. */
+.consoleri-mosaic .consoleri-pane,
+.consoleri-mosaic .consoleri-pane > .mosaic-window {
+  height: 100%;
+  width: 100%;
+}
+
+.consoleri-mosaic.mosaic .mosaic-window .mosaic-window-toolbar,
+.consoleri-mosaic.mosaic .mosaic-preview .mosaic-window-toolbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+  height: auto;
+  min-height: var(--row-height);
+  padding: 0 4px;
+}
+
+.consoleri-mosaic.mosaic .mosaic-window .mosaic-window-toolbar.draggable:hover,
+.consoleri-mosaic.mosaic .mosaic-preview .mosaic-window-toolbar.draggable:hover {
+  background: var(--surface-raised);
+}
+
+.consoleri-mosaic.mosaic .mosaic-window .mosaic-window-title,
+.consoleri-mosaic.mosaic .mosaic-preview .mosaic-window-title {
+  color: var(--fg);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.consoleri-mosaic.mosaic .mosaic-window .mosaic-window-toolbar.draggable:hover .mosaic-window-title,
+.consoleri-mosaic.mosaic .mosaic-preview .mosaic-window-toolbar.draggable:hover .mosaic-window-title {
+  color: var(--fg);
+}
+
+.consoleri-mosaic.mosaic .mosaic-window .mosaic-window-controls .bp5-button,
+.consoleri-mosaic.mosaic .mosaic-window .mosaic-window-controls .bp5-button:before,
+.consoleri-mosaic.mosaic .mosaic-preview .mosaic-window-controls .bp5-button,
+.consoleri-mosaic.mosaic .mosaic-preview .mosaic-window-controls .bp5-button:before {
+  color: var(--muted);
+}
+
+.consoleri-mosaic.mosaic .mosaic-window .mosaic-window-controls .bp5-button:hover,
+.consoleri-mosaic.mosaic .mosaic-window .mosaic-window-controls .bp5-button:hover:before,
+.consoleri-mosaic.mosaic .mosaic-preview .mosaic-window-controls .bp5-button:hover,
+.consoleri-mosaic.mosaic .mosaic-preview .mosaic-window-controls .bp5-button:hover:before {
+  color: var(--fg);
+}
+
+.consoleri-mosaic.mosaic .mosaic-window .mosaic-window-controls .separator,
+.consoleri-mosaic.mosaic .mosaic-preview .mosaic-window-controls .separator {
+  border-left-color: var(--border);
+}
+
+.consoleri-mosaic.mosaic .mosaic-split:hover .mosaic-split-line {
+  background: var(--accent);
+}
+
+.consoleri-mosaic.mosaic .mosaic-tile {
+  margin: 2px;
+}
+
+.consoleri-mosaic.mosaic .mosaic-window .mosaic-window-body,
+.consoleri-mosaic.mosaic .mosaic-preview .mosaic-window-body {
+  background: var(--bg);
+}
+
+.consoleri-mosaic .mosaic-window-controls {
+  gap: 2px;
+  padding-right: 2px;
+}
+
+.consoleri-mosaic .mosaic-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 8px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.consoleri-mosaic .mosaic-toolbar-btn:hover {
+  background: var(--surface-raised);
+  color: var(--fg);
+}
+
+.consoleri-mosaic .mosaic-toolbar-btn-danger:hover {
+  background: color-mix(in oklab, var(--danger), transparent 85%);
+  color: var(--danger);
+}
+
+.consoleri-mosaic .mosaic-toolbar-btn-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.consoleri-mosaic .mosaic-toolbar-btn-icon-only {
+  padding: 0 6px;
+  gap: 0;
+}
+
+.consoleri-mosaic .mosaic-toolbar-btn-caret {
+  font-size: 9px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+/* Temporary pane maximize: CSS overlay — layout tree and splitPercentages stay intact */
+.consoleri-mosaic--maximized .mosaic-split {
+  display: none !important;
+}
+
+.consoleri-mosaic--maximized .mosaic-tile {
+  visibility: hidden;
+}
+
+.consoleri-mosaic--maximized .mosaic-tile:has(.is-maximized) {
+  visibility: visible;
+  position: absolute !important;
+  inset: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  z-index: 10;
+  margin: 0;
+}

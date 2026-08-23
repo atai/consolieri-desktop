@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "Electron Viz — Multi-screen prototype (table + charts)",
+  "entry": "electron-viz-multi-screen.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "primary": true,
+  "createdAt": "2026-07-29T09:06:56.703Z",
+  "updatedAt": "2026-07-29T09:39:45.701Z",
+  "metadata": {
+    "identifier": "electron-viz-multi-screen",
+    "artifactType": "text/html",
+    "inferred": false
+  }
+}

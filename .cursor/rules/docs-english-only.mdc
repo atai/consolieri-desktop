@@ -1,0 +1,14 @@
+---
+description: Project documentation must be written in English only
+globs: docs/**/*.{rst,md}
+alwaysApply: false
+---
+
+# Documentation language: English only
+
+All project documentation under `docs/` is **strictly English**.
+
+- Write headings, body text, captions, toctree titles, and comments in English.
+- Do not add Russian or other non-English prose to RST or Markdown docs.
+- Code identifiers, file paths, CLI flags, and product names stay as in the codebase.
+- Sphinx `language` is `en` in `docs/source/conf.py` — keep it that way.

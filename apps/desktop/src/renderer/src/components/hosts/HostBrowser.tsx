@@ -1,0 +1,460 @@
+import { useEffect, useMemo, useState } from 'react'
+import { buildHostListSections, type HostListGroupBy, type HostListSortBy } from '@consoleri/core'
+import type { ConnectionProfile, Host, LocalShellAvailability, LocalShellType } from '@shared/types'
+import { useAppStore } from '../../stores/appStore'
+import { usePreferencesStore } from '../../stores/preferencesStore'
+import { HostActionsMenu } from './HostActionsMenu'
+import { HostForm } from './HostForm'
+import { HostDetailPanel } from './HostDetailPanel'
+import { HostListSection } from './HostListSection'
+import { pendingProfilesFromHost } from './hostTemplate'
+import { connectFromList, openLocalSessionFromList } from '../../session/connectHost'
+import { SessionOpenModeToggle } from './SessionOpenModeToggle'
+
+const GROUP_BY_OPTIONS: Array<{ value: HostListGroupBy; label: string }> = [
+  { value: 'none', label: 'None' },
+  { value: 'tag', label: 'Tag' },
+  { value: 'osType', label: 'OS' }
+]
+
+const HOST_SORT_OPTIONS: Array<{ value: HostListSortBy; label: string }> = [
+  { value: 'name', label: 'Name' },
+  { value: 'hostname', label: 'Host' }
+]
+
+function toolbarButtonClass(active: boolean): string {
+  return `shrink-0 rounded px-1.5 py-0.5 text-[11px] ${
+    active ? 'bg-accent text-accent-on' : 'bg-surface-raised text-muted hover:text-fg'
+  }`
+}
+
+export function HostBrowser(): React.JSX.Element {
+  const {
+    hosts,
+    allHosts,
+    allHostTags,
+    groups,
+    search,
+    selectedTags,
+    selectedGroupId,
+    selectedHostId,
+    groupBy,
+    collapsedSections,
+    sortBy,
+    sortDir,
+    hostListViewLoaded,
+    setSearch,
+    setSelectedTags,
+    setSelectedGroupId,
+    setGroupBy,
+    setSortBy,
+    setSortDir,
+    toggleCollapsedSection,
+    setSelectedHostId,
+    loadHostListView,
+    refreshHosts,
+    refreshAllHostTags,
+    refreshAllHosts,
+    refreshGroups
+  } = useAppStore()
+
+  const { settings, setAutoOpenConnectionLog, setSessionOpenMode } = usePreferencesStore()
+
+  const [showForm, setShowForm] = useState(false)
+  const [copyFrom, setCopyFrom] = useState<Host | null>(null)
+  const [copyProfiles, setCopyProfiles] = useState<ConnectionProfile[]>([])
+  const [editingHostId, setEditingHostId] = useState<string | null>(null)
+  const [profiles, setProfiles] = useState<ConnectionProfile[]>([])
+  const [profilesForHostId, setProfilesForHostId] = useState<string | null>(null)
+  const [importJson, setImportJson] = useState('')
+  const [showImport, setShowImport] = useState(false)
+  const [showTagFilters, setShowTagFilters] = useState(false)
+  const [wslDistros, setWslDistros] = useState<{ name: string }[]>([])
+  const [availableLocalShells, setAvailableLocalShells] = useState<Partial<LocalShellAvailability>>(
+    {}
+  )
+
+  useEffect(() => {
+    void loadHostListView()
+  }, [loadHostListView])
+
+  useEffect(() => {
+    void window.consoleri.localShells
+      .available()
+      .then(setAvailableLocalShells)
+      .catch(() => {
+        // If the availability probe fails for any reason, hide shell options conservatively.
+        setAvailableLocalShells({})
+      })
+  }, [])
+
+  useEffect(() => {
+    if (!hostListViewLoaded) return
+    refreshHosts()
+    refreshGroups()
+    refreshAllHostTags()
+    refreshAllHosts()
+    window.consoleri.wsl.list().then(setWslDistros)
+  }, [
+    hostListViewLoaded,
+    refreshHosts,
+    refreshGroups,
+    refreshAllHostTags,
+    refreshAllHosts,
+    search,
+    selectedTags,
+    selectedGroupId
+  ])
+
+  if (selectedHostId !== profilesForHostId) {
+    setProfilesForHostId(selectedHostId)
+    setProfiles([])
+  }
+
+  useEffect(() => {
+    if (!selectedHostId) return
+    let cancelled = false
+    void window.consoleri.profiles.list(selectedHostId).then((list) => {
+      if (!cancelled) setProfiles(list)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [selectedHostId])
+
+  const tagFiltersVisible = showTagFilters || selectedTags.length > 0
+
+  const hostSections = useMemo(
+    () => buildHostListSections(hosts, groupBy, sortBy, sortDir),
+    [hosts, groupBy, sortBy, sortDir]
+  )
+
+  const refreshProfiles = (): void => {
+    if (selectedHostId) {
+      window.consoleri.profiles.list(selectedHostId).then(setProfiles)
+    }
+  }
+
+  const connectHostHandler = async (host: Host, profileId?: string): Promise<void> => {
+    await connectFromList(host, profileId)
+  }
+
+  const openLocalShell = async (shell: LocalShellType, wslDistro?: string): Promise<void> => {
+    await openLocalSessionFromList({
+      localShell: shell,
+      wslDistro,
+      title: shell === 'wsl' ? `WSL ${wslDistro ?? ''}` : shell
+    })
+  }
+
+  const handleImport = async (): Promise<void> => {
+    try {
+      const parsed: unknown = JSON.parse(importJson)
+      await window.consoleri.hosts.import(parsed)
+      setImportJson('')
+      setShowImport(false)
+      refreshHosts()
+      refreshAllHostTags()
+      refreshAllHosts()
+      refreshGroups()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Invalid JSON')
+    }
+  }
+
+  const handleImportFromFile = async (): Promise<void> => {
+    try {
+      const result = await window.consoleri.hosts.importFromFile()
+      if ('canceled' in result) return
+      setShowImport(false)
+      refreshHosts()
+      refreshAllHostTags()
+      refreshAllHosts()
+      refreshGroups()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Import failed')
+    }
+  }
+
+  const handleExport = async (): Promise<void> => {
+    try {
+      const result = await window.consoleri.hosts.exportToFile()
+      if ('path' in result) {
+        alert(`Exported to ${result.path}`)
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Export failed')
+    }
+  }
+
+  const handleDeleteHost = async (hostId: string): Promise<void> => {
+    await window.consoleri.hosts.delete(hostId)
+    if (selectedHostId === hostId) {
+      setSelectedHostId(null)
+    }
+    if (editingHostId === hostId) {
+      setEditingHostId(null)
+    }
+    refreshHosts()
+    refreshAllHostTags()
+    refreshAllHosts()
+  }
+
+  const startEditHost = (hostId: string): void => {
+    setSelectedHostId(hostId)
+    setEditingHostId(hostId)
+  }
+
+  const startCopyHost = async (hostId: string): Promise<void> => {
+    const host = hosts.find((h) => h.id === hostId) ?? allHosts.find((h) => h.id === hostId)
+    if (!host) return
+
+    const hostProfiles = await window.consoleri.profiles.list(hostId)
+    setCopyFrom(host)
+    setCopyProfiles(hostProfiles)
+    setEditingHostId(null)
+    setShowForm(true)
+  }
+
+  const closeHostForm = (): void => {
+    setShowForm(false)
+    setCopyFrom(null)
+    setCopyProfiles([])
+  }
+
+  const selectedHost = hosts.find((h) => h.id === selectedHostId)
+
+  return (
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-surface">
+      <div className="shrink-0 border-b border-border px-2 py-1.5">
+        <input
+          type="search"
+          placeholder="Search hosts…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full rounded border border-border bg-bg px-2 py-1 text-xs text-fg placeholder:text-muted"
+        />
+      </div>
+
+      <div className="shrink-0 border-b border-border">
+        <div className="flex items-center gap-2 px-2 py-1">
+          <HostActionsMenu
+            onAddHost={() => {
+              setCopyFrom(null)
+              setCopyProfiles([])
+              setShowForm(true)
+            }}
+            onImport={() => setShowImport(true)}
+            onExport={() => void handleExport()}
+            onOpenLocalShell={(shell) => openLocalShell(shell)}
+            availableLocalShells={availableLocalShells}
+            wslDistros={wslDistros}
+            onOpenWsl={(distro) => openLocalShell('wsl', distro)}
+          />
+
+          <SessionOpenModeToggle mode={settings.sessionOpenMode} onChange={setSessionOpenMode} />
+
+          <div className="flex min-w-0 flex-1 items-center justify-end gap-1">
+            {GROUP_BY_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setGroupBy(option.value)}
+                className={toolbarButtonClass(groupBy === option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+
+            {groupBy === 'none' &&
+              HOST_SORT_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setSortBy(option.value)}
+                  className={toolbarButtonClass(sortBy === option.value)}
+                >
+                  {option.label}
+                </button>
+              ))}
+            <button
+              type="button"
+              onClick={() => setSortDir('asc')}
+              className={toolbarButtonClass(sortDir === 'asc')}
+              title="Ascending"
+            >
+              A→Z
+            </button>
+            <button
+              type="button"
+              onClick={() => setSortDir('desc')}
+              className={toolbarButtonClass(sortDir === 'desc')}
+              title="Descending"
+            >
+              Z→A
+            </button>
+
+            {allHostTags.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowTagFilters((open) => !open)}
+                className={toolbarButtonClass(tagFiltersVisible)}
+              >
+                Tags
+                {selectedTags.length > 0 && (
+                  <span className="ml-1 rounded-full bg-accent/30 px-1 text-[10px]">
+                    {selectedTags.length}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {groups.length > 0 && (
+              <select
+                className="max-w-[6.5rem] shrink-0 rounded border border-border bg-bg px-1 py-0.5 text-[11px] text-fg-2"
+                value={selectedGroupId === null ? '__ungrouped__' : selectedGroupId}
+                onChange={(e) => {
+                  const value = e.target.value
+                  if (value === 'all') setSelectedGroupId('all')
+                  else if (value === '__ungrouped__') setSelectedGroupId(null)
+                  else setSelectedGroupId(value)
+                }}
+                title="Filter by host group"
+              >
+                <option value="all">All groups</option>
+                <option value="__ungrouped__">Ungrouped</option>
+                {groups.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        </div>
+
+        {tagFiltersVisible && allHostTags.length > 0 && (
+          <div className="flex flex-wrap gap-1 border-t border-border/60 px-2 py-1">
+            {allHostTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() =>
+                  setSelectedTags(
+                    selectedTags.includes(tag)
+                      ? selectedTags.filter((t) => t !== tag)
+                      : [...selectedTags, tag]
+                  )
+                }
+                className={`rounded px-1.5 py-0.5 text-[11px] ${
+                  selectedTags.includes(tag)
+                    ? 'bg-accent text-accent-on'
+                    : 'bg-surface-raised text-muted hover:text-fg'
+                }`}
+              >
+                #{tag}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {showImport && (
+          <div className="border-b border-border p-2">
+            <button
+              type="button"
+              onClick={handleImportFromFile}
+              className="mb-1 w-full rounded border border-border py-1 text-xs text-fg-2 hover:bg-surface-raised"
+            >
+              Choose file…
+            </button>
+            <div className="my-1 flex items-center gap-1 text-[10px] text-muted">
+              <span className="flex-1 border-t border-border" />
+              or paste JSON
+              <span className="flex-1 border-t border-border" />
+            </div>
+            <textarea
+              className="w-full rounded border border-border bg-bg p-2 text-xs text-fg-2"
+              rows={4}
+              placeholder='{"version":1,"hosts":[{"name":"web-01","hostname":"10.0.0.1","tags":["prod"]}]}'
+              value={importJson}
+              onChange={(e) => setImportJson(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={handleImport}
+              className="mt-1 w-full rounded bg-success py-1 text-xs text-accent-on"
+            >
+              Import JSON
+            </button>
+          </div>
+        )}
+
+        {showForm && (
+          <div className="border-b border-border">
+            <HostForm
+              copyFrom={copyFrom ?? undefined}
+              initialPendingProfiles={copyFrom ? pendingProfilesFromHost(copyProfiles) : undefined}
+              onSave={() => {
+                closeHostForm()
+                refreshHosts()
+                refreshAllHostTags()
+                refreshAllHosts()
+              }}
+              onCancel={closeHostForm}
+            />
+          </div>
+        )}
+
+        {hosts.length === 0 ? (
+          <p className="p-4 text-center text-sm text-muted">No hosts yet</p>
+        ) : (
+          hostSections.map((section) => (
+            <HostListSection
+              key={section.id}
+              id={section.id}
+              label={section.label}
+              hosts={section.hosts}
+              collapsed={collapsedSections.includes(section.id)}
+              selectedHostId={selectedHostId}
+              onToggleCollapsed={() => toggleCollapsedSection(section.id)}
+              onSelect={setSelectedHostId}
+              onConnect={connectHostHandler}
+              onEdit={startEditHost}
+              onCopy={(hostId) => void startCopyHost(hostId)}
+              onDelete={handleDeleteHost}
+            />
+          ))
+        )}
+      </div>
+
+      {selectedHost && (
+        <HostDetailPanel
+          host={selectedHost}
+          profiles={profiles}
+          autoOpenConnectionLog={settings.autoOpenConnectionLog}
+          editing={editingHostId === selectedHost.id}
+          onConnect={connectHostHandler}
+          onDelete={handleDeleteHost}
+          onAutoOpenLogChange={setAutoOpenConnectionLog}
+          onEdit={() => startEditHost(selectedHost.id)}
+          onCopy={() => void startCopyHost(selectedHost.id)}
+          onCancelEdit={() => setEditingHostId(null)}
+          onHostUpdated={() => {
+            refreshHosts()
+            refreshAllHostTags()
+            refreshAllHosts()
+            refreshProfiles()
+          }}
+          onProfilesChanged={() => {
+            refreshProfiles()
+            refreshHosts()
+            refreshAllHostTags()
+            refreshAllHosts()
+          }}
+        />
+      )}
+    </div>
+  )
+}

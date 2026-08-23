@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "preview/colors-theme-dark.html",
+  "entry": "preview/colors-theme-dark.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-07-29T09:43:22.875Z",
+  "updatedAt": "2026-07-29T09:43:22.875Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}
