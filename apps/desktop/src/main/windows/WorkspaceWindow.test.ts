@@ -127,11 +127,8 @@ describe('WorkspaceWindow key reuse', () => {
   })
 
   it('reuses an existing window for the same key', async () => {
-    const {
-      openWorkspaceWindowFromRecipe,
-      listWorkspaceWindows,
-      findWorkspaceWindowByKey
-    } = await import('./WorkspaceWindow')
+    const { openWorkspaceWindowFromRecipe, listWorkspaceWindows, findWorkspaceWindowByKey } =
+      await import('./WorkspaceWindow')
 
     const first = openWorkspaceWindowFromRecipe({
       key: 'dev-manager:app',
@@ -155,9 +152,8 @@ describe('WorkspaceWindow key reuse', () => {
   })
 
   it('opens a new window when key differs', async () => {
-    const { openWorkspaceWindowFromRecipe, listWorkspaceWindows } = await import(
-      './WorkspaceWindow'
-    )
+    const { openWorkspaceWindowFromRecipe, listWorkspaceWindows } =
+      await import('./WorkspaceWindow')
 
     openWorkspaceWindowFromRecipe({
       key: 'a',

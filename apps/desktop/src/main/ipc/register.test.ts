@@ -103,22 +103,18 @@ const {
     setHostListView: vi.fn(),
     getMapView: vi.fn(),
     setMapView: vi.fn(),
-    getAppSettings: vi
-      .fn()
-      .mockReturnValue({
-        autoOpenConnectionLog: false,
-        sessionOpenMode: 'workspace',
-        keybindings: {},
-        externalControl: { enabled: false }
-      }),
-    setAppSettings: vi
-      .fn()
-      .mockReturnValue({
-        autoOpenConnectionLog: false,
-        sessionOpenMode: 'workspace',
-        keybindings: {},
-        externalControl: { enabled: false }
-      }),
+    getAppSettings: vi.fn().mockReturnValue({
+      autoOpenConnectionLog: false,
+      sessionOpenMode: 'workspace',
+      keybindings: {},
+      externalControl: { enabled: false }
+    }),
+    setAppSettings: vi.fn().mockReturnValue({
+      autoOpenConnectionLog: false,
+      sessionOpenMode: 'workspace',
+      keybindings: {},
+      externalControl: { enabled: false }
+    }),
     getScpRecent: vi.fn(),
     setScpRecent: vi.fn()
   },

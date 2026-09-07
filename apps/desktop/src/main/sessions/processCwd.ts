@@ -18,9 +18,13 @@ export async function getProcessCwd(pid: number): Promise<string | null> {
 
   if (process.platform === 'darwin') {
     try {
-      const { stdout } = await execFileAsync('lsof', ['-a', '-p', String(pid), '-d', 'cwd', '-Fn'], {
-        encoding: 'utf8'
-      })
+      const { stdout } = await execFileAsync(
+        'lsof',
+        ['-a', '-p', String(pid), '-d', 'cwd', '-Fn'],
+        {
+          encoding: 'utf8'
+        }
+      )
       for (const line of stdout.split('\n')) {
         if (line.startsWith('n')) {
           const path = line.slice(1).trim()

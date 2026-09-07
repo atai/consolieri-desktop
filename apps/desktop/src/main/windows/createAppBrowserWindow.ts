@@ -14,9 +14,7 @@ export interface CreateAppBrowserWindowOptions extends BrowserWindowConstructorO
  * Shared BrowserWindow defaults for Consolieri chrome windows.
  * Callers pass size/title/parent and optional overrides.
  */
-export function createAppBrowserWindow(
-  options: CreateAppBrowserWindowOptions
-): BrowserWindow {
+export function createAppBrowserWindow(options: CreateAppBrowserWindowOptions): BrowserWindow {
   const { preload = 'index', webPreferences, ...rest } = options
   return new BrowserWindow({
     icon: appIconPath(),

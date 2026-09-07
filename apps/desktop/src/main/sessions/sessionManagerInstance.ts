@@ -23,6 +23,8 @@ export const sessionManager: SessionManager = new Proxy({} as SessionManager, {
   get(_target, property, receiver) {
     const manager = getSessionManager()
     const value = Reflect.get(manager as object, property, receiver)
-    return typeof value === 'function' ? (value as (...args: unknown[]) => unknown).bind(manager) : value
+    return typeof value === 'function'
+      ? (value as (...args: unknown[]) => unknown).bind(manager)
+      : value
   }
 })

@@ -19,13 +19,7 @@ describe('attachWindowDiagnostics', () => {
 
     attachWindowDiagnostics(win as never, { name: 'session-window', onFailLoad })
 
-    handlers.get('did-fail-load')?.(
-      {},
-      -6,
-      'ERR_FILE_NOT_FOUND',
-      'file:///missing.html',
-      true
-    )
+    handlers.get('did-fail-load')?.({}, -6, 'ERR_FILE_NOT_FOUND', 'file:///missing.html', true)
 
     expect(errorSpy).toHaveBeenCalled()
     expect(onFailLoad).toHaveBeenCalledWith({

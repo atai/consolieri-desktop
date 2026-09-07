@@ -94,9 +94,7 @@ export function SessionMosaic({
 
   // Derive active maximize — avoids setState-in-effect when layout shrinks.
   const activeMaximizedPaneId =
-    maximizedPaneId !== null &&
-    leafCount > 1 &&
-    panes.some((p) => p.paneId === maximizedPaneId)
+    maximizedPaneId !== null && leafCount > 1 && panes.some((p) => p.paneId === maximizedPaneId)
       ? maximizedPaneId
       : null
 

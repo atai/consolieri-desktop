@@ -152,13 +152,10 @@ export function registerSessionIpc(getWindow: () => BrowserWindow | null): void 
 
   ipcMain.handle(
     IPC_CHANNELS.sessionsOpenHostWindow,
-    createHandler(
-      z.object({ hostId: Id, profileId: Id.optional() }),
-      ({ hostId, profileId }) => {
-        openHostSessionWindow(hostId, profileId)
-        return Promise.resolve()
-      }
-    )
+    createHandler(z.object({ hostId: Id, profileId: Id.optional() }), ({ hostId, profileId }) => {
+      openHostSessionWindow(hostId, profileId)
+      return Promise.resolve()
+    })
   )
 
   ipcMain.handle(

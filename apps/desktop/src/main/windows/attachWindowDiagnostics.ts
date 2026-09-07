@@ -22,18 +22,21 @@ export function attachWindowDiagnostics(
   const label = options.name
   const closeOnFailLoad = options.closeOnFailLoad !== false
 
-  win.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
-    if (!isMainFrame) return
-    // Ignore aborted navigations (e.g. window closed mid-load).
-    if (errorCode === -3) return
-    console.error(
-      `[${label}] Failed to load (${errorCode}): ${errorDescription} (${validatedURL})`
-    )
-    options.onFailLoad?.({ errorCode, errorDescription, validatedURL })
-    if (closeOnFailLoad && !win.isDestroyed()) {
-      win.close()
+  win.webContents.on(
+    'did-fail-load',
+    (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+      if (!isMainFrame) return
+      // Ignore aborted navigations (e.g. window closed mid-load).
+      if (errorCode === -3) return
+      console.error(
+        `[${label}] Failed to load (${errorCode}): ${errorDescription} (${validatedURL})`
+      )
+      options.onFailLoad?.({ errorCode, errorDescription, validatedURL })
+      if (closeOnFailLoad && !win.isDestroyed()) {
+        win.close()
+      }
     }
-  })
+  )
 
   win.webContents.on('render-process-gone', (_event, details) => {
     console.error(`[${label}] Render process gone:`, details.reason, details.exitCode)

@@ -32,11 +32,7 @@ export function registerControlConfirmIpc(): void {
     IPC_CHANNELS.controlConfirmResponse,
     (_e, requestId: unknown, decision: unknown) => {
       if (typeof requestId !== 'string') return
-      if (
-        decision !== 'allow_once' &&
-        decision !== 'always_allow' &&
-        decision !== 'deny'
-      ) {
+      if (decision !== 'allow_once' && decision !== 'always_allow' && decision !== 'deny') {
         return
       }
       settleConfirm(requestId, decision)
@@ -55,10 +51,7 @@ function settleConfirm(requestId: string, decision: ControlConfirmDecision): voi
 /**
  * Returns true if the recipe may proceed without showing a dialog.
  */
-export function shouldSkipConfirmation(
-  clientName: string,
-  recipe: ControlWindowRecipe
-): boolean {
+export function shouldSkipConfirmation(clientName: string, recipe: ControlWindowRecipe): boolean {
   if (recipeHasCommand(recipe)) return false
   return isClientAlwaysAllow(clientName)
 }

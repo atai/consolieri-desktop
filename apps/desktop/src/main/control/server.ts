@@ -139,7 +139,11 @@ async function handleApiRequest(
         sendJson(res, 403, { error: message, status: 'denied' })
         return
       }
-      if (message.includes('must be') || message.includes('not allowed') || message.includes('Invalid')) {
+      if (
+        message.includes('must be') ||
+        message.includes('not allowed') ||
+        message.includes('Invalid')
+      ) {
         sendJson(res, 400, { error: message })
         return
       }
@@ -384,8 +388,4 @@ export async function rotateControlToken(): Promise<string> {
   return token
 }
 
-export {
-  listControlClients,
-  revokeControlClient,
-  setClientAlwaysAllow
-}
+export { listControlClients, revokeControlClient, setClientAlwaysAllow }

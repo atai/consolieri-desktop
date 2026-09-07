@@ -21,11 +21,7 @@ export function tokensEqual(a: string, b: string): boolean {
 export function validateHostHeader(req: IncomingMessage, port: number): boolean {
   const host = req.headers.host
   if (!host || typeof host !== 'string') return false
-  const allowed = new Set([
-    `127.0.0.1:${port}`,
-    `localhost:${port}`,
-    `[::1]:${port}`
-  ])
+  const allowed = new Set([`127.0.0.1:${port}`, `localhost:${port}`, `[::1]:${port}`])
   return allowed.has(host.toLowerCase())
 }
 
@@ -43,9 +39,5 @@ export function validateOriginHeader(req: IncomingMessage): boolean {
 
 export function isLoopbackRemoteAddress(address: string | undefined): boolean {
   if (!address) return false
-  return (
-    address === '127.0.0.1' ||
-    address === '::1' ||
-    address === '::ffff:127.0.0.1'
-  )
+  return address === '127.0.0.1' || address === '::1' || address === '::ffff:127.0.0.1'
 }

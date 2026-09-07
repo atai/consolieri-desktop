@@ -9,11 +9,7 @@ import {
   markAsSessionWindow,
   unregisterAllForWindow
 } from './SessionWindowRegistry'
-import {
-  getHostWindow,
-  registerHostWindow,
-  unregisterHostWindow
-} from './HostWindowRegistry'
+import { getHostWindow, registerHostWindow, unregisterHostWindow } from './HostWindowRegistry'
 import { createAppBrowserWindow } from './createAppBrowserWindow'
 import { loadRendererEntry } from './loadRendererEntry'
 import { attachWindowDiagnostics } from './attachWindowDiagnostics'

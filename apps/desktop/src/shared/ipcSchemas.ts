@@ -50,7 +50,11 @@ export const HostInputObjectSchema = z.object({
 
 export const HostInputSchema = HostInputObjectSchema.superRefine((val, ctx) => {
   if ((val.kind ?? 'remote') === 'remote' && !(val.hostname ?? '').trim()) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Hostname is required', path: ['hostname'] })
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Hostname is required',
+      path: ['hostname']
+    })
   }
 })
 

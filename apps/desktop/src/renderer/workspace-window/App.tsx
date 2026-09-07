@@ -49,9 +49,7 @@ export function WorkspaceWindowApp(): React.JSX.Element {
       try {
         setInitSteps((prev) => [...prev, 'Loading workspace snapshot…'])
         // Panes may still be opening on main; briefly retry until populated or timeout.
-        let snapshot: Awaited<
-          ReturnType<typeof window.consoleri.control.getWorkspaceWindow>
-        > = null
+        let snapshot: Awaited<ReturnType<typeof window.consoleri.control.getWorkspaceWindow>> = null
         for (let attempt = 0; attempt < 40; attempt++) {
           snapshot = await window.consoleri.control.getWorkspaceWindow(windowId)
           if (!snapshot) {

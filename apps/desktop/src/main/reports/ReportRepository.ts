@@ -43,9 +43,9 @@ export class ReportRepository {
 
   /** Lightweight title lookup — does not parse config or lastResult JSON. */
   getName(id: string): string | null {
-    const row = getDatabase()
-      .prepare('SELECT name FROM reports WHERE id = ?')
-      .get(id) as { name: string } | undefined
+    const row = getDatabase().prepare('SELECT name FROM reports WHERE id = ?').get(id) as
+      | { name: string }
+      | undefined
     return row?.name ?? null
   }
 

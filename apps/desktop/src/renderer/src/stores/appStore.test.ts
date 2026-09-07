@@ -7,18 +7,21 @@ const mockPreferencesGetHostListView = vi.fn()
 const mockPreferencesGetMapView = vi.fn()
 const mockPreferencesGetAppSettings = vi
   .fn()
-  .mockResolvedValue({ autoOpenConnectionLog: false, sessionOpenMode: 'workspace', keybindings: {}, externalControl: { enabled: false } })
-const mockPreferencesSetAppSettings = vi
-  .fn()
-  .mockImplementation((patch: Record<string, unknown>) =>
-    Promise.resolve({
-      autoOpenConnectionLog: false,
-      sessionOpenMode: 'workspace',
-      externalControl: { enabled: false },
-      keybindings: {},
-      ...patch
-    })
-  )
+  .mockResolvedValue({
+    autoOpenConnectionLog: false,
+    sessionOpenMode: 'workspace',
+    keybindings: {},
+    externalControl: { enabled: false }
+  })
+const mockPreferencesSetAppSettings = vi.fn().mockImplementation((patch: Record<string, unknown>) =>
+  Promise.resolve({
+    autoOpenConnectionLog: false,
+    sessionOpenMode: 'workspace',
+    externalControl: { enabled: false },
+    keybindings: {},
+    ...patch
+  })
+)
 const mockWorkspaceSave = vi.fn().mockResolvedValue(undefined)
 const mockHostsList = vi.fn().mockResolvedValue([])
 const mockGroupsList = vi.fn().mockResolvedValue([])

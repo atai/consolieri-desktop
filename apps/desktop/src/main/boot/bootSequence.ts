@@ -24,10 +24,7 @@ export async function runBootSequence(deps: BootSequenceDeps): Promise<void> {
     deps.openDatabase()
   } catch (error) {
     console.error('[boot] Database initialization failed:', error)
-    deps.onProgress(
-      'Database error',
-      error instanceof Error ? error.message : String(error)
-    )
+    deps.onProgress('Database error', error instanceof Error ? error.message : String(error))
   }
 
   await yieldEventLoop()
@@ -38,10 +35,7 @@ export async function runBootSequence(deps: BootSequenceDeps): Promise<void> {
     deps.createMainWindow()
   } catch (error) {
     console.error('[boot] Interface startup failed:', error)
-    deps.onProgress(
-      'Startup error',
-      error instanceof Error ? error.message : String(error)
-    )
+    deps.onProgress('Startup error', error instanceof Error ? error.message : String(error))
   }
 
   await deps.waitUntilReady()

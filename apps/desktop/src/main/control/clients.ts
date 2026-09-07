@@ -20,9 +20,9 @@ function hashToken(token: string): string {
 }
 
 function readJsonPref<T>(key: string, fallback: T): T {
-  const row = getDatabase()
-    .prepare('SELECT value FROM app_preferences WHERE key = ?')
-    .get(key) as { value: string } | undefined
+  const row = getDatabase().prepare('SELECT value FROM app_preferences WHERE key = ?').get(key) as
+    | { value: string }
+    | undefined
   if (!row?.value) return fallback
   try {
     return JSON.parse(row.value) as T
@@ -123,7 +123,10 @@ export function touchControlClient(name: string): void {
   saveClients(clients)
 }
 
-export function setClientAlwaysAllow(clientId: string, alwaysAllow: boolean): ControlClientInfo | null {
+export function setClientAlwaysAllow(
+  clientId: string,
+  alwaysAllow: boolean
+): ControlClientInfo | null {
   const clients = listStoredClients()
   const existing = clients.find((c) => c.id === clientId)
   if (!existing) return null

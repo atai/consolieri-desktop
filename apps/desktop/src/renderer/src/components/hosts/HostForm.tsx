@@ -112,7 +112,11 @@ export function HostForm({
         name,
         hostname: isLocal ? 'localhost' : hostname,
         port: isLocal ? 0 : port,
-        osType: isLocal ? (localShell === 'powershell' || localShell === 'pwsh' || localShell === 'cmd' ? 'windows' : 'macos') : osType,
+        osType: isLocal
+          ? localShell === 'powershell' || localShell === 'pwsh' || localShell === 'cmd'
+            ? 'windows'
+            : 'macos'
+          : osType,
         kind,
         tags: parseTagsInput(tags),
         notes,

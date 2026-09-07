@@ -12,9 +12,7 @@ vi.mock('../../components/session/SessionView', () => ({
 
 vi.mock('../../stores/preferencesStore', () => ({
   usePreferencesStore: (
-    selector: (state: {
-      settings: { keybindings: ReturnType<typeof mergeKeybindings> }
-    }) => unknown
+    selector: (state: { settings: { keybindings: ReturnType<typeof mergeKeybindings> } }) => unknown
   ) =>
     selector({
       settings: {

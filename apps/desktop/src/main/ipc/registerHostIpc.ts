@@ -53,37 +53,35 @@ export function registerHostIpc(getWindow: () => BrowserWindow | null): void {
 
   ipcMain.handle(
     IPC_CHANNELS.hostsUpdate,
-    createHandler(
-      z.tuple([Id, HostInputObjectSchema.partial()]),
-      ([id, input]) => {
-        const existing = hostRepository.getHost(id)
-        if (!existing) throw new Error(`Host not found: ${id}`)
-        const merged = {
-          name: input.name ?? existing.name,
-          hostname: input.hostname ?? existing.hostname,
-          port: input.port ?? existing.port,
-          osType: input.osType ?? existing.osType,
-          kind: input.kind ?? existing.kind,
-          tags: input.tags ?? existing.tags,
-          groupId: input.groupId !== undefined ? input.groupId : existing.groupId,
-          notes: input.notes ?? existing.notes,
-          defaultProfileId:
-            input.defaultProfileId !== undefined ? input.defaultProfileId : existing.defaultProfileId,
-          uxProfileId: input.uxProfileId !== undefined ? input.uxProfileId : existing.uxProfileId,
-          logVerbosity: input.logVerbosity ?? existing.logVerbosity,
-          relatedHostIds: input.relatedHostIds ?? existing.relatedHostIds,
-          gatewayHostId: input.gatewayHostId !== undefined ? input.gatewayHostId : existing.gatewayHostId,
-          httpEndpoint: input.httpEndpoint !== undefined ? input.httpEndpoint : existing.httpEndpoint
-        }
-        const { normalized, errors } = normalizeHostInput(merged)
-        if (!normalized) {
-          throw new Error(Object.values(errors)[0] ?? 'Invalid host')
-        }
-        const host = hostRepository.updateHost(id, normalized)
-        scheduleCloudUpload()
-        return Promise.resolve(host)
+    createHandler(z.tuple([Id, HostInputObjectSchema.partial()]), ([id, input]) => {
+      const existing = hostRepository.getHost(id)
+      if (!existing) throw new Error(`Host not found: ${id}`)
+      const merged = {
+        name: input.name ?? existing.name,
+        hostname: input.hostname ?? existing.hostname,
+        port: input.port ?? existing.port,
+        osType: input.osType ?? existing.osType,
+        kind: input.kind ?? existing.kind,
+        tags: input.tags ?? existing.tags,
+        groupId: input.groupId !== undefined ? input.groupId : existing.groupId,
+        notes: input.notes ?? existing.notes,
+        defaultProfileId:
+          input.defaultProfileId !== undefined ? input.defaultProfileId : existing.defaultProfileId,
+        uxProfileId: input.uxProfileId !== undefined ? input.uxProfileId : existing.uxProfileId,
+        logVerbosity: input.logVerbosity ?? existing.logVerbosity,
+        relatedHostIds: input.relatedHostIds ?? existing.relatedHostIds,
+        gatewayHostId:
+          input.gatewayHostId !== undefined ? input.gatewayHostId : existing.gatewayHostId,
+        httpEndpoint: input.httpEndpoint !== undefined ? input.httpEndpoint : existing.httpEndpoint
       }
-    )
+      const { normalized, errors } = normalizeHostInput(merged)
+      if (!normalized) {
+        throw new Error(Object.values(errors)[0] ?? 'Invalid host')
+      }
+      const host = hostRepository.updateHost(id, normalized)
+      scheduleCloudUpload()
+      return Promise.resolve(host)
+    })
   )
 
   ipcMain.handle(
@@ -242,19 +240,16 @@ export function registerHostIpc(getWindow: () => BrowserWindow | null): void {
 
   ipcMain.handle(
     IPC_CHANNELS.hostPresetsSave,
-    createHandler(
-      z.tuple([Id, HostSessionPresetInputSchema]),
-      ([hostId, input]) => {
-        const host = hostRepository.getHost(hostId)
-        if (!host) throw new Error(`Host not found: ${hostId}`)
-        const preset = hostSessionPresetRepository.save(hostId, {
-          layout: input.layout ?? null,
-          panes: input.panes
-        })
-        scheduleCloudUpload()
-        return Promise.resolve(preset)
-      }
-    )
+    createHandler(z.tuple([Id, HostSessionPresetInputSchema]), ([hostId, input]) => {
+      const host = hostRepository.getHost(hostId)
+      if (!host) throw new Error(`Host not found: ${hostId}`)
+      const preset = hostSessionPresetRepository.save(hostId, {
+        layout: input.layout ?? null,
+        panes: input.panes
+      })
+      scheduleCloudUpload()
+      return Promise.resolve(preset)
+    })
   )
 
   ipcMain.handle(

@@ -14,10 +14,7 @@ function bringForward(win: BrowserWindow): void {
  * Show a child BrowserWindow as soon as it paints, or after a short timeout.
  * Call after create (with `show: false`); safe to call before or after load*.
  */
-export function revealWindow(
-  win: BrowserWindow,
-  timeoutMs = CHILD_WINDOW_REVEAL_TIMEOUT_MS
-): void {
+export function revealWindow(win: BrowserWindow, timeoutMs = CHILD_WINDOW_REVEAL_TIMEOUT_MS): void {
   if (win.isDestroyed()) return
   if (win.isVisible()) {
     bringForward(win)

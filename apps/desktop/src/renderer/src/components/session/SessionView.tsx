@@ -167,9 +167,7 @@ function ConnectingPane({
     }
   }, [session.id])
 
-  const title = autoEnabled
-    ? `Auto-reconnect attempt ${attemptsDone}…`
-    : 'Connecting…'
+  const title = autoEnabled ? `Auto-reconnect attempt ${attemptsDone}…` : 'Connecting…'
 
   return (
     <WindowBusyOverlay

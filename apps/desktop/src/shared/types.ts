@@ -6,7 +6,13 @@ export type LocalShellType = 'powershell' | 'pwsh' | 'cmd' | 'bash' | 'zsh' | 's
 export type LocalShellExecutableType = Exclude<LocalShellType, 'wsl'>
 export type LocalShellAvailability = Record<LocalShellExecutableType, boolean>
 
-export type { SessionOpenMode, AppSettings, Accelerator, KeybindingId, Keybindings } from '@consoleri/core'
+export type {
+  SessionOpenMode,
+  AppSettings,
+  Accelerator,
+  KeybindingId,
+  Keybindings
+} from '@consoleri/core'
 export type SessionStatus = 'connecting' | 'connected' | 'disconnected' | 'error'
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 export type AboutWindowMode = 'splash' | 'about'

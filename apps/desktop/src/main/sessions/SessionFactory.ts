@@ -212,13 +212,7 @@ export class SessionFactory {
           `Opening WSL${request.wslDistro ? ` (${request.wslDistro})` : ''}`
         )
         return {
-          transport: this.createPty(
-            request,
-            'wsl',
-            cols,
-            rows,
-            profile?.shell ?? '/bin/bash'
-          ),
+          transport: this.createPty(request, 'wsl', cols, rows, profile?.shell ?? '/bin/bash'),
           protocol: 'wsl',
           title: paneTitle
         }

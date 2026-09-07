@@ -52,7 +52,10 @@ describe('HostSessionPresetRepository', () => {
       port: 0,
       kind: 'local'
     })
-    presets.save(host.id, { layout: 'p1', panes: [{ paneId: 'p1', title: 'a', protocol: 'local_pty' }] })
+    presets.save(host.id, {
+      layout: 'p1',
+      panes: [{ paneId: 'p1', title: 'a', protocol: 'local_pty' }]
+    })
     hosts.deleteHost(host.id)
     expect(presets.get(host.id)).toBeNull()
   })

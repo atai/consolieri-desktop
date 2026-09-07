@@ -8,7 +8,10 @@ import {
 } from './auth'
 import type { IncomingMessage } from 'node:http'
 
-function fakeReq(headers: Record<string, string | undefined>, remoteAddress = '127.0.0.1'): IncomingMessage {
+function fakeReq(
+  headers: Record<string, string | undefined>,
+  remoteAddress = '127.0.0.1'
+): IncomingMessage {
   return {
     headers,
     socket: { remoteAddress }

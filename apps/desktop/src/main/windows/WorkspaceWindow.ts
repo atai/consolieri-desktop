@@ -181,7 +181,13 @@ export function openWorkspaceWindowFromRecipe(recipe: ControlWindowRecipe): Cont
     layout = insertPaneIntoLayout(layout, paneId)
   }
 
-  if (recipe.layout && isValidLayoutForPanes(recipe.layout, panes.map((p) => p.paneId))) {
+  if (
+    recipe.layout &&
+    isValidLayoutForPanes(
+      recipe.layout,
+      panes.map((p) => p.paneId)
+    )
+  ) {
     layout = recipe.layout as MosaicNode<string>
   }
 

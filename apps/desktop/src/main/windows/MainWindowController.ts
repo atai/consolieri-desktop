@@ -5,11 +5,7 @@ import { IPC_CHANNELS } from '../../shared/types'
 import { createAppBrowserWindow } from './createAppBrowserWindow'
 import { loadRendererEntry } from './loadRendererEntry'
 import { attachWindowDiagnostics } from './attachWindowDiagnostics'
-import {
-  closeSplashWindow,
-  focusSplashWindow,
-  isSplashOpen
-} from './SplashWindowController'
+import { closeSplashWindow, focusSplashWindow, isSplashOpen } from './SplashWindowController'
 
 const RENDERER_READY_FALLBACK_MS = 8000
 

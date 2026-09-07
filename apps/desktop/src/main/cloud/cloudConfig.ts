@@ -101,8 +101,7 @@ export async function resolveCloudConfig(): Promise<CloudConfig> {
   cachedResolved = {
     apiUrl,
     keycloakIssuer: trimSlash(data.issuer),
-    clientId:
-      process.env.KEYCLOAK_CLIENT_ID ?? data.desktopClientId ?? PROD_DEFAULTS.clientId
+    clientId: process.env.KEYCLOAK_CLIENT_ID ?? data.desktopClientId ?? PROD_DEFAULTS.clientId
   }
   return cachedResolved
 }

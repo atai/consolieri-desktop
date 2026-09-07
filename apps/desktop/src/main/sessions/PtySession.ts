@@ -46,12 +46,11 @@ export class PtySession extends BaseTransport {
             wslShell
           }
 
-    const { file, args: baseArgs, cwd } = resolveLocalShellSpawn(
-      options.shell,
-      options.wslDistro,
-      options.wslShell,
-      options.cwd
-    )
+    const {
+      file,
+      args: baseArgs,
+      cwd
+    } = resolveLocalShellSpawn(options.shell, options.wslDistro, options.wslShell, options.cwd)
     let env = { ...process.env } as Record<string, string>
     if (process.platform === 'win32' && !env.TERM) {
       env.TERM = 'xterm-256color'

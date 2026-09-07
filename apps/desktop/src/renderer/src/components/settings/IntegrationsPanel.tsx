@@ -160,7 +160,12 @@ export function IntegrationsPanel(): React.JSX.Element {
                   <code className="max-w-full truncate rounded bg-bg px-2 py-1 text-xs text-fg">
                     {token}
                   </code>
-                  <Button type="button" size="sm" variant="default" onClick={() => void copyToken()}>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="default"
+                    onClick={() => void copyToken()}
+                  >
                     {copied ? 'Copied' : 'Copy'}
                   </Button>
                 </div>
@@ -171,12 +176,19 @@ export function IntegrationsPanel(): React.JSX.Element {
               )}
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button type="button" size="sm" variant="default" disabled={busy} onClick={() => void rotate()}>
+              <Button
+                type="button"
+                size="sm"
+                variant="default"
+                disabled={busy}
+                onClick={() => void rotate()}
+              >
                 Rotate token
               </Button>
             </div>
             <p className="text-xs text-muted">
-              MCP endpoint: <code className="text-fg">http://127.0.0.1:{status.port ?? '…'}/mcp</code>
+              MCP endpoint:{' '}
+              <code className="text-fg">http://127.0.0.1:{status.port ?? '…'}/mcp</code>
             </p>
           </div>
         )}
@@ -200,7 +212,9 @@ export function IntegrationsPanel(): React.JSX.Element {
                   <p className="text-sm text-fg">{client.name}</p>
                   <p className="text-xs text-muted">
                     {client.alwaysAllow ? 'Always allow' : 'Confirm each window'}
-                    {client.lastUsedAt ? ` · last used ${new Date(client.lastUsedAt).toLocaleString()}` : ''}
+                    {client.lastUsedAt
+                      ? ` · last used ${new Date(client.lastUsedAt).toLocaleString()}`
+                      : ''}
                   </p>
                 </div>
                 <div className="flex gap-2">

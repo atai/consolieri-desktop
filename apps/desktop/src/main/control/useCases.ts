@@ -1,8 +1,5 @@
 import { parseControlWindowRecipe, recipeHasCommand } from './recipes'
-import {
-  requestWindowConfirmation,
-  shouldSkipConfirmation
-} from './confirm'
+import { requestWindowConfirmation, shouldSkipConfirmation } from './confirm'
 import { touchControlClient, upsertControlClient } from './clients'
 import { appendControlAudit } from './audit'
 import {

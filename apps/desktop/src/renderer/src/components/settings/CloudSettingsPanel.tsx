@@ -105,9 +105,7 @@ export function CloudSettingsPanel(): React.JSX.Element {
   } satisfies CloudPanelData)
   const [busy, setBusy] = useState(false)
   const [restoring, setRestoring] = useState<string | null>(null)
-  const [message, setMessage] = useState<{ text: string; kind: 'ok' | 'err' | 'info' } | null>(
-    null
-  )
+  const [message, setMessage] = useState<{ text: string; kind: 'ok' | 'err' | 'info' } | null>(null)
   const [recoveryModal, setRecoveryModal] = useState<{
     mode: CloudRecoveryKeyMode
     key?: string

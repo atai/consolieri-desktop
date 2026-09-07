@@ -46,7 +46,10 @@
 }
 
 .consoleri-mosaic.mosaic .mosaic-window .mosaic-window-toolbar.draggable:hover .mosaic-window-title,
-.consoleri-mosaic.mosaic .mosaic-preview .mosaic-window-toolbar.draggable:hover .mosaic-window-title {
+.consoleri-mosaic.mosaic
+  .mosaic-preview
+  .mosaic-window-toolbar.draggable:hover
+  .mosaic-window-title {
   color: var(--fg);
 }
 

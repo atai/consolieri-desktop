@@ -72,10 +72,7 @@ function HotkeysTab(): React.JSX.Element {
             const isRecording = recordingId === id
 
             return (
-              <div
-                key={id}
-                className="rounded border border-border bg-bg px-3 py-3"
-              >
+              <div key={id} className="rounded border border-border bg-bg px-3 py-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-sm text-fg">{KEYBINDING_LABELS[id]}</p>

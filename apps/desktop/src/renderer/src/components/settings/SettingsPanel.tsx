@@ -8,7 +8,14 @@ import { HotkeysTab } from './HotkeysTab'
 import { IntegrationsPanel } from './IntegrationsPanel'
 import { SessionOpenModeToggle } from '../hosts/SessionOpenModeToggle'
 
-type SettingsTab = 'general' | 'hotkeys' | 'appearance' | 'vault' | 'backup' | 'cloud' | 'integrations'
+type SettingsTab =
+  | 'general'
+  | 'hotkeys'
+  | 'appearance'
+  | 'vault'
+  | 'backup'
+  | 'cloud'
+  | 'integrations'
 
 const TABS: Array<{ id: SettingsTab; label: string }> = [
   { id: 'general', label: 'General' },

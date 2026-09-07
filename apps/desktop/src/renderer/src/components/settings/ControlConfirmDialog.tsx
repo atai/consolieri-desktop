@@ -65,7 +65,12 @@ export function ControlConfirmDialog({
           Deny
         </Button>
         {!request.hasCommand && (
-          <Button type="button" variant="default" size="md" onClick={() => onDecide('always_allow')}>
+          <Button
+            type="button"
+            variant="default"
+            size="md"
+            onClick={() => onDecide('always_allow')}
+          >
             Always allow this client
           </Button>
         )}

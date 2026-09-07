@@ -12,10 +12,7 @@ import {
   rotateControlToken,
   setClientAlwaysAllow
 } from '../control/server'
-import {
-  registerControlConfirmIpc,
-  setControlConfirmWindowGetter
-} from '../control/confirm'
+import { registerControlConfirmIpc, setControlConfirmWindowGetter } from '../control/confirm'
 import { getWorkspaceWindowSnapshot } from '../windows/WorkspaceWindow'
 
 export function registerControlIpc(getWindow: () => BrowserWindow | null): void {
@@ -50,12 +47,9 @@ export function registerControlIpc(getWindow: () => BrowserWindow | null): void 
 
   ipcMain.handle(
     IPC_CHANNELS.controlSetClientAlwaysAllow,
-    createHandler(
-      z.tuple([z.string().min(1), z.boolean()]),
-      ([clientId, alwaysAllow]) => {
-        return Promise.resolve(setClientAlwaysAllow(clientId, alwaysAllow))
-      }
-    )
+    createHandler(z.tuple([z.string().min(1), z.boolean()]), ([clientId, alwaysAllow]) => {
+      return Promise.resolve(setClientAlwaysAllow(clientId, alwaysAllow))
+    })
   )
 
   ipcMain.handle(

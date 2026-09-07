@@ -31,8 +31,7 @@ export function HostListItem({
   onCopy,
   onDelete
 }: HostListItemProps): React.JSX.Element {
-  const subtitle =
-    host.kind === 'local' ? 'local project' : `${host.hostname}:${host.port}`
+  const subtitle = host.kind === 'local' ? 'local project' : `${host.hostname}:${host.port}`
 
   return (
     <li
@@ -46,7 +45,9 @@ export function HostListItem({
         onDoubleClick={onConnect}
         className="flex min-w-0 flex-1 items-start gap-2 px-1 py-0.5 text-left text-sm"
       >
-        <span className="mt-0.5 text-base">{osIcon(host.kind === 'local' ? 'macos' : host.osType)}</span>
+        <span className="mt-0.5 text-base">
+          {osIcon(host.kind === 'local' ? 'macos' : host.osType)}
+        </span>
         <div className="min-w-0 flex-1">
           <div className="truncate font-medium text-fg">{host.name}</div>
           <div className="truncate text-xs text-muted">{subtitle}</div>

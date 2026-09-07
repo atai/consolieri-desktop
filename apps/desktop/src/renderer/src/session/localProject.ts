@@ -69,8 +69,7 @@ export async function createLocalProjectHost(options: {
   panes: PaneBinding[]
 }): Promise<Host> {
   const shell = options.shell ?? defaultLocalShell()
-  const osType =
-    shell === 'powershell' || shell === 'pwsh' || shell === 'cmd' ? 'windows' : 'macos'
+  const osType = shell === 'powershell' || shell === 'pwsh' || shell === 'cmd' ? 'windows' : 'macos'
   const host = await window.consoleri.hosts.create({
     name: options.name,
     hostname: 'localhost',
