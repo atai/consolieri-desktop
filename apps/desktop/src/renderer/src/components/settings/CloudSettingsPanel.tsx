@@ -1,9 +1,15 @@
 import { useState } from 'react'
-import type { CloudBackupInfo, CloudStatus } from '@shared/types'
+import {
+  PERSONAL_SUBSCRIPTION_REQUIRED,
+  type CloudBackupInfo,
+  type CloudStatus
+} from '@shared/types'
 import { useIpcQuery } from '../../hooks/useIpcQuery'
 import { Button } from '../ui/Button'
 import { InlineConfirmButton } from '../ui/InlineConfirmButton'
 import { CloudRecoveryKeyModal, type CloudRecoveryKeyMode } from './CloudRecoveryKeyModal'
+
+const PRICING_URL = 'https://consolieri.app/ru/pricing'
 
 function formatDate(iso: string): string {
   try {
@@ -20,6 +26,61 @@ function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function isPersonalSubscriptionRequired(message: string): boolean {
+  return message.includes(PERSONAL_SUBSCRIPTION_REQUIRED)
+}
+
+function PersonalPlanNotice(): React.JSX.Element {
+  return (
+    <p className="text-xs text-muted">
+      Cloud backup needs a Personal plan.{' '}
+      <a
+        href={PRICING_URL}
+        target="_blank"
+        rel="noreferrer"
+        className="text-accent hover:underline"
+      >
+        View pricing
+      </a>
+    </p>
+  )
+}
+
+function isPersonalInfoMessage(message: { text: string; kind: string } | null): boolean {
+  return Boolean(
+    message && (message.kind === 'info' || isPersonalSubscriptionRequired(message.text))
+  )
+}
+
+function LastErrorNotice({
+  lastError,
+  hidePersonal
+}: Readonly<{
+  lastError: string
+  hidePersonal: boolean
+}>): React.JSX.Element | null {
+  if (isPersonalSubscriptionRequired(lastError)) {
+    if (hidePersonal) return null
+    return <PersonalPlanNotice />
+  }
+  return <p className="text-xs text-danger">Last error: {lastError}</p>
+}
+
+function ActionMessage({
+  message
+}: Readonly<{
+  message: { text: string; kind: 'ok' | 'err' | 'info' }
+}>): React.JSX.Element {
+  if (isPersonalInfoMessage(message)) {
+    return <PersonalPlanNotice />
+  }
+  return (
+    <p className={`text-xs ${message.kind === 'ok' ? 'text-success' : 'text-danger'}`}>
+      {message.text}
+    </p>
+  )
 }
 
 interface CloudPanelData {
@@ -44,7 +105,9 @@ export function CloudSettingsPanel(): React.JSX.Element {
   } satisfies CloudPanelData)
   const [busy, setBusy] = useState(false)
   const [restoring, setRestoring] = useState<string | null>(null)
-  const [message, setMessage] = useState<{ text: string; kind: 'ok' | 'err' } | null>(null)
+  const [message, setMessage] = useState<{ text: string; kind: 'ok' | 'err' | 'info' } | null>(
+    null
+  )
   const [recoveryModal, setRecoveryModal] = useState<{
     mode: CloudRecoveryKeyMode
     key?: string
@@ -108,7 +171,12 @@ export function CloudSettingsPanel(): React.JSX.Element {
       await refresh()
       setMessage({ text: 'Cloud backup uploaded', kind: 'ok' })
     } catch (err) {
-      setMessage({ text: err instanceof Error ? err.message : String(err), kind: 'err' })
+      const text = err instanceof Error ? err.message : String(err)
+      if (isPersonalSubscriptionRequired(text)) {
+        setMessage({ text: PERSONAL_SUBSCRIPTION_REQUIRED, kind: 'info' })
+      } else {
+        setMessage({ text, kind: 'err' })
+      }
     } finally {
       setBusy(false)
     }
@@ -286,7 +354,10 @@ export function CloudSettingsPanel(): React.JSX.Element {
             <p className="text-xs text-muted">Last upload: {formatDate(status.lastUploadAt)}</p>
           )}
           {status.lastError && (
-            <p className="text-xs text-danger">Last error: {status.lastError}</p>
+            <LastErrorNotice
+              lastError={status.lastError}
+              hidePersonal={isPersonalInfoMessage(message)}
+            />
           )}
         </section>
 
@@ -347,11 +418,7 @@ export function CloudSettingsPanel(): React.JSX.Element {
           )}
         </section>
 
-        {message && (
-          <p className={`text-xs ${message.kind === 'ok' ? 'text-success' : 'text-danger'}`}>
-            {message.text}
-          </p>
-        )}
+        {message && <ActionMessage message={message} />}
       </div>
 
       {recoveryModal && (

@@ -516,6 +516,9 @@ export interface CloudSyncSettings {
   lastError: string | null
 }
 
+/** Stable IPC error message when cloud backup requires a Personal plan. */
+export const PERSONAL_SUBSCRIPTION_REQUIRED = 'PERSONAL_SUBSCRIPTION_REQUIRED'
+
 export interface CloudStatus {
   signedIn: boolean
   email: string | null

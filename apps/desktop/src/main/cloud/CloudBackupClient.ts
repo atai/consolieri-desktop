@@ -1,3 +1,4 @@
+import { PERSONAL_SUBSCRIPTION_REQUIRED } from '../../shared/types'
 import { cloudAuthService } from './CloudAuthService'
 import { getCloudConfig } from './cloudConfig'
 import { isCloudBackupEnvelope, type CloudBackupEnvelope } from './SyncCrypto'
@@ -9,6 +10,17 @@ export interface CloudBackupListItem {
   label: string | null
   deviceId: string | null
   schemaVersion: number
+}
+
+function isPersonalSubscriptionRequiredBody(body: string): boolean {
+  try {
+    const parsed: unknown = JSON.parse(body)
+    if (!parsed || typeof parsed !== 'object') return false
+    const row = parsed as Record<string, unknown>
+    return row.code === 'PERSONAL_REQUIRED' || row.error === PERSONAL_SUBSCRIPTION_REQUIRED
+  } catch {
+    return false
+  }
 }
 
 export class CloudBackupClient {
@@ -45,6 +57,9 @@ export class CloudBackupClient {
     })
     if (!response.ok) {
       const body = await response.text().catch(() => '')
+      if (response.status === 403 && isPersonalSubscriptionRequiredBody(body)) {
+        throw new Error(PERSONAL_SUBSCRIPTION_REQUIRED)
+      }
       throw new Error(`Cloud backup upload failed: ${response.status} ${body.slice(0, 200)}`)
     }
     return (await response.json()) as CloudBackupListItem
