@@ -9,6 +9,7 @@
     "build": "node scripts/pnpm.mjs --filter @consoleri/desktop build",
     "package": "node scripts/pnpm.mjs --filter @consoleri/desktop build:win",
     "lint": "node scripts/pnpm.mjs --filter @consoleri/desktop lint",
+    "format": "node scripts/pnpm.mjs --filter @consoleri/desktop format",
     "typecheck": "node scripts/pnpm.mjs --filter @consoleri/desktop typecheck",
     "check:design-tokens": "node scripts/check-design-tokens.mjs",
     "test": "node scripts/check-design-tokens.mjs && node scripts/pnpm.mjs --filter @consoleri/core test && node scripts/pnpm.mjs --filter @consoleri/desktop test",

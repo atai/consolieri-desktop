@@ -1,7 +1,26 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { CHILD_WINDOW_REVEAL_TIMEOUT_MS, revealWindow } from './revealWindow'
 
-function fakeWindow(options?: { visible?: boolean; destroyed?: boolean; minimized?: boolean }) {
+type FakeWindow = {
+  destroyed: boolean
+  visible: boolean
+  minimized: boolean
+  isDestroyed: () => boolean
+  isVisible: () => boolean
+  isMinimized: () => boolean
+  restore: ReturnType<typeof vi.fn>
+  show: ReturnType<typeof vi.fn>
+  focus: ReturnType<typeof vi.fn>
+  once: ReturnType<typeof vi.fn>
+  removeListener: ReturnType<typeof vi.fn>
+  emit: (event: string) => void
+}
+
+function fakeWindow(options?: {
+  visible?: boolean
+  destroyed?: boolean
+  minimized?: boolean
+}): FakeWindow {
   const handlers = new Map<string, Array<(...args: unknown[]) => void>>()
   return {
     destroyed: options?.destroyed ?? false,

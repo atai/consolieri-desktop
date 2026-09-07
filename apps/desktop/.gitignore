@@ -7,3 +7,5 @@ out
 .eslintcache
 *.log*
 .consoleri-dev
+electron.vite.config.js
+electron.vite.config.d.ts
