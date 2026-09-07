@@ -67,18 +67,9 @@ export async function connectHost(host: Host, profileId?: string): Promise<void>
   await openSessionAndAddToWorkspace(request)
 }
 
+/** Open the host window immediately; connection runs inside the child window. */
 export async function connectHostInWindow(host: Host, profileId?: string): Promise<void> {
-  if (host.kind === 'local') {
-    const preset = await window.consoleri.hostPresets.get(host.id)
-    if (preset && preset.panes.length > 0) {
-      await window.consoleri.sessions.openHostWindow(host.id)
-      return
-    }
-  }
-  const request = await resolveHostConnectRequest(host, profileId)
-  const session = await openSession(request)
-  if (!session) return
-  await window.consoleri.sessions.openSessionWindow(session.id)
+  await window.consoleri.sessions.openHostWindow(host.id, profileId)
 }
 
 export async function connectFromList(host: Host, profileId?: string): Promise<void> {
@@ -90,6 +81,11 @@ export async function connectFromList(host: Host, profileId?: string): Promise<v
 export async function openLocalSessionFromList(request: OpenSessionRequest): Promise<void> {
   const mode = usePreferencesStore.getState().settings.sessionOpenMode
   if (mode === 'window') {
+    // Prefer host window when we have a host — connect happens after chrome is visible.
+    if (request.hostId) {
+      await window.consoleri.sessions.openHostWindow(request.hostId, request.profileId)
+      return
+    }
     const session = await openSession(request)
     if (session) await window.consoleri.sessions.openSessionWindow(session.id)
     return

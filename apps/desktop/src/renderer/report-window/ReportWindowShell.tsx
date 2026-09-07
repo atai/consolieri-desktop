@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { formatDuration, totalReportDurationMs } from '@consoleri/core'
+import { formatDuration, totalReportDurationMs } from '@consoleri/core/reports/format'
 import type { Report, ReportFormatLabels, ReportProgressEvent, ReportResult } from '@shared/types'
 
 function reportTypeLabel(type: Report['type']): string {

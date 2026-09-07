@@ -17,6 +17,7 @@ import {
 import { createAppBrowserWindow } from './createAppBrowserWindow'
 import { loadRendererEntry } from './loadRendererEntry'
 import { attachWindowDiagnostics } from './attachWindowDiagnostics'
+import { revealWindow } from './revealWindow'
 
 export { getRegisteredSessionWindow as getSessionWindow }
 
@@ -49,7 +50,7 @@ export function openSessionWindow(sessionId: string): BrowserWindow {
   return win
 }
 
-export function openHostSessionWindow(hostId: string): BrowserWindow {
+export function openHostSessionWindow(hostId: string, profileId?: string): BrowserWindow {
   const existing = getHostWindow(hostId)
   if (existing) {
     existing.focus()
@@ -76,7 +77,7 @@ export function openHostSessionWindow(hostId: string): BrowserWindow {
     unregisterAllForWindow(win)
   })
 
-  loadSessionWindow(win, { hostId })
+  loadSessionWindow(win, { hostId, profileId })
   return win
 }
 
@@ -100,21 +101,17 @@ function createSessionBrowserWindow(title: string): BrowserWindow {
     preload: 'index'
   })
   attachWindowDiagnostics(win, { name: 'session-window' })
-  win.once('ready-to-show', () => {
-    if (!win.isDestroyed()) {
-      win.show()
-      win.focus()
-    }
-  })
+  revealWindow(win)
   return win
 }
 
 function loadSessionWindow(
   win: BrowserWindow,
-  query: { sessionId?: string; hostId?: string }
+  query: { sessionId?: string; hostId?: string; profileId?: string }
 ): void {
   const params: Record<string, string> = {}
   if (query.sessionId) params.sessionId = query.sessionId
   if (query.hostId) params.hostId = query.hostId
+  if (query.profileId) params.profileId = query.profileId
   loadRendererEntry(win, 'session-window', params)
 }

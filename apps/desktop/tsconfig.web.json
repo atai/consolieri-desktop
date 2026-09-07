@@ -11,6 +11,7 @@
   ],
   "compilerOptions": {
     "composite": true,
+    "noEmit": true,
     "jsx": "react-jsx",
     "paths": {
       "@renderer/*": [

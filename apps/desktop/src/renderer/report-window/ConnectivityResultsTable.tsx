@@ -1,5 +1,9 @@
 import { Fragment, useMemo, useState } from 'react'
-import { classifyHttpStatus, formatHttpStatusLabel, httpStatusTailwindClass } from '@consoleri/core'
+import {
+  classifyHttpStatus,
+  formatHttpStatusLabel,
+  httpStatusTailwindClass
+} from '@consoleri/core/reports/httpStatusColor'
 import type { ConnectivityTestResult, Host } from '@shared/types'
 
 function formatDuration(ms: number): string {

@@ -113,7 +113,7 @@ export interface ConsoleriAPI {
     ) => Promise<void>
     openLogWindow: (sessionId: string) => Promise<void>
     openSessionWindow: (sessionId: string) => Promise<void>
-    openHostWindow: (hostId: string) => Promise<void>
+    openHostWindow: (hostId: string, profileId?: string) => Promise<void>
     getCwd: (sessionId: string) => Promise<string | null>
     onData: (cb: (payload: { id: string; data: string }) => void) => () => void
     onExit: (cb: (payload: { id: string; code: number }) => void) => () => void
@@ -308,8 +308,8 @@ const consoleri: ConsoleriAPI = {
       ipcRenderer.invoke(IPC_CHANNELS.sessionsLogOpenWindow, sessionId),
     openSessionWindow: (sessionId: string) =>
       ipcRenderer.invoke(IPC_CHANNELS.sessionsOpenSessionWindow, sessionId),
-    openHostWindow: (hostId: string) =>
-      ipcRenderer.invoke(IPC_CHANNELS.sessionsOpenHostWindow, hostId),
+    openHostWindow: (hostId: string, profileId?: string) =>
+      ipcRenderer.invoke(IPC_CHANNELS.sessionsOpenHostWindow, { hostId, profileId }),
     getCwd: (sessionId: string) => ipcRenderer.invoke(IPC_CHANNELS.sessionsGetCwd, sessionId),
     onData: (cb) => {
       const listener = (_: unknown, payload: { id: string; data: string }): void => {

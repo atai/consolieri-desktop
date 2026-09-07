@@ -1,17 +1,6 @@
-/* OD-derived entry: tokens + @theme — single bridge */
-@import '@consoleri/design-system/tailwind';
+/* Main / session / workspace: shared chrome + mosaic vendor overrides */
+@import './window.css';
 @import 'react-mosaic-component/react-mosaic-component.css';
-
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-body);
-}
 
 /* App-only vendor overlays — CSS vars only, no palette hex */
 .consoleri-mosaic {

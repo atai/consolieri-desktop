@@ -5,10 +5,12 @@ import type { OpenSessionRequest, PaneBinding, SessionInfo } from '@shared/types
 import { SessionMosaic } from '../src/session/mosaic/SessionMosaic'
 import {
   closeMosaicPane,
+  openMosaicSession,
   reconnectMosaicPane,
   splitMosaicPane
 } from '../src/session/mosaic/sessionMosaicOps'
 import { applySessionStatusUpdate } from '../src/session/applySessionStatus'
+import { resolveHostConnectRequest } from '../src/session/connectHost'
 import { useUxProfileStore } from '../src/stores/uxProfileStore'
 import { usePreferencesStore } from '../src/stores/preferencesStore'
 import { releaseTerminal } from '../src/terminal/TerminalPool'
@@ -19,6 +21,8 @@ import {
   savePresetToHost
 } from '../src/session/localProject'
 import { SaveLocalProjectDialog } from '../src/components/hosts/SaveLocalProjectDialog'
+import { WindowBusyOverlay } from '../src/components/ui/WindowBusyOverlay'
+import { Button } from '../src/components/ui/Button'
 
 function getQueryParam(name: string): string {
   return new URLSearchParams(window.location.search).get(name) ?? ''
@@ -27,6 +31,7 @@ function getQueryParam(name: string): string {
 export function SessionWindowApp(): React.JSX.Element {
   const sessionId = getQueryParam('sessionId')
   const hostId = getQueryParam('hostId')
+  const profileId = getQueryParam('profileId') || undefined
   const refreshUxProfiles = useUxProfileStore((s) => s.refresh)
   const refreshPreferences = usePreferencesStore((s) => s.refresh)
   const [layout, setLayout] = useState<MosaicNode<string> | null>(null)
@@ -35,9 +40,14 @@ export function SessionWindowApp(): React.JSX.Element {
   const [boundHostId, setBoundHostId] = useState<string | null>(hostId || null)
   const [boundHostName, setBoundHostName] = useState<string | null>(null)
   const [initError, setInitError] = useState<string | null>(null)
+  const [initSteps, setInitSteps] = useState<string[]>(['Opening window…'])
   const [showSaveAs, setShowSaveAs] = useState(false)
   const [saving, setSaving] = useState(false)
   const getSessions = useEffectEvent(() => sessions)
+
+  const pushStep = useCallback((step: string): void => {
+    setInitSteps((prev) => [...prev, step])
+  }, [])
 
   const upsertSession = useCallback((session: SessionInfo): void => {
     setSessions((prev) => {
@@ -56,6 +66,7 @@ export function SessionWindowApp(): React.JSX.Element {
     if (hostId) {
       const initHost = async (): Promise<void> => {
         try {
+          pushStep('Loading host…')
           const host = await window.consoleri.hosts.get(hostId)
           if (!host) {
             setInitError('Host not found')
@@ -63,33 +74,38 @@ export function SessionWindowApp(): React.JSX.Element {
           }
           setBoundHostId(host.id)
           setBoundHostName(host.name)
+          pushStep(`Host: ${host.name}`)
+
           const preset = await window.consoleri.hostPresets.get(host.id)
-          if (!preset || preset.panes.length === 0) {
-            // Fallback: single local shell
-            const request: OpenSessionRequest = {
-              hostId: host.id,
-              profileId: host.defaultProfileId ?? undefined,
-              title: host.name,
-              protocol: 'local_pty'
-            }
-            const session = await window.consoleri.sessions.open(request)
-            const paneId = nanoid()
-            const binding: PaneBinding = {
-              paneId,
-              sessionId: session.id,
-              protocol: session.protocol,
-              title: session.title,
-              connectRequest: { ...request, paneId }
-            }
-            setPanes([binding])
-            setLayout(paneId)
-            setSessions([session])
+          if (preset && preset.panes.length > 0) {
+            pushStep(`Restoring ${preset.panes.length} pane(s)…`)
+            const restored = await restoreHostPresetSessions(host, preset)
+            setPanes(restored.panes)
+            setLayout(restored.layout)
+            setSessions(restored.sessions)
+            pushStep('Ready')
             return
           }
-          const restored = await restoreHostPresetSessions(host, preset)
-          setPanes(restored.panes)
-          setLayout(restored.layout)
-          setSessions(restored.sessions)
+
+          pushStep('Starting session…')
+          const request = await resolveHostConnectRequest(host, profileId)
+          const session = await openMosaicSession(request)
+          if (!session) {
+            setInitError('Failed to open session')
+            return
+          }
+          const paneId = nanoid()
+          const binding: PaneBinding = {
+            paneId,
+            sessionId: session.id,
+            protocol: session.protocol,
+            title: session.title,
+            connectRequest: { ...request, paneId }
+          }
+          setPanes([binding])
+          setLayout(paneId)
+          setSessions([session])
+          pushStep('Connecting…')
         } catch (error) {
           console.error('[session-window] Failed to initialize host window:', error)
           setInitError(error instanceof Error ? error.message : String(error))
@@ -103,6 +119,7 @@ export function SessionWindowApp(): React.JSX.Element {
 
     const init = async (): Promise<void> => {
       try {
+        pushStep('Loading session…')
         const listed = await window.consoleri.sessions.list()
         const session = listed.find((s) => s.id === sessionId)
         if (!session) {
@@ -137,6 +154,7 @@ export function SessionWindowApp(): React.JSX.Element {
         setPanes([binding])
         setLayout(paneId)
         setSessions([session])
+        pushStep('Ready')
       } catch (error) {
         console.error('[session-window] Failed to initialize session window:', error)
         setInitError(error instanceof Error ? error.message : String(error))
@@ -144,7 +162,7 @@ export function SessionWindowApp(): React.JSX.Element {
     }
 
     void init()
-  }, [sessionId, hostId])
+  }, [sessionId, hostId, profileId, pushStep])
 
   useEffect(() => {
     if (!sessionId && !hostId) return
@@ -257,9 +275,7 @@ export function SessionWindowApp(): React.JSX.Element {
   }
 
   if (!layout) {
-    return (
-      <div className="flex h-full items-center justify-center text-sm text-muted">Loading…</div>
-    )
+    return <WindowBusyOverlay title="Preparing session…" steps={initSteps} />
   }
 
   return (
@@ -269,23 +285,13 @@ export function SessionWindowApp(): React.JSX.Element {
           <span className="min-w-0 flex-1 truncate text-xs text-muted">
             {boundHostName ? `Project: ${boundHostName}` : 'Unsaved local session'}
           </span>
-          <button
-            type="button"
-            disabled={saving}
-            onClick={() => void handleSave()}
-            className="rounded border border-border px-2 py-0.5 text-xs text-fg hover:bg-surface-raised disabled:opacity-50"
-          >
+          <Button disabled={saving} onClick={() => void handleSave()}>
             {boundHostId ? 'Save' : 'Save as host…'}
-          </button>
+          </Button>
           {boundHostId && (
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => setShowSaveAs(true)}
-              className="rounded border border-border px-2 py-0.5 text-xs text-muted hover:bg-surface-raised disabled:opacity-50"
-            >
+            <Button disabled={saving} onClick={() => setShowSaveAs(true)}>
               Save as…
-            </button>
+            </Button>
           )}
         </div>
       )}

@@ -1,0 +1,11 @@
+import type { GroupExportItem, HostExportItem, HostProfileLinkExport, HostsExportDocument, ProfileExportItem } from './types';
+export declare function sanitizeCredentialRefForImport(credentialRef: string | null): string | null;
+export declare function normalizeGroupExportItem(raw: unknown): GroupExportItem | null;
+export declare function normalizeHostExportItem(raw: unknown): HostExportItem | null;
+export declare function normalizeProfileExportItem(raw: unknown): ProfileExportItem | null;
+export declare function normalizeLinkExportItem(raw: unknown): HostProfileLinkExport | null;
+export declare function legacyHostsArrayToDocument(items: unknown[], exportedAt?: string): HostsExportDocument;
+export declare function normalizeHostsExportDocument(raw: unknown): HostsExportDocument;
+export declare function parseHostsImportJson(raw: string): HostsExportDocument;
+export declare function parseHostsImportPayload(payload: unknown): HostsExportDocument;
+export declare function sortGroupsForImport(groups: GroupExportItem[]): GroupExportItem[];

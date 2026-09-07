@@ -1,10 +1,10 @@
-# Consolieri
+# Consolieri Desktop
 
 Monorepo for Consolieri — a desktop host console manager (SSH, shells, RDP, VNC).
 
 **Cloud backend:** [https://consolieri.app/](https://consolieri.app/) — optional cloud companion for encrypted backups, settings sync across devices, and upcoming advanced features.
 
-**Documentation:** [https://atai.github.io/consolieri-desktop/](https://atai.github.io/consolieri-desktop/) (published on each release) · sources in [`docs/source/`](docs/source/)
+**Documentation:** [https://atai.github.io/consolieri-desktop/](https://atai.github.io/consolieri-desktop/) (published on each release) · sources in `[docs/source/](docs/source/)`
 
 ## Structure
 
@@ -12,6 +12,8 @@ Monorepo for Consolieri — a desktop host console manager (SSH, shells, RDP, VN
 - `packages/core` — shared pure functions (`@consoleri/core`)
 - `scripts/` — root tooling (dev launcher, native rebuild, etc.)
 - `docs/` — Sphinx / reStructuredText documentation
+
+
 
 ## Prerequisites
 
@@ -32,6 +34,8 @@ npm run rebuild-native     # optional re-run if local terminals break after Elec
 ```
 
 > If install scripts were skipped, run `npm run install:electron` then `npm run rebuild-native`.
+
+
 
 ## Development
 
@@ -56,15 +60,19 @@ npm run build
 npm run package
 ```
 
+
+
 ## Test
 
 ```bash
 npm run test
 ```
 
+
+
 ## Documentation
 
-Built docs are on GitHub Pages: [https://atai.github.io/consolieri-desktop/](https://atai.github.io/consolieri-desktop/) (updated on each release). Sources: [`docs/source/`](docs/source/).
+Built docs are on GitHub Pages: [https://atai.github.io/consolieri-desktop/](https://atai.github.io/consolieri-desktop/) (updated on each release). Sources: `[docs/source/](docs/source/)`.
 
 To preview locally:
 
@@ -74,7 +82,7 @@ docs/.venv/bin/pip install -r docs/requirements.txt
 cd docs && make html
 ```
 
-Then open `docs/build/html/index.html`. Agent and contributor notes: [`docs/source/agent.rst`](docs/source/agent.rst). Release and CI signing secrets: [`docs/source/release.rst`](docs/source/release.rst), [`docs/source/ci-secrets.rst`](docs/source/ci-secrets.rst).
+Then open `docs/build/html/index.html`. Agent and contributor notes: `[docs/source/agent.rst](docs/source/agent.rst)`. Release and CI signing secrets: `[docs/source/release.rst](docs/source/release.rst)`, `[docs/source/ci-secrets.rst](docs/source/ci-secrets.rst)`.
 
 ## Release
 

@@ -1,10 +1,16 @@
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { isTerminalProtocol } from '@consoleri/core'
-import type { PaneBinding, SessionInfo } from '@shared/types'
-import { TerminalPane } from '../terminal/TerminalPane'
-import { RdpPane } from '../rdp/RdpPane'
-import { VncPane } from '../vnc/VncPane'
+import type { LogEntry, PaneBinding, SessionInfo } from '@shared/types'
 import { useAutoReconnect } from '../../hooks/useAutoReconnect'
 import type { AutoReconnectHook } from '../../hooks/useAutoReconnect'
+import { WindowBusyOverlay } from '../ui/WindowBusyOverlay'
+import { Button } from '../ui/Button'
+
+const TerminalPane = lazy(() =>
+  import('../terminal/TerminalPane').then((m) => ({ default: m.TerminalPane }))
+)
+const RdpPane = lazy(() => import('../rdp/RdpPane').then((m) => ({ default: m.RdpPane })))
+const VncPane = lazy(() => import('../vnc/VncPane').then((m) => ({ default: m.VncPane })))
 
 export interface SessionViewProps {
   session: SessionInfo | undefined
@@ -26,13 +32,9 @@ function DisconnectedPane({
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 p-4 text-sm text-muted">
       <p className="text-fg-2">{label}</p>
-      <button
-        type="button"
-        onClick={onConnect}
-        className="rounded bg-accent px-4 py-1.5 text-xs text-accent-on hover:bg-accent-hover"
-      >
+      <Button variant="primary" onClick={onConnect}>
         Connect
-      </button>
+      </Button>
     </div>
   )
 }
@@ -51,25 +53,15 @@ function ErrorPane({
       <p className="text-center">{session.error ?? 'Connection failed'}</p>
 
       <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => window.consoleri.sessions.openLogWindow(session.id)}
-          className="rounded border border-border px-3 py-1 text-xs text-fg-2 hover:bg-surface-raised"
-        >
+        <Button onClick={() => window.consoleri.sessions.openLogWindow(session.id)}>
           View log
-        </button>
-        <button
-          type="button"
-          onClick={onConnect}
-          className="rounded bg-accent px-3 py-1 text-xs text-accent-on hover:bg-accent-hover"
-        >
+        </Button>
+        <Button variant="primary" onClick={onConnect}>
           Connect
-        </button>
+        </Button>
       </div>
 
-      {/* Auto-reconnect panel */}
       <div className="mt-1 w-full max-w-xs rounded border border-border text-xs">
-        {/* Collapsible header */}
         <button
           type="button"
           className="flex w-full items-center justify-between px-3 py-1.5 text-muted hover:bg-surface-raised"
@@ -81,7 +73,6 @@ function ErrorPane({
 
         {ar.panelOpen && (
           <div className="flex flex-col gap-2 border-t border-border px-3 py-2">
-            {/* Enable + interval + max attempts */}
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-fg-2">
               <label className="flex cursor-pointer items-center gap-1.5">
                 <input
@@ -112,7 +103,6 @@ function ErrorPane({
               <span className="text-muted">tries (0=∞)</span>
             </div>
 
-            {/* Sound on success */}
             <label className="flex cursor-pointer items-center gap-1.5 text-fg-2">
               <input
                 type="checkbox"
@@ -125,7 +115,6 @@ function ErrorPane({
           </div>
         )}
 
-        {/* Countdown status bar — visible when auto-reconnect is active */}
         {ar.autoEnabled && (
           <div className="flex items-center justify-between border-t border-border px-3 py-1.5 text-muted">
             <span>
@@ -151,6 +140,54 @@ function ErrorPane({
   )
 }
 
+function ConnectingPane({
+  session,
+  autoEnabled,
+  attemptsDone
+}: {
+  session: SessionInfo
+  autoEnabled: boolean
+  attemptsDone: number
+}): React.JSX.Element {
+  const [steps, setSteps] = useState<string[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    void window.consoleri.sessions.getLog(session.id).then((entries: LogEntry[]) => {
+      if (cancelled) return
+      setSteps(entries.map((e) => e.message))
+    })
+    const unsub = window.consoleri.sessions.onLog((entry: LogEntry) => {
+      if (entry.sessionId !== session.id) return
+      setSteps((prev) => [...prev, entry.message])
+    })
+    return () => {
+      cancelled = true
+      unsub()
+    }
+  }, [session.id])
+
+  const title = autoEnabled
+    ? `Auto-reconnect attempt ${attemptsDone}…`
+    : 'Connecting…'
+
+  return (
+    <WindowBusyOverlay
+      title={title}
+      steps={steps}
+      action={
+        <Button onClick={() => window.consoleri.sessions.openLogWindow(session.id)}>
+          View log
+        </Button>
+      }
+    />
+  )
+}
+
+function ProtocolPaneFallback(): React.JSX.Element {
+  return <WindowBusyOverlay title="Loading protocol UI…" />
+}
+
 // ── main component ─────────────────────────────────────────────────────────────
 
 export function SessionView({
@@ -170,18 +207,11 @@ export function SessionView({
 
   if (session.status === 'connecting') {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-2 text-sm text-muted">
-        <span className="animate-pulse">
-          {ar.autoEnabled ? `Auto-reconnect attempt ${ar.attemptsDone}…` : 'Connecting…'}
-        </span>
-        <button
-          type="button"
-          onClick={() => window.consoleri.sessions.openLogWindow(session.id)}
-          className="rounded border border-border px-3 py-1 text-xs text-fg-2 hover:bg-surface-raised"
-        >
-          View log
-        </button>
-      </div>
+      <ConnectingPane
+        session={session}
+        autoEnabled={ar.autoEnabled}
+        attemptsDone={ar.attemptsDone}
+      />
     )
   }
 
@@ -194,19 +224,29 @@ export function SessionView({
   }
 
   if (session.protocol === 'rdp') {
-    return <RdpPane session={session} profileId={session.profileId} />
+    return (
+      <Suspense fallback={<ProtocolPaneFallback />}>
+        <RdpPane session={session} profileId={session.profileId} />
+      </Suspense>
+    )
   }
   if (session.protocol === 'vnc') {
-    return <VncPane session={session} />
+    return (
+      <Suspense fallback={<ProtocolPaneFallback />}>
+        <VncPane session={session} />
+      </Suspense>
+    )
   }
   if (isTerminalProtocol(session.protocol)) {
     return (
-      <TerminalPane
-        sessionId={session.id}
-        hostId={session.hostId}
-        disconnected={false}
-        onReconnect={() => onReconnect(session.id)}
-      />
+      <Suspense fallback={<ProtocolPaneFallback />}>
+        <TerminalPane
+          sessionId={session.id}
+          hostId={session.hostId}
+          disconnected={false}
+          onReconnect={() => onReconnect(session.id)}
+        />
+      </Suspense>
     )
   }
 

@@ -5,6 +5,7 @@ import { formatLogWindowTitle, pinBrowserWindowTitle, type LogWindowKind } from 
 import { createAppBrowserWindow } from './createAppBrowserWindow'
 import { loadRendererEntry } from './loadRendererEntry'
 import { attachWindowDiagnostics } from './attachWindowDiagnostics'
+import { revealWindow } from './revealWindow'
 
 const logWindows = new Map<string, BrowserWindow>()
 
@@ -91,15 +92,10 @@ export function openLogWindow(
     sessionManager.setLogWindow(null)
   })
 
+  revealWindow(win)
   loadRendererEntry(win, 'log-window', {
     sessionId: logId,
     headerTitle
-  })
-  win.once('ready-to-show', () => {
-    if (!win.isDestroyed()) {
-      win.show()
-      win.focus()
-    }
   })
 
   return win

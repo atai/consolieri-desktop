@@ -1,0 +1,13 @@
+/* Shared chrome for all renderer entries: tokens + base layout (no mosaic). */
+@import '@consoleri/design-system/tailwind';
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+}

@@ -15,6 +15,7 @@ import { registerSessionWindow, unregisterAllForWindow } from './SessionWindowRe
 import { createAppBrowserWindow } from './createAppBrowserWindow'
 import { loadRendererEntry } from './loadRendererEntry'
 import { attachWindowDiagnostics } from './attachWindowDiagnostics'
+import { revealWindow } from './revealWindow'
 
 export interface WorkspaceWindowState {
   id: string
@@ -129,6 +130,28 @@ export function openWorkspaceWindowFromRecipe(recipe: ControlWindowRecipe): Cont
   attachWindowDiagnostics(win, { name: 'workspace-window' })
 
   pinBrowserWindowTitle(win, () => title)
+  // Show chrome immediately; open panes after load starts so the click is not blocked.
+  revealWindow(win)
+
+  const state: WorkspaceWindowState = {
+    id: windowId,
+    key: recipe.key ?? null,
+    title: recipe.title,
+    win,
+    layout: null,
+    panes: [],
+    sessions: []
+  }
+  byId.set(windowId, state)
+  if (recipe.key) byKey.set(recipe.key, windowId)
+
+  win.on('closed', () => {
+    sessionManager.closeSessionsForWindow(win)
+    unregisterAllForWindow(win)
+    forgetWorkspaceWindow(state)
+  })
+
+  loadRendererEntry(win, 'workspace-window', { windowId })
 
   const panes: PaneBinding[] = []
   const sessions: SessionInfo[] = []
@@ -162,31 +185,9 @@ export function openWorkspaceWindowFromRecipe(recipe: ControlWindowRecipe): Cont
     layout = recipe.layout as MosaicNode<string>
   }
 
-  const state: WorkspaceWindowState = {
-    id: windowId,
-    key: recipe.key ?? null,
-    title: recipe.title,
-    win,
-    layout,
-    panes,
-    sessions
-  }
-  byId.set(windowId, state)
-  if (recipe.key) byKey.set(recipe.key, windowId)
-
-  win.on('closed', () => {
-    sessionManager.closeSessionsForWindow(win)
-    unregisterAllForWindow(win)
-    forgetWorkspaceWindow(state)
-  })
-
-  loadRendererEntry(win, 'workspace-window', { windowId })
-  win.once('ready-to-show', () => {
-    if (!win.isDestroyed()) {
-      win.show()
-      win.focus()
-    }
-  })
+  state.layout = layout
+  state.panes = panes
+  state.sessions = sessions
 
   return {
     id: windowId,

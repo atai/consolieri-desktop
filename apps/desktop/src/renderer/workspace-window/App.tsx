@@ -11,6 +11,7 @@ import { applySessionStatusUpdate } from '../src/session/applySessionStatus'
 import { useUxProfileStore } from '../src/stores/uxProfileStore'
 import { usePreferencesStore } from '../src/stores/preferencesStore'
 import { releaseTerminal } from '../src/terminal/TerminalPool'
+import { WindowBusyOverlay } from '../src/components/ui/WindowBusyOverlay'
 
 function getWindowIdFromUrl(): string {
   return new URLSearchParams(window.location.search).get('windowId') ?? ''
@@ -24,6 +25,8 @@ export function WorkspaceWindowApp(): React.JSX.Element {
   const [panes, setPanes] = useState<PaneBinding[]>([])
   const [sessions, setSessions] = useState<SessionInfo[]>([])
   const [initError, setInitError] = useState<string | null>(null)
+  const [initSteps, setInitSteps] = useState<string[]>(['Opening workspace…'])
+  const [ready, setReady] = useState(false)
   const getSessions = useEffectEvent(() => sessions)
 
   const upsertSession = useCallback((session: SessionInfo): void => {
@@ -44,7 +47,23 @@ export function WorkspaceWindowApp(): React.JSX.Element {
 
     const init = async (): Promise<void> => {
       try {
-        const snapshot = await window.consoleri.control.getWorkspaceWindow(windowId)
+        setInitSteps((prev) => [...prev, 'Loading workspace snapshot…'])
+        // Panes may still be opening on main; briefly retry until populated or timeout.
+        let snapshot: Awaited<
+          ReturnType<typeof window.consoleri.control.getWorkspaceWindow>
+        > = null
+        for (let attempt = 0; attempt < 40; attempt++) {
+          snapshot = await window.consoleri.control.getWorkspaceWindow(windowId)
+          if (!snapshot) {
+            setInitError('Window not found')
+            return
+          }
+          if (snapshot.panes.length > 0 || snapshot.layout !== null) break
+          setInitSteps((prev) =>
+            prev.at(-1) === 'Starting panes…' ? prev : [...prev, 'Starting panes…']
+          )
+          await new Promise((resolve) => setTimeout(resolve, 25))
+        }
         if (!snapshot) {
           setInitError('Window not found')
           return
@@ -55,6 +74,7 @@ export function WorkspaceWindowApp(): React.JSX.Element {
         if (snapshot.title) {
           document.title = snapshot.title
         }
+        setReady(true)
       } catch (error) {
         console.error('[workspace-window] Failed to initialize:', error)
         setInitError(error instanceof Error ? error.message : String(error))
@@ -131,10 +151,8 @@ export function WorkspaceWindowApp(): React.JSX.Element {
     )
   }
 
-  if (!layout) {
-    return (
-      <div className="flex h-full items-center justify-center text-sm text-muted">Loading…</div>
-    )
+  if (!ready) {
+    return <WindowBusyOverlay title="Preparing workspace…" steps={initSteps} />
   }
 
   return (

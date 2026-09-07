@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react'
-import { formatBytes } from '@consoleri/core'
+import { formatBytes } from '@consoleri/core/reports/format'
 import type { InventoryResult } from '@shared/types'
 
 function statusBadge(status: string): string {

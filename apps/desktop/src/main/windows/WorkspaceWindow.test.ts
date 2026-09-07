@@ -47,6 +47,10 @@ vi.mock('./attachWindowDiagnostics', () => ({
   attachWindowDiagnostics: vi.fn()
 }))
 
+vi.mock('./revealWindow', () => ({
+  revealWindow: vi.fn()
+}))
+
 vi.mock('./loadRendererEntry', () => ({
   loadRendererEntry: vi.fn()
 }))

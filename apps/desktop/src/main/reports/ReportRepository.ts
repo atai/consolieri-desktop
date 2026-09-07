@@ -41,6 +41,14 @@ export class ReportRepository {
     return row ? rowToReport(row as Record<string, unknown>) : null
   }
 
+  /** Lightweight title lookup — does not parse config or lastResult JSON. */
+  getName(id: string): string | null {
+    const row = getDatabase()
+      .prepare('SELECT name FROM reports WHERE id = ?')
+      .get(id) as { name: string } | undefined
+    return row?.name ?? null
+  }
+
   create(input: ReportInput): Report {
     const id = nanoid()
     const now = new Date().toISOString()

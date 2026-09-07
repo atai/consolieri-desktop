@@ -7,7 +7,9 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./keys/node": "./src/keys/node.ts"
+    "./keys/node": "./src/keys/node.ts",
+    "./reports/format": "./src/reports/format.ts",
+    "./reports/httpStatusColor": "./src/reports/httpStatusColor.ts"
   },
   "scripts": {
     "test": "vitest run --coverage",
