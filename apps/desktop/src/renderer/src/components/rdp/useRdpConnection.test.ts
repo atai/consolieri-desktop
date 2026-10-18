@@ -22,10 +22,12 @@ function makeIronRdpApi(): IronRdpInputApi {
     wheelRotations: vi.fn(() => ({ type: 'wheelRotations' }))
   }
 
-  const InputTransaction = vi.fn().mockImplementation(() => ({
-    addEvent: vi.fn(),
-    _apply: applyInputs
-  }))
+  const InputTransaction = vi.fn().mockImplementation(function () {
+    return {
+      addEvent: vi.fn(),
+      _apply: applyInputs
+    }
+  })
 
   const RotationUnit = { Line: 'line', Pixel: 'pixel' }
 
