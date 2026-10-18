@@ -11,26 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix the release docs build and macOS signing.
 
-
-### Other
-
-- Enhance desktop app configuration and testing
-
-- Bump electron from 42.5.1 to 42.10.0
-
-- Bump vitest from 3.2.6 to 4.1.11
-
-- Merge dependabot vitest 4.1.11 into the electron bump.
-
-- Align Vitest 4 with its coverage provider so CI can finish.
-
-- Merge pull request #7 from atai/chore/merge-dependabot-oct
-
-
-### Refactoring
-
-- Refactor error handling and improve code formatting in desktop app
-
 ## [1.0.2] - 2026-10-18
 
 ### Other
