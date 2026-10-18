@@ -1,5 +1,5 @@
 Consolieri documentation
-=======================
+========================
 
 Consolieri is a desktop host console manager for SSH, local shells, RDP, and VNC.
 
