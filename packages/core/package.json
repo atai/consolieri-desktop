@@ -1,6 +1,6 @@
 {
   "name": "@consoleri/core",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
@@ -17,9 +17,9 @@
   },
   "devDependencies": {
     "@types/dagre": "^0.7.54",
-    "@vitest/coverage-v8": "^3.2.6",
+    "@vitest/coverage-v8": "4.1.12",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "4.1.12"
   },
   "dependencies": {
     "dagre": "^0.8.5"

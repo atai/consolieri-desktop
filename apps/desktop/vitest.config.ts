@@ -9,7 +9,6 @@ export default defineConfig({
     include: ['src/renderer/**/*.test.{ts,tsx}'],
     coverage: {
       provider: 'v8',
-      all: true,
       include: ['src/renderer/src/**/*.{ts,tsx}'],
       exclude: ['**/*.test.{ts,tsx}', '**/*.d.ts', '**/index.ts', '**/types.ts'],
       reporter: ['text', 'html', 'lcov', 'json'],

@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-10-18
+
+### Other
+
+- Enhance desktop app configuration and testing
+
+- Bump electron from 42.5.1 to 42.10.0
+
+- Bump vitest from 3.2.6 to 4.1.11
+
+- Merge dependabot vitest 4.1.11 into the electron bump.
+
+- Align Vitest 4 with its coverage provider so CI can finish.
+
+
+### Refactoring
+
+- Refactor error handling and improve code formatting in desktop app
+
 ## [1.0.1] - 2026-09-07
 
 ### Features
