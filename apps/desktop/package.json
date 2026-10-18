@@ -1,6 +1,6 @@
 {
   "name": "@consoleri/desktop",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Consolieri Desktop — SSH, shell, RDP, VNC host manager",
   "main": "./out/main/index.js",
   "author": "consoleri",
