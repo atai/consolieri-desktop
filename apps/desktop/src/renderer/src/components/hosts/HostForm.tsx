@@ -38,7 +38,7 @@ interface HostFormProps {
   profiles?: ConnectionProfile[]
   onProfilesChanged?: () => void
   onConnect?: (host: Host, profileId?: string) => void
-  onSave: () => void
+  onSave: (hostId: string) => void
   onCancel: () => void
 }
 
@@ -136,10 +136,13 @@ export function HostForm({
         return
       }
 
+      let savedHostId: string
       if (host) {
         await window.consoleri.hosts.update(host.id, normalizedHost)
+        savedHostId = host.id
       } else {
         const savedHost = await window.consoleri.hosts.create(normalizedHost)
+        savedHostId = savedHost.id
         if (isLocal) {
           const profile = await window.consoleri.profiles.create({
             name: localShell,
@@ -165,7 +168,7 @@ export function HostForm({
           }
         }
       }
-      onSave()
+      onSave(savedHostId)
     } finally {
       setSaving(false)
     }

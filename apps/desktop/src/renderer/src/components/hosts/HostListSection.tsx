@@ -7,6 +7,8 @@ export interface HostListSectionProps {
   hosts: Host[]
   collapsed: boolean
   selectedHostId: string | null
+  focusHostId?: string | null
+  onCreatedHostFocused?: () => void
   onToggleCollapsed: () => void
   onSelect: (hostId: string) => void
   onConnect: (host: Host) => void
@@ -21,6 +23,8 @@ export function HostListSection({
   hosts,
   collapsed,
   selectedHostId,
+  focusHostId = null,
+  onCreatedHostFocused,
   onToggleCollapsed,
   onSelect,
   onConnect,
@@ -40,6 +44,8 @@ export function HostListSection({
             key={host.id}
             host={host}
             selected={selectedHostId === host.id}
+            autoFocus={focusHostId === host.id}
+            onFocused={focusHostId === host.id ? onCreatedHostFocused : undefined}
             onSelect={() => onSelect(host.id)}
             onConnect={() => onConnect(host)}
             onEdit={() => onEdit(host.id)}
@@ -77,6 +83,8 @@ export function HostListSection({
               key={`${id}:${host.id}`}
               host={host}
               selected={selectedHostId === host.id}
+              autoFocus={focusHostId === host.id}
+              onFocused={focusHostId === host.id ? onCreatedHostFocused : undefined}
               onSelect={() => onSelect(host.id)}
               onConnect={() => onConnect(host)}
               onEdit={() => onEdit(host.id)}

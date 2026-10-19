@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { buildHostListSections, type HostListGroupBy, type HostListSortBy } from '@consoleri/core'
 import type { ConnectionProfile, Host, LocalShellAvailability, LocalShellType } from '@shared/types'
 import { useAppStore } from '../../stores/appStore'
@@ -61,6 +61,7 @@ export function HostBrowser(): React.JSX.Element {
   const { settings, setAutoOpenConnectionLog, setSessionOpenMode } = usePreferencesStore()
 
   const [showForm, setShowForm] = useState(false)
+  const [focusHostId, setFocusHostId] = useState<string | null>(null)
   const [copyFrom, setCopyFrom] = useState<Host | null>(null)
   const [copyProfiles, setCopyProfiles] = useState<ConnectionProfile[]>([])
   const [editingHostId, setEditingHostId] = useState<string | null>(null)
@@ -128,6 +129,21 @@ export function HostBrowser(): React.JSX.Element {
     () => buildHostListSections(hosts, groupBy, sortBy, sortDir),
     [hosts, groupBy, sortBy, sortDir]
   )
+
+  const focusSection = focusHostId
+    ? hostSections.find((section) => section.hosts.some((host) => host.id === focusHostId))
+    : undefined
+
+  const clearCreatedHostFocus = useCallback(() => {
+    setFocusHostId(null)
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!focusHostId || !focusSection) return
+    if (collapsedSections.includes(focusSection.id)) {
+      toggleCollapsedSection(focusSection.id)
+    }
+  }, [focusHostId, focusSection, collapsedSections, toggleCollapsedSection])
 
   const refreshProfiles = (): void => {
     if (selectedHostId) {
@@ -220,6 +236,16 @@ export function HostBrowser(): React.JSX.Element {
     setShowForm(false)
     setCopyFrom(null)
     setCopyProfiles([])
+  }
+
+  const handleHostCreated = async (hostId: string): Promise<void> => {
+    closeHostForm()
+    setSelectedHostId(hostId)
+    refreshAllHostTags()
+    refreshAllHosts()
+    await refreshHosts()
+    const visible = useAppStore.getState().hosts.some((host) => host.id === hostId)
+    if (visible) setFocusHostId(hostId)
   }
 
   const selectedHost = hosts.find((h) => h.id === selectedHostId)
@@ -396,11 +422,8 @@ export function HostBrowser(): React.JSX.Element {
             <HostForm
               copyFrom={copyFrom ?? undefined}
               initialPendingProfiles={copyFrom ? pendingProfilesFromHost(copyProfiles) : undefined}
-              onSave={() => {
-                closeHostForm()
-                refreshHosts()
-                refreshAllHostTags()
-                refreshAllHosts()
+              onSave={(hostId) => {
+                void handleHostCreated(hostId)
               }}
               onCancel={closeHostForm}
             />
@@ -418,6 +441,8 @@ export function HostBrowser(): React.JSX.Element {
               hosts={section.hosts}
               collapsed={collapsedSections.includes(section.id)}
               selectedHostId={selectedHostId}
+              focusHostId={section.id === focusSection?.id ? focusHostId : null}
+              onCreatedHostFocused={clearCreatedHostFocus}
               onToggleCollapsed={() => toggleCollapsedSection(section.id)}
               onSelect={setSelectedHostId}
               onConnect={connectHostHandler}

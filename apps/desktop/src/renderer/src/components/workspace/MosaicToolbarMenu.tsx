@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 
 export interface MosaicToolbarMenuItem {
   key: string
@@ -15,6 +16,31 @@ interface MosaicToolbarMenuProps {
   className?: string
 }
 
+/** Inset from the viewport edge, and the gap under the toolbar button. */
+export const TOOLBAR_MENU_MARGIN = 4
+
+/**
+ * Horizontal position of a toolbar menu. Prefers aligning the menu's right edge
+ * with the button. If that crosses the left edge, aligns to the button's left.
+ * If the menu still does not fit, shifts it inside the viewport.
+ */
+export function placeToolbarMenu(
+  anchor: { left: number; right: number },
+  menuWidth: number,
+  viewportWidth: number
+): number {
+  let left = anchor.right - menuWidth
+  if (left < TOOLBAR_MENU_MARGIN) left = anchor.left
+  const maxLeft = viewportWidth - TOOLBAR_MENU_MARGIN - menuWidth
+  if (left > maxLeft) left = Math.max(TOOLBAR_MENU_MARGIN, maxLeft)
+  return left
+}
+
+interface MenuPosition {
+  top: number
+  left: number
+}
+
 export function MosaicToolbarMenu({
   label,
   title,
@@ -23,17 +49,49 @@ export function MosaicToolbarMenu({
   className = ''
 }: MosaicToolbarMenuProps): React.JSX.Element {
   const [open, setOpen] = useState(false)
+  const [position, setPosition] = useState<MenuPosition | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) return
     const onPointerDown = (event: MouseEvent): void => {
-      if (!rootRef.current?.contains(event.target as Node)) {
-        setOpen(false)
-      }
+      const target = event.target as Node
+      if (rootRef.current?.contains(target) || menuRef.current?.contains(target)) return
+      setOpen(false)
     }
     document.addEventListener('mousedown', onPointerDown)
     return () => document.removeEventListener('mousedown', onPointerDown)
+  }, [open])
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setPosition(null)
+      return
+    }
+
+    const update = (): void => {
+      const anchor = rootRef.current?.getBoundingClientRect()
+      const menu = menuRef.current
+      if (!anchor || !menu) return
+      const left = placeToolbarMenu(
+        { left: anchor.left, right: anchor.right },
+        menu.offsetWidth,
+        window.innerWidth
+      )
+      const next = { top: anchor.bottom + TOOLBAR_MENU_MARGIN, left }
+      setPosition((current) =>
+        current && current.top === next.top && current.left === next.left ? current : next
+      )
+    }
+
+    update()
+    window.addEventListener('resize', update)
+    window.addEventListener('scroll', update, true)
+    return () => {
+      window.removeEventListener('resize', update)
+      window.removeEventListener('scroll', update, true)
+    }
   }, [open])
 
   const run = (action: () => void): void => {
@@ -60,29 +118,35 @@ export function MosaicToolbarMenu({
           ▾
         </span>
       </button>
-      {open && (
-        <div
-          role="menu"
-          className="absolute right-0 top-full z-20 mt-0.5 min-w-[10rem] overflow-hidden rounded border border-border bg-surface shadow-lg"
-        >
-          {items.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              role="menuitem"
-              onClick={() => run(item.onClick)}
-              className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs text-fg hover:bg-surface-raised"
-            >
-              {item.icon && (
-                <span className="mosaic-toolbar-btn-icon shrink-0" aria-hidden="true">
-                  {item.icon}
-                </span>
-              )}
-              {item.label}
-            </button>
-          ))}
-        </div>
-      )}
+      {open &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            style={{ top: position?.top ?? 0, left: position?.left ?? 0 }}
+            className={`fixed z-30 min-w-[10rem] overflow-hidden rounded border border-border bg-surface shadow-lg ${
+              position ? '' : 'invisible'
+            }`}
+          >
+            {items.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                role="menuitem"
+                onClick={() => run(item.onClick)}
+                className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs text-fg hover:bg-surface-raised"
+              >
+                {item.icon && (
+                  <span className="mosaic-toolbar-btn-icon shrink-0" aria-hidden="true">
+                    {item.icon}
+                  </span>
+                )}
+                {item.label}
+              </button>
+            ))}
+          </div>,
+          document.body
+        )}
     </div>
   )
 }
