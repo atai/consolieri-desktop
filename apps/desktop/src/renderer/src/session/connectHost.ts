@@ -4,10 +4,16 @@ import { useSessionWorkspaceStore } from '../stores/sessionWorkspaceStore'
 import { openSession, openSessionAndAddToWorkspace } from './openSession'
 import { restoreHostPresetSessions } from './localProject'
 
+function homeDirCwd(host: Host): string | undefined {
+  const dir = host.homeDir?.trim()
+  return dir ? dir : undefined
+}
+
 export async function resolveHostConnectRequest(
   host: Host,
   profileId?: string
 ): Promise<OpenSessionRequest> {
+  const cwd = homeDirCwd(host)
   if (host.kind === 'local') {
     const hostProfiles = await window.consoleri.profiles.list(host.id)
     const profile = profileId
@@ -23,7 +29,8 @@ export async function resolveHostConnectRequest(
       profileId: profile?.id,
       protocol: profile?.protocol ?? 'local_pty',
       title: host.name,
-      localShell: shell
+      localShell: shell,
+      ...(cwd ? { cwd } : {})
     }
   }
 
@@ -35,7 +42,8 @@ export async function resolveHostConnectRequest(
       : hostProfiles[0]
   return {
     hostId: host.id,
-    profileId: profile?.id
+    profileId: profile?.id,
+    ...(cwd ? { cwd } : {})
   }
 }
 

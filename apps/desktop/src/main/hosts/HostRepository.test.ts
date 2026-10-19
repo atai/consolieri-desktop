@@ -89,6 +89,7 @@ describe('createHost / getHost / updateHost / deleteHost', () => {
     expect(host.port).toBe(22)
     expect(host.tags).toEqual([])
     expect(host.osType).toBe('unknown')
+    expect(host.homeDir).toBeNull()
 
     const fetched = repo.getHost(host.id)
     expect(fetched).toEqual(host)
@@ -96,6 +97,21 @@ describe('createHost / getHost / updateHost / deleteHost', () => {
 
   it('returns null for unknown id', () => {
     expect(repo.getHost('nonexistent')).toBeNull()
+  })
+
+  it('stores homeDir and keeps it when other fields change', () => {
+    const host = repo.createHost({
+      name: 'web01',
+      hostname: '10.0.0.1',
+      homeDir: '  /srv/app  '
+    })
+    expect(host.homeDir).toBe('/srv/app')
+
+    const renamed = repo.updateHost(host.id, { name: 'web01-renamed' })
+    expect(renamed.homeDir).toBe('/srv/app')
+
+    const cleared = repo.updateHost(host.id, { homeDir: '   ' })
+    expect(cleared.homeDir).toBeNull()
   })
 
   it('updates a host', () => {

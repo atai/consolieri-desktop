@@ -17,6 +17,7 @@ export function rowToHost(row) {
         relatedHostIds: JSON.parse(row.related_hosts_json || '[]'),
         gatewayHostId: row.gateway_host_id || null,
         httpEndpoint: row.http_endpoint || null,
+        homeDir: row.home_dir || null,
         createdAt: row.created_at,
         updatedAt: row.updated_at
     };

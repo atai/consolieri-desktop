@@ -50,6 +50,27 @@ describe('resolveLocalShell', () => {
     expect(spec.cwd).toBe('/Users/ra/git/consoleri')
   })
 
+  it('expands a leading tilde against the machine home directory', () => {
+    const spec = resolveLocalShell({
+      shell: 'zsh',
+      platform: 'darwin',
+      existsSync: (p) => p === '/bin/zsh',
+      homeDir: '/Users/ra',
+      cwd: '~/git/consoleri'
+    })
+    expect(spec.cwd).toBe('/Users/ra/git/consoleri')
+  })
+
+  it('leaves a remote-style path unchanged when no home directory is available', () => {
+    const spec = resolveLocalShell({
+      shell: 'zsh',
+      platform: 'darwin',
+      existsSync: (p) => p === '/bin/zsh',
+      cwd: '~/git/consoleri'
+    })
+    expect(spec.cwd).toBe('~/git/consoleri')
+  })
+
   it('resolves sh on linux', () => {
     const spec = resolveLocalShell({
       shell: 'sh',

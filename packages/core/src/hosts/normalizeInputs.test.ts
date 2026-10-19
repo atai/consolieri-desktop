@@ -102,6 +102,17 @@ describe('normalizeHostInput', () => {
   })
 
   // No errors → normalized is populated
+  it('trims homeDir and treats a blank value as unset', () => {
+    expect(normalizeHostInput({ name: 'h', hostname: 'h', homeDir: '  /srv/app  ' }).normalized?.homeDir).toBe(
+      '/srv/app'
+    )
+    expect(normalizeHostInput({ name: 'h', hostname: 'h', homeDir: '   ' }).normalized?.homeDir).toBeNull()
+    expect(normalizeHostInput({ name: 'h', hostname: 'h' }).normalized?.homeDir).toBeNull()
+    expect(normalizeHostInput({ name: 'consoleri', kind: 'local', homeDir: '~/src' }).normalized?.homeDir).toBe(
+      '~/src'
+    )
+  })
+
   it('returns no errors and a populated normalized object for valid minimal input', () => {
     const result = normalizeHostInput({ name: 'web01', hostname: '10.0.0.1' })
     expect(result.errors).toEqual({})

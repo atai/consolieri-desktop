@@ -19,6 +19,7 @@ function makeHost(overrides: Partial<Host> & Pick<Host, 'id' | 'name'>): Host {
     relatedHostIds: [],
     gatewayHostId: null,
     httpEndpoint: null,
+    homeDir: null,
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',
     ...overrides

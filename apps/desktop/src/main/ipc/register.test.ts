@@ -509,6 +509,7 @@ describe('hosts routing', () => {
       relatedHostIds: [],
       gatewayHostId: null,
       httpEndpoint: null,
+      homeDir: null,
       createdAt: '',
       updatedAt: ''
     })

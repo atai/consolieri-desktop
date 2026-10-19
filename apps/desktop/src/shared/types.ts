@@ -94,6 +94,8 @@ export interface Host {
   relatedHostIds: string[]
   gatewayHostId: string | null
   httpEndpoint: string | null
+  /** Starting directory for a new console. Saved session panes keep their own cwd. */
+  homeDir: string | null
   createdAt: string
   updatedAt: string
 }
@@ -241,6 +243,7 @@ export interface HostInput {
   relatedHostIds?: string[]
   gatewayHostId?: string | null
   httpEndpoint?: string | null
+  homeDir?: string | null
 }
 
 export interface HostSessionPresetPane {

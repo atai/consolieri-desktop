@@ -68,6 +68,7 @@ export function HostForm({
   const [localShell, setLocalShell] = useState('zsh')
   const [tags, setTags] = useState(source?.tags.join(', ') ?? '')
   const [notes, setNotes] = useState(source?.notes ?? '')
+  const [homeDir, setHomeDir] = useState(source?.homeDir ?? '')
   const [logVerbosity, setLogVerbosity] = useState<HostLogVerbosity>(source?.logVerbosity ?? 'info')
   const [uxProfileId, setUxProfileId] = useState(source?.uxProfileId ?? '')
   const [uxProfiles, setUxProfiles] = useState<UxProfile[]>([])
@@ -125,6 +126,7 @@ export function HostForm({
         relatedHostIds: isLocal ? [] : relatedHostIds,
         gatewayHostId: isLocal ? null : gatewayHostId || null,
         httpEndpoint: isLocal ? null : normalizedHttpEndpoint,
+        homeDir,
         groupId: copyFrom?.groupId ?? null
       }
 
@@ -495,6 +497,21 @@ export function HostForm({
               </select>
             </label>
           )}
+
+          <label className="block">
+            <span className="text-muted">Home folder</span>
+            <input
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+              value={homeDir}
+              onChange={(e) => setHomeDir(e.target.value)}
+              placeholder={isLocal ? '~/projects' : '/home/user/app'}
+              spellCheck={false}
+            />
+            <span className="mt-1 block text-xs text-muted">
+              Starting directory for a new console. A saved session layout keeps each pane's own
+              directory.
+            </span>
+          </label>
 
           <label className="block">
             <span className="text-muted">Notes</span>

@@ -96,6 +96,29 @@ describe('resolveRemoteShellInvoke', () => {
     }
   })
 
+  it('prefixes cd when cwd is set and leaves the command unchanged without cwd', () => {
+    expect(resolveRemoteShellInvoke('/bin/bash', { cwd: '/srv/app' })).toEqual({
+      mode: 'exec',
+      command: `cd '/srv/app' && /bin/bash --login -i`
+    })
+    expect(resolveRemoteShellInvoke('/bin/bash', { cwd: " /tmp/it's " })).toEqual({
+      mode: 'exec',
+      command: `cd '/tmp/it'\\''s' && /bin/bash --login -i`
+    })
+    expect(resolveRemoteShellInvoke('/bin/bash')).toEqual({
+      mode: 'exec',
+      command: '/bin/bash --login -i'
+    })
+  })
+
+  it('uses exec with cd when the default shell would otherwise be used', () => {
+    expect(resolveRemoteShellInvoke(null, { cwd: '~/app' })).toEqual({
+      mode: 'exec',
+      command: `cd '~/app' && /bin/bash --login -i`
+    })
+    expect(resolveRemoteShellInvoke(null, { cwd: '   ' })).toEqual({ mode: 'default' })
+  })
+
   it('omits PS1 prefix when promptFallback is disabled', () => {
     expect(resolveRemoteShellInvoke('/bin/bash', { promptFallback: false })).toEqual({
       mode: 'exec',

@@ -28,13 +28,15 @@ describe('hostBundle import', () => {
         logVerbosity: 'verbose',
         relatedHostIds: ['h2'],
         gatewayHostId: 'h3',
-        httpEndpoint: 'https://10.0.0.1'
+        httpEndpoint: 'https://10.0.0.1',
+        homeDir: '  /srv/app  '
       })
       expect(item).toMatchObject({
         exportId: 'h1',
         port: 2222,
         logVerbosity: 'verbose',
-        relatedHostIds: ['h2']
+        relatedHostIds: ['h2'],
+        homeDir: '/srv/app'
       })
     })
 

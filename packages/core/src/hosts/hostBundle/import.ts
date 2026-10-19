@@ -1,6 +1,7 @@
 import { isKeyFileRef } from '../../keys/credentialRef'
 import { normalizeHostLogVerbosity } from '../../logging/verbosity'
 import type { AuthMethod, HostKind, OsType, Protocol } from '../../types'
+import { normalizeHomeDir } from '../normalizeInputs'
 import { normalizeHttpEndpoint } from '../normalizeHttpEndpoint'
 import type {
   GroupExportItem,
@@ -144,6 +145,7 @@ export function normalizeHostExportItem(raw: unknown): HostExportItem | null {
     relatedHostIds: kind === 'local' ? [] : normalizeStringArray(entry.relatedHostIds),
     gatewayHostId: kind === 'local' ? null : normalizeNullableString(entry.gatewayHostId),
     httpEndpoint,
+    homeDir: normalizeHomeDir(typeof entry.homeDir === 'string' ? entry.homeDir : null),
     sessionPreset: normalizeSessionPreset(entry.sessionPreset)
   }
 }

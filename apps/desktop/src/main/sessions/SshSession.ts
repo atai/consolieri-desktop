@@ -18,6 +18,7 @@ export interface SshConnectOptions {
   log: ConnectionLog
   sessionId: string
   shellPrompt?: ShellPromptMode
+  cwd?: string
 }
 
 interface ConnectConfigOptions {
@@ -176,7 +177,8 @@ export class SshSession extends BaseTransport {
       rows,
       log,
       sessionId,
-      shellPrompt = 'consoleri'
+      shellPrompt = 'consoleri',
+      cwd
     } = options
 
     log.append(sessionId, 'info', `Connecting SSH to ${host.hostname}:${host.port || 22}`)
@@ -214,7 +216,8 @@ export class SshSession extends BaseTransport {
     }
 
     const shellInvoke = resolveRemoteShellInvoke(profile.shell, {
-      promptFallback: shellPrompt === 'consoleri'
+      promptFallback: shellPrompt === 'consoleri',
+      cwd
     })
     log.append(
       sessionId,

@@ -46,6 +46,7 @@ export interface HostExportItem {
   relatedHostIds: string[]
   gatewayHostId: string | null
   httpEndpoint: string | null
+  homeDir: string | null
   sessionPreset?: HostSessionPresetExport | null
 }
 
@@ -89,6 +90,7 @@ export interface HostCreateFromExport {
     uxProfileId: string | null
     logVerbosity: HostExportItem['logVerbosity']
     httpEndpoint: string | null
+    homeDir: string | null
   }
   sessionPreset?: HostSessionPresetExport | null
 }

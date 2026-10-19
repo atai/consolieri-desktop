@@ -6,6 +6,17 @@ export type RemoteShellInvoke =
 
 export interface ResolveRemoteShellOptions {
   promptFallback?: boolean
+  cwd?: string
+}
+
+function shellSingleQuote(value: string): string {
+  return `'${value.replace(/'/g, `'\\''`)}'`
+}
+
+function withRemoteCwd(command: string, cwd: string | undefined): string {
+  const dir = cwd?.trim()
+  if (!dir) return command
+  return `cd ${shellSingleQuote(dir)} && ${command}`
 }
 
 const DEFAULT_BASH_COMMAND = '/bin/bash --login -i'
@@ -66,11 +77,14 @@ export function resolveRemoteShellInvoke(
   options?: ResolveRemoteShellOptions
 ): RemoteShellInvoke {
   const promptFallback = options?.promptFallback ?? false
+  const cwd = options?.cwd?.trim() || undefined
   const trimmed = shell?.trim() ?? ''
 
-  if (!trimmed && !promptFallback) {
+  if (!trimmed && !promptFallback && !cwd) {
     return { mode: 'default' }
   }
 
-  return execCommand(shell, promptFallback)
+  const invoke = execCommand(shell, promptFallback)
+  if (invoke.mode !== 'exec' || !cwd) return invoke
+  return { mode: 'exec', command: withRemoteCwd(invoke.command, cwd) }
 }

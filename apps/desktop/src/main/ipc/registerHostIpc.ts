@@ -72,7 +72,8 @@ export function registerHostIpc(getWindow: () => BrowserWindow | null): void {
         relatedHostIds: input.relatedHostIds ?? existing.relatedHostIds,
         gatewayHostId:
           input.gatewayHostId !== undefined ? input.gatewayHostId : existing.gatewayHostId,
-        httpEndpoint: input.httpEndpoint !== undefined ? input.httpEndpoint : existing.httpEndpoint
+        httpEndpoint: input.httpEndpoint !== undefined ? input.httpEndpoint : existing.httpEndpoint,
+        homeDir: input.homeDir !== undefined ? input.homeDir : existing.homeDir
       }
       const { normalized, errors } = normalizeHostInput(merged)
       if (!normalized) {

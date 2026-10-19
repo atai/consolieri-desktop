@@ -1,5 +1,6 @@
 import { isKeyFileRef } from '../../keys/credentialRef';
 import { normalizeHostLogVerbosity } from '../../logging/verbosity';
+import { normalizeHomeDir } from '../normalizeInputs';
 import { normalizeHttpEndpoint } from '../normalizeHttpEndpoint';
 import { HOSTS_BUNDLE_VERSION } from './types';
 const OS_TYPES = ['windows', 'linux', 'macos', 'unknown'];
@@ -135,6 +136,7 @@ export function normalizeHostExportItem(raw) {
         relatedHostIds: kind === 'local' ? [] : normalizeStringArray(entry.relatedHostIds),
         gatewayHostId: kind === 'local' ? null : normalizeNullableString(entry.gatewayHostId),
         httpEndpoint,
+        homeDir: normalizeHomeDir(typeof entry.homeDir === 'string' ? entry.homeDir : null),
         sessionPreset: normalizeSessionPreset(entry.sessionPreset)
     };
 }

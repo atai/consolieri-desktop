@@ -45,7 +45,8 @@ export const HostInputObjectSchema = z.object({
   logVerbosity: z.enum(['quiet', 'info', 'verbose', 'trace']).optional(),
   relatedHostIds: z.array(z.string()).optional(),
   gatewayHostId: z.string().nullable().optional(),
-  httpEndpoint: z.string().nullable().optional()
+  httpEndpoint: z.string().nullable().optional(),
+  homeDir: z.string().nullable().optional()
 })
 
 export const HostInputSchema = HostInputObjectSchema.superRefine((val, ctx) => {

@@ -171,7 +171,8 @@ export class SessionFactory {
           rows,
           log: this.log,
           sessionId,
-          shellPrompt: uxProfile.terminal.shellPrompt
+          shellPrompt: uxProfile.terminal.shellPrompt,
+          cwd: request.cwd
         })
         return { transport, protocol, title: paneTitle }
       }
