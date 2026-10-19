@@ -59,6 +59,7 @@ import { HostRepository } from './HostRepository'
 import { ProfileRepository } from './ProfileRepository'
 import { WorkspaceRepository } from './WorkspaceRepository'
 import { HostImportExportService } from './HostImportExportService'
+import { hostSessionPresetRepository } from './HostSessionPresetRepository'
 import { getDatabase } from '../db/database'
 
 let repo: HostRepository
@@ -475,6 +476,49 @@ describe('exportHostsBundle / importHostsBundle round-trip', () => {
     const imported = await importExportService.importHostsBundle(bundle)
     expect(imported).toHaveLength(0)
   })
+
+  it('importHostsBundle keeps homeDir and preset history', async () => {
+    const host = repo.createHost({
+      name: 'web01',
+      hostname: '10.0.0.1',
+      homeDir: '/srv/app'
+    })
+    hostSessionPresetRepository.save(host.id, {
+      layout: 'pane-1',
+      panes: [{ paneId: 'pane-1', title: 'dev', protocol: 'ssh', history: ['ls', 'pwd'] }]
+    })
+
+    const bundle = importExportService.exportHostsBundle()
+    resetDatabaseForTest()
+    setDatabaseForTest(':memory:')
+    const freshHostRepo = new HostRepository()
+    const fresh = new HostImportExportService(freshHostRepo, new ProfileRepository())
+    const imported = await fresh.importHostsBundle(bundle)
+
+    expect(imported).toHaveLength(1)
+    expect(imported[0].homeDir).toBe('/srv/app')
+    expect(hostSessionPresetRepository.get(imported[0].id)?.panes[0]?.history).toEqual(['ls', 'pwd'])
+  })
+
+  it('importHostsBundleReplace keeps original ids, homeDir, and history', () => {
+    const host = repo.createHost({
+      name: 'web01',
+      hostname: '10.0.0.1',
+      homeDir: '/srv/app'
+    })
+    hostSessionPresetRepository.save(host.id, {
+      layout: 'pane-1',
+      panes: [{ paneId: 'pane-1', title: 'dev', protocol: 'ssh', history: ['ls', 'pwd'] }]
+    })
+    const bundle = importExportService.exportHostsBundle()
+    repo.createHost({ name: 'other', hostname: '10.0.0.2' })
+
+    importExportService.importHostsBundleReplace(bundle)
+
+    expect(repo.getHost(host.id)?.homeDir).toBe('/srv/app')
+    expect(repo.listHosts().map((item) => item.name)).toEqual(['web01'])
+    expect(hostSessionPresetRepository.get(host.id)?.panes[0]?.history).toEqual(['ls', 'pwd'])
+  })
 })
 
 // ── Workspace ────────────────────────────────────────────────────────────────
@@ -519,6 +563,25 @@ describe('workspace save / load', () => {
     const ws = workspaceRepo.getActiveWorkspace()
     // Default workspace has layout_json = 'null'
     expect(ws.layoutJson).toBe('null')
+    const loaded = workspaceRepo.loadWorkspace()
+    expect(loaded.tabs).toEqual([])
+    expect(loaded.activeTabId).toBeNull()
+  })
+
+  it('creates a default workspace when none is active', () => {
+    getDatabase().prepare('DELETE FROM workspace_panes').run()
+    getDatabase().prepare('DELETE FROM workspaces').run()
+    const created = workspaceRepo.getActiveWorkspace()
+    expect(created.name).toBe('Default')
+    expect(created.isLastActive).toBe(true)
+    expect(created.layoutJson).toBe('null')
+  })
+
+  it('loadWorkspace returns empty tabs when layout_json is not JSON', () => {
+    const ws = workspaceRepo.getActiveWorkspace()
+    getDatabase()
+      .prepare('UPDATE workspaces SET layout_json = ? WHERE id = ?')
+      .run('not-json', ws.id)
     const loaded = workspaceRepo.loadWorkspace()
     expect(loaded.tabs).toEqual([])
     expect(loaded.activeTabId).toBeNull()

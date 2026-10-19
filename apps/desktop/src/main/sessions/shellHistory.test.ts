@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -13,6 +13,8 @@ vi.mock('electron', () => ({ app: mockApp }))
 
 const {
   buildShellHistoryOverrides,
+  deleteHostShellHistory,
+  deletePaneShellHistory,
   ensureShellHistoryFile,
   readPaneShellHistory,
   shellHistoryPath
@@ -51,6 +53,21 @@ describe('readPaneShellHistory', () => {
   it('returns nothing when the limit is zero', () => {
     ensureShellHistoryFile('host-off', 'pane-off', ['ls'])
     expect(readPaneShellHistory('host-off', 'pane-off', 0)).toEqual([])
+  })
+})
+
+describe('delete shell history', () => {
+  it('removes one pane file', () => {
+    const file = ensureShellHistoryFile('host-del', 'pane-del', ['ls'])
+    expect(existsSync(file)).toBe(true)
+    deletePaneShellHistory('host-del', 'pane-del')
+    expect(existsSync(file)).toBe(false)
+  })
+
+  it('removes the host directory', () => {
+    const file = ensureShellHistoryFile('host-dir', 'pane-dir', ['ls'])
+    deleteHostShellHistory('host-dir')
+    expect(existsSync(file)).toBe(false)
   })
 })
 
