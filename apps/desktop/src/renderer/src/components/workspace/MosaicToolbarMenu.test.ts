@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { TOOLBAR_MENU_MARGIN, placeToolbarMenu } from './MosaicToolbarMenu'
+import { TOOLBAR_MENU_MARGIN, placeToolbarMenu } from './placeToolbarMenu'
 
 const menuWidth = 160
 

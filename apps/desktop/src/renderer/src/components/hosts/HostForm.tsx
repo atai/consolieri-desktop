@@ -511,8 +511,8 @@ export function HostForm({
               spellCheck={false}
             />
             <span className="mt-1 block text-xs text-muted">
-              Starting directory for a new console. A saved session layout keeps each pane's own
-              directory.
+              Starting directory for a new console. A saved session layout keeps the directory of
+              each pane.
             </span>
           </label>
 
