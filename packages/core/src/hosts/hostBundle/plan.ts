@@ -64,7 +64,8 @@ export function hostCreateFromExportItem(
       notes: host.notes,
       uxProfileId: resolveUxProfileIdForImport(host.uxProfileId, validUxProfileIds),
       logVerbosity: host.logVerbosity,
-      httpEndpoint: host.httpEndpoint
+      httpEndpoint: host.httpEndpoint,
+      homeDir: host.homeDir
     },
     sessionPreset: host.sessionPreset ?? null
   }

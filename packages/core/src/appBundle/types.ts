@@ -48,10 +48,18 @@ export interface PaneBindingExport {
   connectRequest: SessionConnectRequest
 }
 
-export interface WorkspaceExportItem {
-  name: string
+export interface WorkspaceTabExport {
+  id: string
+  hostId: string | null
+  title: string
   layout: unknown
   panes: PaneBindingExport[]
+}
+
+export interface WorkspaceExportItem {
+  name: string
+  tabs: WorkspaceTabExport[]
+  activeTabId: string | null
 }
 
 export interface AppExportDocument {

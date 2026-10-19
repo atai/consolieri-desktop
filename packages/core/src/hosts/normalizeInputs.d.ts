@@ -15,6 +15,7 @@ export interface HostFormInput {
     relatedHostIds?: string[];
     gatewayHostId?: string | null;
     httpEndpoint?: string | null;
+    homeDir?: string | null;
 }
 export interface NormalizedHostInput {
     name: string;
@@ -31,7 +32,9 @@ export interface NormalizedHostInput {
     relatedHostIds: string[];
     gatewayHostId: string | null;
     httpEndpoint: string | null;
+    homeDir: string | null;
 }
+export declare function normalizeHomeDir(value: string | null | undefined): string | null;
 export interface ProfileFormInput {
     name: string;
     protocol?: string;

@@ -18,6 +18,7 @@ export interface HostFormInput {
   relatedHostIds?: string[]
   gatewayHostId?: string | null
   httpEndpoint?: string | null
+  homeDir?: string | null
 }
 
 export interface NormalizedHostInput {
@@ -35,6 +36,7 @@ export interface NormalizedHostInput {
   relatedHostIds: string[]
   gatewayHostId: string | null
   httpEndpoint: string | null
+  homeDir: string | null
 }
 
 export interface ProfileFormInput {
@@ -60,6 +62,12 @@ export interface NormalizedProfileInput {
 }
 
 // ── Validation constants ──────────────────────────────────────────────────────
+
+export function normalizeHomeDir(value: string | null | undefined): string | null {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
 
 const VALID_OS_TYPES: ReadonlySet<string> = new Set(['windows', 'linux', 'macos', 'unknown'])
 const VALID_HOST_KINDS: ReadonlySet<string> = new Set(['remote', 'local'])
@@ -127,7 +135,8 @@ export function normalizeHostInput(
       logVerbosity: normalizeHostLogVerbosity(input.logVerbosity),
       relatedHostIds: isLocal ? [] : (input.relatedHostIds ?? []),
       gatewayHostId: isLocal ? null : (input.gatewayHostId ?? null),
-      httpEndpoint: isLocal ? null : (input.httpEndpoint ?? null)
+      httpEndpoint: isLocal ? null : (input.httpEndpoint ?? null),
+      homeDir: normalizeHomeDir(input.homeDir)
     }
   }
 }

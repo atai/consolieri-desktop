@@ -50,7 +50,7 @@ export function HostDetailPanel({
           profiles={profiles}
           onConnect={onConnect}
           onProfilesChanged={onProfilesChanged}
-          onSave={() => {
+          onSave={(_hostId) => {
             onCancelEdit()
             onHostUpdated()
           }}

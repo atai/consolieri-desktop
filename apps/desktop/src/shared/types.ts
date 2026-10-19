@@ -94,6 +94,8 @@ export interface Host {
   relatedHostIds: string[]
   gatewayHostId: string | null
   httpEndpoint: string | null
+  /** Starting directory for a new console. Saved session panes keep their own cwd. */
+  homeDir: string | null
   createdAt: string
   updatedAt: string
 }
@@ -161,6 +163,8 @@ export interface OpenSessionRequest {
   command?: string
   paneId?: string
   histFile?: string
+  /** Commands to seed into the pane HISTFILE when that file does not exist yet. */
+  history?: string[]
 }
 
 export interface ExternalControlSettings {
@@ -241,6 +245,7 @@ export interface HostInput {
   relatedHostIds?: string[]
   gatewayHostId?: string | null
   httpEndpoint?: string | null
+  homeDir?: string | null
 }
 
 export interface HostSessionPresetPane {
@@ -251,6 +256,8 @@ export interface HostSessionPresetPane {
   wslDistro?: string
   cwd?: string | null
   profileId?: string
+  /** Recent shell commands restored into the pane HISTFILE. */
+  history?: string[]
 }
 
 export interface HostSessionPreset {
@@ -358,9 +365,17 @@ export interface PaneBinding {
   connectRequest: OpenSessionRequest
 }
 
-export interface WorkspaceState {
+export interface WorkspaceTab {
+  id: string
+  hostId: string | null
+  title: string
   layout: unknown
   panes: PaneBinding[]
+}
+
+export interface WorkspaceState {
+  tabs: WorkspaceTab[]
+  activeTabId: string | null
 }
 
 export const IPC_CHANNELS = {

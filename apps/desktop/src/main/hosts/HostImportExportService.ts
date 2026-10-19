@@ -105,7 +105,8 @@ export class HostImportExportService {
             localShell: p.localShell as LocalShellType | undefined,
             wslDistro: p.wslDistro,
             cwd: p.cwd,
-            profileId: p.profileId
+            profileId: p.profileId,
+            history: p.history
           }))
         })
       }
@@ -162,8 +163,8 @@ export class HostImportExportService {
       db.prepare(
         `INSERT INTO hosts (id, name, hostname, port, os_type, kind, tags_json, group_id, notes,
           default_profile_id, ux_profile_id, log_verbosity, related_hosts_json,
-          gateway_host_id, http_endpoint, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+          gateway_host_id, http_endpoint, home_dir, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       ).run(
         host.exportId,
         host.name,
@@ -180,6 +181,7 @@ export class HostImportExportService {
         JSON.stringify(host.relatedHostIds),
         host.gatewayHostId ?? null,
         host.httpEndpoint ?? null,
+        host.homeDir ?? null,
         now,
         now
       )
@@ -193,7 +195,8 @@ export class HostImportExportService {
             localShell: p.localShell as LocalShellType | undefined,
             wslDistro: p.wslDistro,
             cwd: p.cwd,
-            profileId: p.profileId
+            profileId: p.profileId,
+            history: p.history
           }))
         })
       }

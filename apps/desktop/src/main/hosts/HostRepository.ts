@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid'
 import {
   normalizeHostLogVerbosity,
   normalizeGatewayHostId,
+  normalizeHomeDir,
   normalizeHttpEndpoint,
   normalizeRelatedHostIds,
   rowToHost
@@ -73,9 +74,10 @@ export class HostRepository {
       this.existingHostsForGateway()
     )
     const httpEndpoint = normalizeHttpEndpoint(input.httpEndpoint)
+    const homeDir = normalizeHomeDir(input.homeDir)
     db.prepare(
-      `INSERT INTO hosts (id, name, hostname, port, os_type, kind, tags_json, group_id, notes, default_profile_id, ux_profile_id, log_verbosity, related_hosts_json, gateway_host_id, http_endpoint, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO hosts (id, name, hostname, port, os_type, kind, tags_json, group_id, notes, default_profile_id, ux_profile_id, log_verbosity, related_hosts_json, gateway_host_id, http_endpoint, home_dir, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       id,
       input.name,
@@ -92,6 +94,7 @@ export class HostRepository {
       JSON.stringify(relatedHostIds),
       gatewayHostId,
       httpEndpoint,
+      homeDir,
       now,
       now
     )
@@ -115,9 +118,10 @@ export class HostRepository {
       input.httpEndpoint !== undefined
         ? normalizeHttpEndpoint(input.httpEndpoint)
         : existing.httpEndpoint
+    const homeDir = input.homeDir !== undefined ? normalizeHomeDir(input.homeDir) : existing.homeDir
     getDatabase()
       .prepare(
-        `UPDATE hosts SET name=?, hostname=?, port=?, os_type=?, kind=?, tags_json=?, group_id=?, notes=?, default_profile_id=?, ux_profile_id=?, log_verbosity=?, related_hosts_json=?, gateway_host_id=?, http_endpoint=?, updated_at=? WHERE id=?`
+        `UPDATE hosts SET name=?, hostname=?, port=?, os_type=?, kind=?, tags_json=?, group_id=?, notes=?, default_profile_id=?, ux_profile_id=?, log_verbosity=?, related_hosts_json=?, gateway_host_id=?, http_endpoint=?, home_dir=?, updated_at=? WHERE id=?`
       )
       .run(
         input.name ?? existing.name,
@@ -136,6 +140,7 @@ export class HostRepository {
         JSON.stringify(relatedHostIds),
         gatewayHostId,
         httpEndpoint,
+        homeDir,
         now,
         id
       )

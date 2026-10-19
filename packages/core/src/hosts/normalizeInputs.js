@@ -1,4 +1,10 @@
 import { normalizeHostLogVerbosity } from '../logging/verbosity';
+export function normalizeHomeDir(value) {
+    if (typeof value !== 'string')
+        return null;
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+}
 // ── Validation constants ──────────────────────────────────────────────────────
 const VALID_OS_TYPES = new Set(['windows', 'linux', 'macos', 'unknown']);
 const VALID_HOST_KINDS = new Set(['remote', 'local']);
@@ -53,7 +59,8 @@ export function normalizeHostInput(input) {
             logVerbosity: normalizeHostLogVerbosity(input.logVerbosity),
             relatedHostIds: isLocal ? [] : (input.relatedHostIds ?? []),
             gatewayHostId: isLocal ? null : (input.gatewayHostId ?? null),
-            httpEndpoint: isLocal ? null : (input.httpEndpoint ?? null)
+            httpEndpoint: isLocal ? null : (input.httpEndpoint ?? null),
+            homeDir: normalizeHomeDir(input.homeDir)
         }
     };
 }

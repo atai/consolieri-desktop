@@ -19,6 +19,7 @@ export function rowToHost(row: Record<string, unknown>): Host {
     relatedHostIds: JSON.parse((row.related_hosts_json as string) || '[]'),
     gatewayHostId: (row.gateway_host_id as string) || null,
     httpEndpoint: (row.http_endpoint as string) || null,
+    homeDir: (row.home_dir as string) || null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string
   }

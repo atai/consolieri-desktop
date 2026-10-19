@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import {
+  clampCommandHistoryLimit,
+  DEFAULT_COMMAND_HISTORY_LIMIT,
   mergeKeybindings,
   type Accelerator,
   type AppSettings,
@@ -16,7 +18,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   autoOpenConnectionLog: false,
   sessionOpenMode: 'workspace',
   keybindings: mergeKeybindings(),
-  externalControl: { enabled: false }
+  externalControl: { enabled: false },
+  commandHistoryLimit: DEFAULT_COMMAND_HISTORY_LIMIT
 }
 
 interface PreferencesState {
@@ -25,6 +28,7 @@ interface PreferencesState {
   refresh: () => Promise<void>
   setAutoOpenConnectionLog: (value: boolean) => Promise<void>
   setSessionOpenMode: (mode: SessionOpenMode) => Promise<void>
+  setCommandHistoryLimit: (limit: number) => Promise<void>
   setKeybinding: (id: KeybindingId, accelerator: Accelerator) => Promise<void>
   resetKeybindings: () => Promise<void>
 }
@@ -51,7 +55,8 @@ export const usePreferencesStore = create<PreferencesState>((set) => ({
     set({
       settings: {
         ...settings,
-        keybindings: mergeKeybindings(settings.keybindings)
+        keybindings: mergeKeybindings(settings.keybindings),
+        commandHistoryLimit: clampCommandHistoryLimit(settings.commandHistoryLimit)
       },
       loaded: true
     })
@@ -64,6 +69,13 @@ export const usePreferencesStore = create<PreferencesState>((set) => ({
 
   setSessionOpenMode: async (sessionOpenMode) => {
     const settings = await window.consoleri.preferences.setAppSettings({ sessionOpenMode })
+    set({ settings: { ...settings, keybindings: mergeKeybindings(settings.keybindings) } })
+  },
+
+  setCommandHistoryLimit: async (limit) => {
+    const settings = await window.consoleri.preferences.setAppSettings({
+      commandHistoryLimit: clampCommandHistoryLimit(limit)
+    })
     set({ settings: { ...settings, keybindings: mergeKeybindings(settings.keybindings) } })
   },
 

@@ -11,7 +11,7 @@ import type {
   ReportExportItem,
   SecretExportItem,
   WorkspaceExportItem,
-  PaneBindingExport
+  WorkspaceTabExport
 } from './types'
 import { APP_BUNDLE_KIND, APP_BUNDLE_VERSION } from './types'
 
@@ -39,21 +39,35 @@ export function reportToExportItem(report: Report): ReportExportItem {
   }
 }
 
-export interface WorkspaceForExport {
-  name: string
+export interface WorkspaceTabForExport {
+  id: string
+  hostId: string | null
+  title: string
   layout: unknown
   panes: Array<{
     paneId: string
-    connectRequest: PaneBindingExport['connectRequest']
+    connectRequest: WorkspaceTabExport['panes'][number]['connectRequest']
   }>
 }
 
+export interface WorkspaceForExport {
+  name: string
+  tabs: WorkspaceTabForExport[]
+  activeTabId: string | null
+}
+
 export function buildWorkspaceExportItem(workspace: WorkspaceForExport): WorkspaceExportItem {
-  const panes: PaneBindingExport[] = workspace.panes.map((p) => ({
-    paneId: p.paneId,
-    connectRequest: { ...p.connectRequest }
+  const tabs: WorkspaceTabExport[] = workspace.tabs.map((tab) => ({
+    id: tab.id,
+    hostId: tab.hostId,
+    title: tab.title,
+    layout: tab.layout,
+    panes: tab.panes.map((pane) => ({
+      paneId: pane.paneId,
+      connectRequest: { ...pane.connectRequest }
+    }))
   }))
-  return { name: workspace.name, layout: workspace.layout, panes }
+  return { name: workspace.name, tabs, activeTabId: workspace.activeTabId }
 }
 
 export function buildAppExportDocument(

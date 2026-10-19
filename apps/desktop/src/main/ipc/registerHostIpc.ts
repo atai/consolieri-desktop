@@ -18,7 +18,8 @@ import { withOperationalLogWindow } from './withOperationalLogWindow'
 import { hostRepository } from '../hosts/HostRepository'
 import { profileRepository } from '../hosts/ProfileRepository'
 import { hostSessionPresetRepository } from '../hosts/HostSessionPresetRepository'
-import { deleteHostShellHistory } from '../sessions/shellHistory'
+import { appPreferencesRepository } from '../preferences/AppPreferencesRepository'
+import { deleteHostShellHistory, readPaneShellHistory } from '../sessions/shellHistory'
 import { hostImportExportService } from '../hosts/hostImportExportServiceInstance'
 import { secretBackendService } from '../secrets/SecretBackendService'
 import { scheduleCloudUpload } from '../cloud/CloudSyncCoordinator'
@@ -72,7 +73,8 @@ export function registerHostIpc(getWindow: () => BrowserWindow | null): void {
         relatedHostIds: input.relatedHostIds ?? existing.relatedHostIds,
         gatewayHostId:
           input.gatewayHostId !== undefined ? input.gatewayHostId : existing.gatewayHostId,
-        httpEndpoint: input.httpEndpoint !== undefined ? input.httpEndpoint : existing.httpEndpoint
+        httpEndpoint: input.httpEndpoint !== undefined ? input.httpEndpoint : existing.httpEndpoint,
+        homeDir: input.homeDir !== undefined ? input.homeDir : existing.homeDir
       }
       const { normalized, errors } = normalizeHostInput(merged)
       if (!normalized) {
@@ -243,9 +245,13 @@ export function registerHostIpc(getWindow: () => BrowserWindow | null): void {
     createHandler(z.tuple([Id, HostSessionPresetInputSchema]), ([hostId, input]) => {
       const host = hostRepository.getHost(hostId)
       if (!host) throw new Error(`Host not found: ${hostId}`)
+      const limit = appPreferencesRepository.getAppSettings().commandHistoryLimit
       const preset = hostSessionPresetRepository.save(hostId, {
         layout: input.layout ?? null,
-        panes: input.panes
+        panes: input.panes.map((pane) => ({
+          ...pane,
+          history: readPaneShellHistory(hostId, pane.paneId, limit)
+        }))
       })
       scheduleCloudUpload()
       return Promise.resolve(preset)

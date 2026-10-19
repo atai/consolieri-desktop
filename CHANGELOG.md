@@ -5,6 +5,49 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-10-19
+
+### Bug Fixes
+
+- Fix the release docs build and macOS signing.
+
+
+### Features
+
+- Add homeDir support for hosts in database and UI
+
+- Add command history management to session handling
+
+- Add session management enhancements and shell history features
+
+
+### Other
+
+- Enhance desktop app configuration and testing
+
+- Bump electron from 42.5.1 to 42.10.0
+
+- Bump vitest from 3.2.6 to 4.1.11
+
+- Merge dependabot vitest 4.1.11 into the electron bump.
+
+- Align Vitest 4 with its coverage provider so CI can finish.
+
+- Merge pull request #7 from atai/chore/merge-dependabot-oct
+
+- Keep the 1.0.3 notes to the release fix.
+
+- Enhance HostBrowser and related components with host focus management
+
+
+### Refactoring
+
+- Refactor error handling and improve code formatting in desktop app
+
+- Refactor workspace management to support tabbed layout
+
+- Refactor MosaicToolbarMenu and HostForm for clarity
+
 ## [1.0.3] - 2026-10-18
 
 ### Bug Fixes

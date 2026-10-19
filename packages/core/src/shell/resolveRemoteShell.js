@@ -43,6 +43,15 @@ function augmentShellCommand(shell) {
         return trimmed;
     return `${trimmed} ${flags.join(' ')}`;
 }
+function shellSingleQuote(value) {
+    return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+function withRemoteCwd(command, cwd) {
+    const dir = cwd?.trim();
+    if (!dir)
+        return command;
+    return `cd ${shellSingleQuote(dir)} && ${command}`;
+}
 function execCommand(shell, promptFallback) {
     const trimmed = shell?.trim() ?? '';
     const baseCommand = trimmed ? augmentShellCommand(trimmed) : DEFAULT_BASH_COMMAND;
@@ -53,9 +62,13 @@ function execCommand(shell, promptFallback) {
 }
 export function resolveRemoteShellInvoke(shell, options) {
     const promptFallback = options?.promptFallback ?? false;
+    const cwd = options?.cwd?.trim() || undefined;
     const trimmed = shell?.trim() ?? '';
-    if (!trimmed && !promptFallback) {
+    if (!trimmed && !promptFallback && !cwd) {
         return { mode: 'default' };
     }
-    return execCommand(shell, promptFallback);
+    const invoke = execCommand(shell, promptFallback);
+    if (invoke.mode !== 'exec' || !cwd)
+        return invoke;
+    return { mode: 'exec', command: withRemoteCwd(invoke.command, cwd) };
 }

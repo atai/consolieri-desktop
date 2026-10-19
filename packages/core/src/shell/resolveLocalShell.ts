@@ -16,8 +16,21 @@ export interface ResolveLocalShellOptions {
   cwd?: string
 }
 
+function expandLocalCwd(cwd: string | undefined, homeDir: string | undefined): string | undefined {
+  if (!cwd || !homeDir) return cwd
+  if (cwd === '~') return homeDir
+  if (cwd.startsWith('~/') || cwd.startsWith('~\\')) {
+    const sep = cwd[1]!
+    const rest = cwd.slice(2)
+    const base = homeDir.endsWith('/') || homeDir.endsWith('\\') ? homeDir.slice(0, -1) : homeDir
+    return rest ? `${base}${sep}${rest}` : base
+  }
+  return cwd
+}
+
 export function resolveLocalShell(options: ResolveLocalShellOptions): ShellSpawnSpec {
-  const { shell, wslDistro, wslShell = '/bin/bash', platform, existsSync, cwd } = options
+  const { shell, wslDistro, wslShell = '/bin/bash', platform, existsSync, homeDir } = options
+  const cwd = expandLocalCwd(options.cwd, homeDir)
   const withCwd = (spec: ShellSpawnSpec): ShellSpawnSpec => (cwd ? { ...spec, cwd } : spec)
 
   switch (shell) {

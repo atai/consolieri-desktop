@@ -4,6 +4,7 @@ import {
   resolveRdpPort,
   resolveUxProfile
 } from '@consoleri/core'
+import { appPreferencesRepository } from '../preferences/AppPreferencesRepository'
 import type {
   ConnectionProfile,
   Host,
@@ -75,7 +76,8 @@ export class SessionFactory {
       wslDistro: request.wslDistro,
       wslShell,
       cwd: request.cwd,
-      histFile: request.histFile
+      histFile: request.histFile,
+      historyLimit: appPreferencesRepository.getAppSettings().commandHistoryLimit
     })
   }
 
@@ -171,7 +173,8 @@ export class SessionFactory {
           rows,
           log: this.log,
           sessionId,
-          shellPrompt: uxProfile.terminal.shellPrompt
+          shellPrompt: uxProfile.terminal.shellPrompt,
+          cwd: request.cwd
         })
         return { transport, protocol, title: paneTitle }
       }

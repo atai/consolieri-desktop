@@ -1,3 +1,4 @@
+import { migrateWorkspaceState } from '../workspace/migrate.js';
 import { APP_BUNDLE_KIND } from './types';
 function isRecord(v) {
     return typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -41,10 +42,19 @@ function normalizeWorkspaceExportItem(raw) {
     if (!isRecord(raw))
         return null;
     const name = typeof raw.name === 'string' ? raw.name : 'Default';
-    const panes = Array.isArray(raw.panes)
-        ? raw.panes.map(normalizePaneBinding).filter((p) => p !== null)
-        : [];
-    return { name, layout: raw.layout ?? null, panes };
+    let sequence = 0;
+    const migrated = migrateWorkspaceState(raw, () => `imported-tab-${++sequence}`);
+    return {
+        name,
+        activeTabId: migrated.activeTabId,
+        tabs: migrated.tabs.map((tab) => ({
+            id: tab.id,
+            hostId: tab.hostId,
+            title: tab.title,
+            layout: tab.layout,
+            panes: tab.panes.map(normalizePaneBinding).filter((pane) => pane !== null)
+        }))
+    };
 }
 export function isAppExportDocument(input) {
     if (!isRecord(input))

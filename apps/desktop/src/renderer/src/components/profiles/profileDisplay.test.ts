@@ -19,6 +19,7 @@ const hosts: Host[] = [
     relatedHostIds: [],
     gatewayHostId: null,
     httpEndpoint: null,
+    homeDir: null,
     createdAt: '',
     updatedAt: ''
   }

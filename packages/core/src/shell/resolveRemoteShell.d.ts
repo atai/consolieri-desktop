@@ -6,5 +6,6 @@ export type RemoteShellInvoke = {
 };
 export interface ResolveRemoteShellOptions {
     promptFallback?: boolean;
+    cwd?: string;
 }
 export declare function resolveRemoteShellInvoke(shell: string | null | undefined, options?: ResolveRemoteShellOptions): RemoteShellInvoke;

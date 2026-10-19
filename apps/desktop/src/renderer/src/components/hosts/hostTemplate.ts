@@ -20,7 +20,8 @@ export function hostInputFromCopy(source: Host): HostInput {
     logVerbosity: source.logVerbosity,
     relatedHostIds: [...source.relatedHostIds],
     gatewayHostId: source.gatewayHostId,
-    httpEndpoint: source.httpEndpoint
+    httpEndpoint: source.httpEndpoint,
+    homeDir: source.homeDir
   }
 }
 

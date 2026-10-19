@@ -115,7 +115,8 @@ export function presetPaneToConnectRequest(
     localShell: pane.localShell,
     wslDistro: pane.wslDistro,
     cwd: pane.cwd ?? undefined,
-    paneId: pane.paneId
+    paneId: pane.paneId,
+    history: pane.history
   }
 }
 

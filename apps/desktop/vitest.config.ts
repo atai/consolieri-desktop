@@ -7,6 +7,7 @@ export default defineConfig({
     name: 'desktop-renderer',
     environment: 'jsdom',
     include: ['src/renderer/**/*.test.{ts,tsx}'],
+    setupFiles: ['./vitest.setup.ts'],
     coverage: {
       provider: 'v8',
       include: ['src/renderer/src/**/*.{ts,tsx}'],

@@ -2,10 +2,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { SessionInfo } from '@shared/types'
 
 // ── store stubs ───────────────────────────────────────────────────────────────
-const { mockAddSession, mockWorkspaceGetState, mockPrefsGetState } = vi.hoisted(() => ({
+const {
+  mockAddSession,
+  mockWorkspaceGetState,
+  mockPrefsGetState,
+  mockOpenTab,
+  mockActivateTab,
+  mockFindTabByHost
+} = vi.hoisted(() => ({
   mockAddSession: vi.fn(),
   mockWorkspaceGetState: vi.fn(),
-  mockPrefsGetState: vi.fn()
+  mockPrefsGetState: vi.fn(),
+  mockOpenTab: vi.fn(),
+  mockActivateTab: vi.fn(),
+  mockFindTabByHost: vi.fn((): { id: string } | undefined => undefined)
 }))
 
 vi.mock('../stores/sessionWorkspaceStore', () => ({
@@ -62,19 +72,22 @@ function makeSessionInfo(overrides: Partial<SessionInfo> = {}): SessionInfo {
   }
 }
 
-const mockPersistWorkspace = vi.fn()
 const mockRemoveSession = vi.fn()
 
 function makeWorkspaceState(overrides: object = {}): {
   addSession: typeof mockAddSession
-  workspace: { layout: null; panes: unknown[] }
-  persistWorkspace: typeof mockPersistWorkspace
+  tabs: unknown[]
+  findTabByHost: typeof mockFindTabByHost
+  activateTab: typeof mockActivateTab
+  openTab: typeof mockOpenTab
   removeSession: typeof mockRemoveSession
 } {
   return {
     addSession: mockAddSession,
-    workspace: { layout: null, panes: [] },
-    persistWorkspace: mockPersistWorkspace,
+    tabs: [],
+    findTabByHost: mockFindTabByHost,
+    activateTab: mockActivateTab,
+    openTab: mockOpenTab,
     removeSession: mockRemoveSession,
     ...overrides
   }
@@ -101,6 +114,7 @@ function makePrefsState(overrides: object = {}): {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mockFindTabByHost.mockReturnValue(undefined)
   mockWorkspaceGetState.mockReturnValue(makeWorkspaceState())
   mockPrefsGetState.mockReturnValue(makePrefsState())
 })
@@ -110,7 +124,7 @@ afterEach(() => {
 })
 
 // ── openSession ───────────────────────────────────────────────────────────────
-import { openSession } from './openSession'
+import { openSession, openSessionAndAddToWorkspace } from './openSession'
 
 function stubConsoleri(api: MockConsoleri): void {
   vi.stubGlobal('alert', vi.fn())
@@ -166,6 +180,36 @@ describe('openSession', () => {
 
     await openSession({ protocol: 'ssh' })
     expect(api.sessions.openLogWindow).toHaveBeenCalledWith(session.id)
+  })
+
+  it('opens a new tab for a host that has none', async () => {
+    const session = makeSessionInfo({ status: 'connecting', title: 'web01' })
+    const api = makeMockConsoleri()
+    api.sessions.open.mockResolvedValue(session)
+    stubConsoleri(api)
+
+    await openSessionAndAddToWorkspace({ protocol: 'ssh', hostId: 'h1' }, 'web01')
+
+    expect(mockOpenTab).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hostId: 'h1',
+        title: 'web01',
+        panes: [expect.objectContaining({ sessionId: 'sess-1' })]
+      })
+    )
+    expect(mockActivateTab).not.toHaveBeenCalled()
+  })
+
+  it('activates the existing host tab instead of opening another session', async () => {
+    const api = makeMockConsoleri()
+    stubConsoleri(api)
+    mockFindTabByHost.mockReturnValue({ id: 'tab-h1' })
+
+    await openSessionAndAddToWorkspace({ protocol: 'ssh', hostId: 'h1' }, 'web01')
+
+    expect(mockActivateTab).toHaveBeenCalledWith('tab-h1')
+    expect(api.sessions.open).not.toHaveBeenCalled()
+    expect(mockOpenTab).not.toHaveBeenCalled()
   })
 
   it('does NOT open log window when autoOpenConnectionLog is false', async () => {

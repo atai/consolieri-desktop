@@ -4,6 +4,7 @@
  * Used in register.ts via createHandler() to validate data crossing the
  * IPC boundary before it reaches repositories or services.
  */
+import { MAX_COMMAND_HISTORY_LIMIT } from '@consoleri/core'
 import { z } from 'zod'
 
 // ── Primitives ────────────────────────────────────────────────────────────────
@@ -45,7 +46,8 @@ export const HostInputObjectSchema = z.object({
   logVerbosity: z.enum(['quiet', 'info', 'verbose', 'trace']).optional(),
   relatedHostIds: z.array(z.string()).optional(),
   gatewayHostId: z.string().nullable().optional(),
-  httpEndpoint: z.string().nullable().optional()
+  httpEndpoint: z.string().nullable().optional(),
+  homeDir: z.string().nullable().optional()
 })
 
 export const HostInputSchema = HostInputObjectSchema.superRefine((val, ctx) => {
@@ -65,7 +67,8 @@ export const HostSessionPresetPaneSchema = z.object({
   localShell: z.enum(['powershell', 'pwsh', 'cmd', 'bash', 'zsh', 'sh', 'wsl']).optional(),
   wslDistro: z.string().optional(),
   cwd: z.string().nullable().optional(),
-  profileId: z.string().optional()
+  profileId: z.string().optional(),
+  history: z.array(z.string()).max(MAX_COMMAND_HISTORY_LIMIT).optional()
 })
 
 export const HostSessionPresetInputSchema = z.object({
@@ -139,9 +142,17 @@ const PaneBindingSchema = z.object({
   connectRequest: z.record(z.unknown())
 })
 
-export const WorkspaceStateSchema = z.object({
+const WorkspaceTabSchema = z.object({
+  id: z.string().min(1),
+  hostId: z.string().nullable(),
+  title: z.string(),
   layout: z.unknown(),
   panes: z.array(PaneBindingSchema)
+})
+
+export const WorkspaceStateSchema = z.object({
+  tabs: z.array(WorkspaceTabSchema),
+  activeTabId: z.string().nullable()
 })
 
 // ── OpenSessionRequest ────────────────────────────────────────────────────────
@@ -156,7 +167,8 @@ export const OpenSessionRequestSchema = z.object({
   cwd: z.string().optional(),
   command: z.string().optional(),
   paneId: z.string().optional(),
-  histFile: z.string().optional()
+  histFile: z.string().optional(),
+  history: z.array(z.string()).max(MAX_COMMAND_HISTORY_LIMIT).optional()
 })
 
 // ── DeployKeyRequest ──────────────────────────────────────────────────────────

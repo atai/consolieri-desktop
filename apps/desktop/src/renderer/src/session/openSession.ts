@@ -2,7 +2,7 @@ import type { MosaicNode } from 'react-mosaic-component'
 import { nanoid } from 'nanoid'
 import { insertPaneIntoLayout, splitPaneInLayout } from '@consoleri/core'
 import type { MosaicNode as CoreMosaicNode } from '@consoleri/core'
-import type { OpenSessionRequest, PaneBinding, SessionInfo } from '@shared/types'
+import type { OpenSessionRequest, PaneBinding, SessionInfo, WorkspaceTab } from '@shared/types'
 import { useSessionWorkspaceStore } from '../stores/sessionWorkspaceStore'
 import { usePreferencesStore } from '../stores/preferencesStore'
 import { getConsoleriApi } from '../api'
@@ -41,34 +41,44 @@ function createBinding(session: SessionInfo, connectRequest: OpenSessionRequest)
   }
 }
 
+function requireTab(tabId: string): WorkspaceTab {
+  const tab = useSessionWorkspaceStore.getState().tabs.find((item) => item.id === tabId)
+  if (!tab) throw new Error(`Unknown workspace tab ${tabId}`)
+  return tab
+}
+
 export async function addSessionToWorkspace(
+  tabId: string,
   session: SessionInfo,
   connectRequest: OpenSessionRequest
 ): Promise<void> {
   const binding = createBinding(session, connectRequest)
-  const { workspace, persistWorkspace } = useSessionWorkspaceStore.getState()
-  const panes = [...workspace.panes, binding]
-  const currentLayout = workspace.layout as MosaicNode<string> | null
+  const tab = requireTab(tabId)
+  const { persistTab } = useSessionWorkspaceStore.getState()
+  const panes = [...tab.panes, binding]
+  const currentLayout = tab.layout as MosaicNode<string> | null
   const nextLayout = insertPaneIntoLayout(
     currentLayout as CoreMosaicNode<string> | null,
     binding.paneId
   ) as MosaicNode<string>
-  persistWorkspace(nextLayout, panes)
+  persistTab(tabId, nextLayout, panes)
 }
 
 export async function splitPaneInWorkspace(
+  tabId: string,
   sourcePaneId: string,
   direction: 'row' | 'column'
 ): Promise<void> {
-  const { workspace, persistWorkspace } = useSessionWorkspaceStore.getState()
-  const sourceBinding = workspace.panes.find((p) => p.paneId === sourcePaneId)
+  const tab = requireTab(tabId)
+  const { persistTab } = useSessionWorkspaceStore.getState()
+  const sourceBinding = tab.panes.find((p) => p.paneId === sourcePaneId)
   if (!sourceBinding) return
 
   const session = await openSession({ ...sourceBinding.connectRequest })
   if (!session) return
 
   const newBinding = createBinding(session, { ...sourceBinding.connectRequest })
-  const layout = workspace.layout as MosaicNode<string> | null
+  const layout = tab.layout as MosaicNode<string> | null
   if (!layout) return
 
   const nextLayout = splitPaneInLayout(
@@ -79,12 +89,13 @@ export async function splitPaneInWorkspace(
   ) as MosaicNode<string> | null
   if (!nextLayout) return
 
-  persistWorkspace(nextLayout, [...workspace.panes, newBinding])
+  persistTab(tabId, nextLayout, [...tab.panes, newBinding])
 }
 
-export async function connectPane(paneId: string): Promise<void> {
-  const { workspace, persistWorkspace, removeSession } = useSessionWorkspaceStore.getState()
-  const binding = workspace.panes.find((p) => p.paneId === paneId)
+export async function connectPane(tabId: string, paneId: string): Promise<void> {
+  const tab = requireTab(tabId)
+  const { persistTab, removeSession } = useSessionWorkspaceStore.getState()
+  const binding = tab.panes.find((p) => p.paneId === paneId)
   if (!binding) return
 
   const session = await openSession({ ...binding.connectRequest })
@@ -96,16 +107,34 @@ export async function connectPane(paneId: string): Promise<void> {
     removeSession(binding.sessionId)
   }
 
-  const panes = workspace.panes.map((p) =>
+  const panes = tab.panes.map((p) =>
     p.paneId === paneId
       ? { ...p, sessionId: session.id, title: session.title, protocol: session.protocol }
       : p
   )
-  persistWorkspace(workspace.layout as MosaicNode<string> | null, panes)
+  persistTab(tabId, tab.layout as MosaicNode<string> | null, panes)
 }
 
-export async function openSessionAndAddToWorkspace(request: OpenSessionRequest): Promise<void> {
+export async function openSessionAndAddToWorkspace(
+  request: OpenSessionRequest,
+  title?: string
+): Promise<void> {
+  const store = useSessionWorkspaceStore.getState()
+  if (request.hostId) {
+    const existing = store.findTabByHost(request.hostId)
+    if (existing) {
+      store.activateTab(existing.id)
+      return
+    }
+  }
+
   const session = await openSession(request)
   if (!session) return
-  await addSessionToWorkspace(session, request)
+  const binding = createBinding(session, request)
+  store.openTab({
+    hostId: request.hostId ?? null,
+    title: title ?? request.title ?? session.title,
+    layout: binding.paneId,
+    panes: [binding]
+  })
 }

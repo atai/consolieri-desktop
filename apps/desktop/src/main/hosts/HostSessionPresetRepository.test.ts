@@ -34,7 +34,8 @@ describe('HostSessionPresetRepository', () => {
           title: 'dev',
           protocol: 'local_pty',
           localShell: 'zsh',
-          cwd: '/Users/ra/git/consoleri'
+          cwd: '/Users/ra/git/consoleri',
+          history: ['ls', 'git status']
         }
       ]
     })
@@ -42,6 +43,7 @@ describe('HostSessionPresetRepository', () => {
     expect(loaded).not.toBeNull()
     expect(loaded!.panes).toHaveLength(1)
     expect(loaded!.panes[0]!.cwd).toBe('/Users/ra/git/consoleri')
+    expect(loaded!.panes[0]!.history).toEqual(['ls', 'git status'])
     expect(loaded!.layout).toBe(paneId)
   })
 

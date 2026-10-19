@@ -46,8 +46,8 @@ export function AppShell({ workspaceReady }: AppShellProps): React.JSX.Element {
 
   useEffect(() => {
     const unsubExit = window.consoleri.sessions.onExit(({ id }) => {
-      const { workspace } = useSessionWorkspaceStore.getState()
-      const inWorkspace = workspace.panes.some((p) => p.sessionId === id)
+      const { tabs } = useSessionWorkspaceStore.getState()
+      const inWorkspace = tabs.some((tab) => tab.panes.some((pane) => pane.sessionId === id))
       if (inWorkspace) {
         updateSession(id, { status: 'disconnected' })
       } else {

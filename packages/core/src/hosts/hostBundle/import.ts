@@ -1,6 +1,8 @@
 import { isKeyFileRef } from '../../keys/credentialRef'
 import { normalizeHostLogVerbosity } from '../../logging/verbosity'
+import { MAX_COMMAND_HISTORY_LIMIT } from '../../shell/commandHistory'
 import type { AuthMethod, HostKind, OsType, Protocol } from '../../types'
+import { normalizeHomeDir } from '../normalizeInputs'
 import { normalizeHttpEndpoint } from '../normalizeHttpEndpoint'
 import type {
   GroupExportItem,
@@ -64,6 +66,13 @@ function normalizeExtra(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>
 }
 
+function normalizeHistory(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  return value
+    .filter((line): line is string => typeof line === 'string')
+    .slice(-MAX_COMMAND_HISTORY_LIMIT)
+}
+
 function normalizeSessionPreset(value: unknown): HostSessionPresetExport | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
   const entry = value as Record<string, unknown>
@@ -72,6 +81,7 @@ function normalizeSessionPreset(value: unknown): HostSessionPresetExport | null 
     if (!p || typeof p !== 'object') return []
     const pane = p as Record<string, unknown>
     if (typeof pane.paneId !== 'string') return []
+    const history = normalizeHistory(pane.history)
     return [
       {
         paneId: pane.paneId,
@@ -80,7 +90,8 @@ function normalizeSessionPreset(value: unknown): HostSessionPresetExport | null 
         localShell: typeof pane.localShell === 'string' ? pane.localShell : undefined,
         wslDistro: typeof pane.wslDistro === 'string' ? pane.wslDistro : undefined,
         cwd: typeof pane.cwd === 'string' ? pane.cwd : pane.cwd === null ? null : undefined,
-        profileId: typeof pane.profileId === 'string' ? pane.profileId : undefined
+        profileId: typeof pane.profileId === 'string' ? pane.profileId : undefined,
+        ...(history !== undefined ? { history } : {})
       }
     ]
   })
@@ -144,6 +155,7 @@ export function normalizeHostExportItem(raw: unknown): HostExportItem | null {
     relatedHostIds: kind === 'local' ? [] : normalizeStringArray(entry.relatedHostIds),
     gatewayHostId: kind === 'local' ? null : normalizeNullableString(entry.gatewayHostId),
     httpEndpoint,
+    homeDir: normalizeHomeDir(typeof entry.homeDir === 'string' ? entry.homeDir : null),
     sessionPreset: normalizeSessionPreset(entry.sessionPreset)
   }
 }

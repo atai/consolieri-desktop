@@ -17,6 +17,7 @@ export const sampleHost: Host = {
   relatedHostIds: ['h2'],
   gatewayHostId: 'h3',
   httpEndpoint: 'https://10.0.0.1/',
+  homeDir: '/srv/app',
   createdAt: '2024-01-01',
   updatedAt: '2024-01-02'
 }

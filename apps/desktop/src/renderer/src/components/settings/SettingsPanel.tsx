@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { MAX_COMMAND_HISTORY_LIMIT } from '@consoleri/core'
 import { usePreferencesStore } from '../../stores/preferencesStore'
 import { UxProfileManager } from '../ux/UxProfileManager'
 import { VaultSettingsPanel } from '../vault/VaultSettingsPanel'
@@ -28,7 +29,8 @@ const TABS: Array<{ id: SettingsTab; label: string }> = [
 ]
 
 function GeneralTab(): React.JSX.Element {
-  const { settings, setAutoOpenConnectionLog, setSessionOpenMode } = usePreferencesStore()
+  const { settings, setAutoOpenConnectionLog, setCommandHistoryLimit, setSessionOpenMode } =
+    usePreferencesStore()
 
   return (
     <div className="max-w-lg space-y-6 p-6">
@@ -44,6 +46,27 @@ function GeneralTab(): React.JSX.Element {
               </p>
             </div>
             <SessionOpenModeToggle mode={settings.sessionOpenMode} onChange={setSessionOpenMode} />
+          </div>
+
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-fg">Commands to keep per pane</p>
+              <p className="text-xs text-muted">
+                Recent shell commands saved with a session and restored when it is opened again
+              </p>
+            </div>
+            <input
+              type="number"
+              min={0}
+              max={MAX_COMMAND_HISTORY_LIMIT}
+              aria-label="Commands to keep per pane"
+              value={settings.commandHistoryLimit}
+              onChange={(e) => {
+                const value = parseInt(e.target.value, 10)
+                if (!Number.isNaN(value)) void setCommandHistoryLimit(value)
+              }}
+              className="w-20 rounded border border-border bg-bg px-2 py-1 text-sm text-fg"
+            />
           </div>
 
           <div className="flex items-center justify-between">

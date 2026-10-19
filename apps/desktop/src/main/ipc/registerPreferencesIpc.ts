@@ -1,4 +1,5 @@
 import { ipcMain, clipboard } from 'electron'
+import { MAX_COMMAND_HISTORY_LIMIT } from '@consoleri/core'
 import { z } from 'zod'
 import { IPC_CHANNELS } from '../../shared/types'
 import { createHandler } from './createHandler'
@@ -59,7 +60,8 @@ export function registerPreferencesIpc(): void {
           .object({
             enabled: z.boolean()
           })
-          .optional()
+          .optional(),
+        commandHistoryLimit: z.number().int().min(0).max(MAX_COMMAND_HISTORY_LIMIT).optional()
       }),
       async (patch) => {
         const next = appPreferencesRepository.setAppSettings(patch as Partial<AppSettings>)

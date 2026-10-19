@@ -18,6 +18,7 @@ describe('rowToHost', () => {
       related_hosts_json: '["db"]',
       gateway_host_id: 'gw1',
       http_endpoint: 'https://alb.example/health',
+      home_dir: '  /srv/app  ',
       created_at: '2024-01-01',
       updated_at: '2024-01-02'
     })
@@ -27,6 +28,7 @@ describe('rowToHost', () => {
     expect(host.relatedHostIds).toEqual(['db'])
     expect(host.gatewayHostId).toBe('gw1')
     expect(host.httpEndpoint).toBe('https://alb.example/health')
+    expect(host.homeDir).toBe('  /srv/app  ')
     expect(host.kind).toBe('remote')
   })
 

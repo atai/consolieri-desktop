@@ -55,6 +55,8 @@ export interface SessionMosaicProps {
   onSplitPane: (paneId: string, direction: 'row' | 'column') => void | Promise<void>
   onConnectPane: (paneId: string) => void | Promise<void>
   onClosePane: (paneId: string) => void
+  /** When false, this mosaic ignores the maximize hotkey. Hidden workspace tabs pass false. */
+  active?: boolean
   zeroStateView?: ReactElement
   emptyLayoutView?: ReactNode
 }
@@ -68,6 +70,7 @@ export function SessionMosaic({
   onSplitPane,
   onConnectPane,
   onClosePane,
+  active = true,
   zeroStateView,
   emptyLayoutView
 }: SessionMosaicProps): React.JSX.Element {
@@ -144,6 +147,8 @@ export function SessionMosaic({
 
   // Capture-phase hotkey so it works while xterm has focus.
   useEffect(() => {
+    if (!active) return
+
     const onKeyDown = (event: KeyboardEvent): void => {
       if (!matchAccelerator(event, maximizeAccel)) return
 
@@ -165,7 +170,7 @@ export function SessionMosaic({
 
     window.addEventListener('keydown', onKeyDown, true)
     return () => window.removeEventListener('keydown', onKeyDown, true)
-  }, [canMaximize, maximizeAccel, activeMaximizedPaneId, panes])
+  }, [active, canMaximize, maximizeAccel, activeMaximizedPaneId, panes])
 
   const handleReconnect = async (sessionId: string): Promise<void> => {
     const updated = await window.consoleri.sessions.reconnect(sessionId)

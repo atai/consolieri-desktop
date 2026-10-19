@@ -1,4 +1,6 @@
 import {
+  clampCommandHistoryLimit,
+  DEFAULT_COMMAND_HISTORY_LIMIT,
   mergeHostListViewSettings,
   mergeKeybindings,
   mergeMapViewSettings,
@@ -22,7 +24,8 @@ const DEFAULT_APP_SETTINGS: AppSettings = {
   autoOpenConnectionLog: false,
   sessionOpenMode: 'workspace',
   keybindings: mergeKeybindings(),
-  externalControl: { enabled: false }
+  externalControl: { enabled: false },
+  commandHistoryLimit: DEFAULT_COMMAND_HISTORY_LIMIT
 }
 
 function serializeHostListView(settings: HostListViewSettings): string {
@@ -119,7 +122,8 @@ export class AppPreferencesRepository {
         keybindings: mergeKeybindings(parsed.keybindings),
         externalControl: {
           enabled: parsed.externalControl?.enabled === true
-        }
+        },
+        commandHistoryLimit: clampCommandHistoryLimit(parsed.commandHistoryLimit)
       }
     } catch {
       return { ...DEFAULT_APP_SETTINGS, keybindings: mergeKeybindings() }
@@ -140,7 +144,12 @@ export class AppPreferencesRepository {
           patch.externalControl?.enabled !== undefined
             ? patch.externalControl.enabled
             : current.externalControl.enabled
-      }
+      },
+      commandHistoryLimit: clampCommandHistoryLimit(
+        patch.commandHistoryLimit !== undefined
+          ? patch.commandHistoryLimit
+          : current.commandHistoryLimit
+      )
     }
     getDatabase()
       .prepare(

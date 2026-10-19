@@ -5,24 +5,32 @@ const mockPreferencesSetHostListView = vi.fn().mockResolvedValue(undefined)
 const mockPreferencesSetMapView = vi.fn().mockResolvedValue(undefined)
 const mockPreferencesGetHostListView = vi.fn()
 const mockPreferencesGetMapView = vi.fn()
-const mockPreferencesGetAppSettings = vi
-  .fn()
-  .mockResolvedValue({
-    autoOpenConnectionLog: false,
-    sessionOpenMode: 'workspace',
-    keybindings: {},
-    externalControl: { enabled: false }
-  })
+const mockPreferencesGetAppSettings = vi.fn().mockResolvedValue({
+  autoOpenConnectionLog: false,
+  sessionOpenMode: 'workspace',
+  keybindings: {},
+  externalControl: { enabled: false },
+  commandHistoryLimit: 200
+})
 const mockPreferencesSetAppSettings = vi.fn().mockImplementation((patch: Record<string, unknown>) =>
   Promise.resolve({
     autoOpenConnectionLog: false,
     sessionOpenMode: 'workspace',
     externalControl: { enabled: false },
     keybindings: {},
+    commandHistoryLimit: 200,
     ...patch
   })
 )
 const mockWorkspaceSave = vi.fn().mockResolvedValue(undefined)
+const mockSessionsClose = vi.fn()
+const mockShellHistoryDeletePane = vi.fn()
+
+const { mockReleaseTerminal } = vi.hoisted(() => ({ mockReleaseTerminal: vi.fn() }))
+
+vi.mock('../terminal/TerminalPool', () => ({
+  releaseTerminal: mockReleaseTerminal
+}))
 const mockHostsList = vi.fn().mockResolvedValue([])
 const mockGroupsList = vi.fn().mockResolvedValue([])
 const mockUxProfilesGetActive = vi.fn()
@@ -41,6 +49,12 @@ function installConsoleriGlobal(): void {
       },
       workspace: {
         save: mockWorkspaceSave
+      },
+      sessions: {
+        close: mockSessionsClose
+      },
+      shellHistory: {
+        deletePane: mockShellHistoryDeletePane
       },
       hosts: {
         list: mockHostsList
@@ -194,24 +208,50 @@ describe('hostListView debounced persistence', () => {
   })
 })
 
-// ── persistWorkspace: debounce vs immediate ──────────────────────────────────
-describe('persistWorkspace', () => {
+function openTestTab(
+  store: ReturnType<typeof import('./sessionWorkspaceStore').useSessionWorkspaceStore.getState>,
+  hostId: string,
+  title: string
+): string {
+  return store.openTab({
+    hostId,
+    title,
+    layout: 'p1',
+    panes: [
+      {
+        paneId: 'p1',
+        sessionId: 's1',
+        protocol: 'ssh',
+        title,
+        connectRequest: { hostId }
+      }
+    ]
+  })
+}
+
+// ── persistTab: debounce vs immediate ────────────────────────────────────────
+describe('persistTab', () => {
   it('calls workspace.save immediately when debounce is false', async () => {
     const { useSessionWorkspaceStore } = await freshSessionWorkspaceStore()
-    useSessionWorkspaceStore.getState().persistWorkspace(null, [])
+    const tabId = openTestTab(useSessionWorkspaceStore.getState(), 'h1', 'one')
+    mockWorkspaceSave.mockClear()
+    useSessionWorkspaceStore.getState().persistTab(tabId, null, [])
     expect(mockWorkspaceSave).toHaveBeenCalledOnce()
   })
 
   it('defers workspace.save when debounce is true', async () => {
     const { useSessionWorkspaceStore } = await freshSessionWorkspaceStore()
-    useSessionWorkspaceStore.getState().persistWorkspace(null, [], { debounce: true })
+    const tabId = openTestTab(useSessionWorkspaceStore.getState(), 'h1', 'one')
+    mockWorkspaceSave.mockClear()
+    useSessionWorkspaceStore.getState().persistTab(tabId, null, [], { debounce: true })
     expect(mockWorkspaceSave).not.toHaveBeenCalled()
     vi.runAllTimers()
     expect(mockWorkspaceSave).toHaveBeenCalledOnce()
   })
 
-  it('updates workspace state synchronously even with debounce', async () => {
+  it('updates the tab synchronously even with debounce', async () => {
     const { useSessionWorkspaceStore } = await freshSessionWorkspaceStore()
+    const tabId = openTestTab(useSessionWorkspaceStore.getState(), 'h1', 'one')
     const panes = [
       {
         paneId: 'p1',
@@ -221,8 +261,59 @@ describe('persistWorkspace', () => {
         connectRequest: {}
       }
     ]
-    useSessionWorkspaceStore.getState().persistWorkspace(null, panes, { debounce: true })
-    expect(useSessionWorkspaceStore.getState().workspace.panes).toHaveLength(1)
+    useSessionWorkspaceStore.getState().persistTab(tabId, null, panes, { debounce: true })
+    expect(useSessionWorkspaceStore.getState().tabs[0].panes).toHaveLength(1)
+  })
+})
+
+describe('workspace tabs', () => {
+  it('keeps a tab per host and activates an existing one', async () => {
+    const { useSessionWorkspaceStore } = await freshSessionWorkspaceStore()
+    const store = useSessionWorkspaceStore.getState()
+    const first = openTestTab(store, 'h1', 'one')
+    const second = useSessionWorkspaceStore.getState().openTab({
+      hostId: 'h2',
+      title: 'two',
+      layout: 'p2',
+      panes: [
+        {
+          paneId: 'p2',
+          sessionId: null,
+          protocol: 'ssh',
+          title: 'two',
+          connectRequest: { hostId: 'h2' }
+        }
+      ]
+    })
+
+    const tabs = useSessionWorkspaceStore.getState().tabs
+    expect(tabs.map((tab) => tab.hostId)).toEqual(['h1', 'h2'])
+    expect(useSessionWorkspaceStore.getState().activeTabId).toBe(second)
+    expect(useSessionWorkspaceStore.getState().findTabByHost('h1')?.id).toBe(first)
+
+    useSessionWorkspaceStore.getState().activateTab(first)
+    expect(useSessionWorkspaceStore.getState().activeTabId).toBe(first)
+    expect(useSessionWorkspaceStore.getState().tabs).toHaveLength(2)
+  })
+
+  it('closeTab closes the tab sessions and drops the tab', async () => {
+    const { useSessionWorkspaceStore } = await freshSessionWorkspaceStore()
+    useSessionWorkspaceStore.getState().addSession({
+      id: 's1',
+      protocol: 'ssh',
+      title: 'one',
+      status: 'connected',
+      hostId: 'h1',
+      profileId: null
+    })
+    const tabId = openTestTab(useSessionWorkspaceStore.getState(), 'h1', 'one')
+    useSessionWorkspaceStore.getState().closeTab(tabId)
+
+    expect(mockSessionsClose).toHaveBeenCalledWith('s1')
+    expect(mockReleaseTerminal).toHaveBeenCalledWith('s1')
+    expect(mockShellHistoryDeletePane).toHaveBeenCalledWith('h1', 'p1')
+    expect(useSessionWorkspaceStore.getState().tabs).toEqual([])
+    expect(useSessionWorkspaceStore.getState().sessions).toEqual([])
   })
 })
 
@@ -230,7 +321,9 @@ describe('persistWorkspace', () => {
 describe('flushWorkspacePersist', () => {
   it('flushes any pending debounced save immediately', async () => {
     const { useSessionWorkspaceStore, flushWorkspacePersist } = await freshSessionWorkspaceStore()
-    useSessionWorkspaceStore.getState().persistWorkspace(null, [], { debounce: true })
+    const tabId = openTestTab(useSessionWorkspaceStore.getState(), 'h1', 'one')
+    mockWorkspaceSave.mockClear()
+    useSessionWorkspaceStore.getState().persistTab(tabId, null, [], { debounce: true })
     expect(mockWorkspaceSave).not.toHaveBeenCalled()
     flushWorkspacePersist()
     expect(mockWorkspaceSave).toHaveBeenCalledOnce()
@@ -244,6 +337,7 @@ describe('settings load/persist', () => {
     const { settings } = usePreferencesStore.getState()
     expect(settings.autoOpenConnectionLog).toBe(false)
     expect(settings.sessionOpenMode).toBe('workspace')
+    expect(settings.commandHistoryLimit).toBe(200)
   })
 
   it('refresh loads settings from IPC', async () => {

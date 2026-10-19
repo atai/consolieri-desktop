@@ -138,6 +138,7 @@ function initializeDatabase(database: DatabaseSync): void {
   migrateUxProfiles(database)
   migrateHostRelations(database)
   migrateHostHttpEndpoint(database)
+  migrateHostHomeDir(database)
   migrateHostKind(database)
   migrateHostSessionPresets(database)
   migrateReports(database)
@@ -250,6 +251,13 @@ function migrateHostHttpEndpoint(database: DatabaseSync): void {
   const columns = database.prepare('PRAGMA table_info(hosts)').all() as Array<{ name: string }>
   if (!columns.some((column) => column.name === 'http_endpoint')) {
     database.exec(`ALTER TABLE hosts ADD COLUMN http_endpoint TEXT`)
+  }
+}
+
+function migrateHostHomeDir(database: DatabaseSync): void {
+  const columns = database.prepare('PRAGMA table_info(hosts)').all() as Array<{ name: string }>
+  if (!columns.some((column) => column.name === 'home_dir')) {
+    database.exec(`ALTER TABLE hosts ADD COLUMN home_dir TEXT`)
   }
 }
 

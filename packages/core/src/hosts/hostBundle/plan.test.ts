@@ -76,6 +76,7 @@ describe('hostBundle plan', () => {
       expect(planned.exportId).toBe('h1')
       expect(planned.input.groupId).toBe('new-g1')
       expect(planned.input.uxProfileId).toBe('ux1')
+      expect(planned.input.homeDir).toBe('/srv/app')
       expect(planned.input.relatedHostIds).toBeUndefined()
     })
 

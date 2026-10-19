@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { MAX_COMMAND_HISTORY_LIMIT } from '@consoleri/core'
 import { IPC_CHANNELS } from '../../shared/types'
 
 // ── ipcMain capture ──────────────────────────────────────────────────────────
@@ -107,13 +108,15 @@ const {
       autoOpenConnectionLog: false,
       sessionOpenMode: 'workspace',
       keybindings: {},
-      externalControl: { enabled: false }
+      externalControl: { enabled: false },
+      commandHistoryLimit: 200
     }),
     setAppSettings: vi.fn().mockReturnValue({
       autoOpenConnectionLog: false,
       sessionOpenMode: 'workspace',
       keybindings: {},
-      externalControl: { enabled: false }
+      externalControl: { enabled: false },
+      commandHistoryLimit: 200
     }),
     getScpRecent: vi.fn(),
     setScpRecent: vi.fn()
@@ -174,7 +177,8 @@ vi.mock('../hosts/HostSessionPresetRepository', () => ({
 vi.mock('../sessions/shellHistory', () => ({
   deleteHostShellHistory: vi.fn(),
   deletePaneShellHistory: vi.fn(),
-  ensureShellHistoryFile: vi.fn((hostId: string, paneId: string) => `/tmp/${hostId}/${paneId}`)
+  ensureShellHistoryFile: vi.fn((hostId: string, paneId: string) => `/tmp/${hostId}/${paneId}`),
+  readPaneShellHistory: vi.fn(() => [])
 }))
 vi.mock('../hosts/hostImportExportServiceInstance', () => ({
   hostImportExportService: {
@@ -292,6 +296,9 @@ vi.mock('../windows/WorkspaceWindow', () => ({
 
 // ── Setup ─────────────────────────────────────────────────────────────────────
 import { registerIpcHandlers } from './register'
+import { hostSessionPresetRepository } from '../hosts/HostSessionPresetRepository'
+import { ensureShellHistoryFile, readPaneShellHistory } from '../sessions/shellHistory'
+import { syncControlServerWithSettings } from '../control/server'
 
 const FAKE_EVENT = {} as Electron.IpcMainInvokeEvent
 const getWindow = vi.fn(() => null as Electron.BrowserWindow | null)
@@ -509,6 +516,7 @@ describe('hosts routing', () => {
       relatedHostIds: [],
       gatewayHostId: null,
       httpEndpoint: null,
+      homeDir: null,
       createdAt: '',
       updatedAt: ''
     })
@@ -540,9 +548,66 @@ describe('hosts routing', () => {
     expect(mockHostRepo.exportHostsBundle).toHaveBeenCalled()
   })
 
+  it('hosts:update passes homeDir through to hostRepository.updateHost', async () => {
+    vi.mocked(mockHostRepo.getHost).mockReturnValue({
+      id: 'h1',
+      name: 'old',
+      hostname: '10.0.0.1',
+      port: 22,
+      osType: 'linux',
+      kind: 'remote',
+      tags: [],
+      groupId: null,
+      notes: '',
+      defaultProfileId: null,
+      uxProfileId: null,
+      logVerbosity: 'info',
+      relatedHostIds: [],
+      gatewayHostId: null,
+      httpEndpoint: null,
+      homeDir: null,
+      createdAt: '',
+      updatedAt: ''
+    })
+    await handleMap.get(IPC_CHANNELS.hostsUpdate)!(FAKE_EVENT, 'h1', { homeDir: '  /srv/app  ' })
+    expect(mockHostRepo.updateHost).toHaveBeenCalledWith(
+      'h1',
+      expect.objectContaining({ homeDir: '/srv/app' })
+    )
+  })
+
   it('hosts:export-to-file → hostRepository.exportHostsToFile', async () => {
     await handleMap.get(IPC_CHANNELS.hostsExportToFile)!(FAKE_EVENT)
     expect(mockHostRepo.exportHostsToFile).toHaveBeenCalled()
+  })
+
+  it('hostPresets:save stores the pane shell history up to the configured limit', async () => {
+    vi.mocked(mockHostRepo.getHost).mockReturnValue({ id: 'h1' })
+    vi.mocked(readPaneShellHistory).mockReturnValue(['ls', 'pwd'])
+    vi.mocked(hostSessionPresetRepository.save).mockReturnValue({
+      hostId: 'h1',
+      layout: 'pane-1',
+      panes: [],
+      updatedAt: ''
+    })
+
+    await handleMap.get(IPC_CHANNELS.hostPresetsSave)!(FAKE_EVENT, 'h1', {
+      layout: 'pane-1',
+      panes: [{ paneId: 'pane-1', title: 'dev', protocol: 'ssh' }]
+    })
+
+    expect(readPaneShellHistory).toHaveBeenCalledWith('h1', 'pane-1', 200)
+    expect(hostSessionPresetRepository.save).toHaveBeenCalledWith('h1', {
+      layout: 'pane-1',
+      panes: [
+        {
+          paneId: 'pane-1',
+          title: 'dev',
+          protocol: 'ssh',
+          history: ['ls', 'pwd']
+        }
+      ]
+    })
   })
 })
 
@@ -664,6 +729,27 @@ describe('sessions routing', () => {
     expect(mockSessionManager.setWindow).not.toHaveBeenCalled()
   })
 
+  it('sessions:open seeds the pane history file from saved commands', async () => {
+    getWindow.mockReturnValue(null)
+    await handleMap.get(IPC_CHANNELS.sessionsOpen)!(
+      FAKE_EVENT,
+      { hostId: 'h1', paneId: 'pane-1', protocol: 'ssh', history: ['ls', 'pwd'] },
+      80,
+      24
+    )
+    expect(ensureShellHistoryFile).toHaveBeenCalledWith('h1', 'pane-1', ['ls', 'pwd'])
+    expect(mockSessionManager.open).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hostId: 'h1',
+        paneId: 'pane-1',
+        history: ['ls', 'pwd'],
+        histFile: '/tmp/h1/pane-1'
+      }),
+      80,
+      24
+    )
+  })
+
   it('sessions:open → sessionManager.setWindow when window is present', async () => {
     const fakeWin = {} as Electron.BrowserWindow
     getWindow.mockReturnValue(fakeWin)
@@ -736,7 +822,7 @@ describe('sessions routing', () => {
 // ── Routing: workspace ────────────────────────────────────────────────────────
 describe('workspace routing', () => {
   it('workspace:save → hostRepository.saveWorkspace', async () => {
-    const state = { layout: null, panes: [] }
+    const state = { tabs: [], activeTabId: null }
     await handleMap.get(IPC_CHANNELS.workspaceSave)!(FAKE_EVENT, state, 'Main')
     expect(mockHostRepo.saveWorkspace).toHaveBeenCalledWith(state, 'Main')
   })
@@ -830,6 +916,29 @@ describe('preferences routing', () => {
     const patch = { appView: 'list' }
     await handleMap.get(IPC_CHANNELS.preferencesSetMapView)!(FAKE_EVENT, patch)
     expect(mockAppPrefs.setMapView).toHaveBeenCalledWith(patch)
+  })
+
+  it('preferences:get-app-settings → appPreferencesRepository.getAppSettings', async () => {
+    const settings = await handleMap.get(IPC_CHANNELS.preferencesGetAppSettings)!(FAKE_EVENT)
+    expect(settings).toEqual(expect.objectContaining({ commandHistoryLimit: 200 }))
+    expect(mockAppPrefs.getAppSettings).toHaveBeenCalled()
+  })
+
+  it('preferences:set-app-settings stores the command history limit', async () => {
+    await handleMap.get(IPC_CHANNELS.preferencesSetAppSettings)!(FAKE_EVENT, {
+      commandHistoryLimit: 40
+    })
+    expect(mockAppPrefs.setAppSettings).toHaveBeenCalledWith({ commandHistoryLimit: 40 })
+    expect(syncControlServerWithSettings).toHaveBeenCalled()
+  })
+
+  it('preferences:set-app-settings rejects a command history limit above the maximum', async () => {
+    await expect(
+      handleMap.get(IPC_CHANNELS.preferencesSetAppSettings)!(FAKE_EVENT, {
+        commandHistoryLimit: MAX_COMMAND_HISTORY_LIMIT + 1
+      })
+    ).rejects.toThrow()
+    expect(mockAppPrefs.setAppSettings).not.toHaveBeenCalled()
   })
 })
 

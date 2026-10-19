@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from 'react'
 import type { Host } from '@shared/types'
 import { EditDeleteActions } from '../ui/EditDeleteActions'
 
@@ -15,6 +16,8 @@ function osIcon(os: string): string {
 export interface HostListItemProps {
   host: Host
   selected: boolean
+  autoFocus?: boolean
+  onFocused?: () => void
   onSelect: () => void
   onConnect: () => void
   onEdit: () => void
@@ -25,13 +28,25 @@ export interface HostListItemProps {
 export function HostListItem({
   host,
   selected,
+  autoFocus = false,
+  onFocused,
   onSelect,
   onConnect,
   onEdit,
   onCopy,
   onDelete
 }: HostListItemProps): React.JSX.Element {
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const subtitle = host.kind === 'local' ? 'local project' : `${host.hostname}:${host.port}`
+
+  useLayoutEffect(() => {
+    if (!autoFocus) return
+    const button = buttonRef.current
+    if (!button) return
+    button.focus()
+    button.scrollIntoView({ block: 'nearest' })
+    onFocused?.()
+  }, [autoFocus, onFocused])
 
   return (
     <li
@@ -40,6 +55,7 @@ export function HostListItem({
       }`}
     >
       <button
+        ref={buttonRef}
         type="button"
         onClick={onSelect}
         onDoubleClick={onConnect}

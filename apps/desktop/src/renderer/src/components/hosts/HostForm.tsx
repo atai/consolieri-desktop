@@ -38,7 +38,7 @@ interface HostFormProps {
   profiles?: ConnectionProfile[]
   onProfilesChanged?: () => void
   onConnect?: (host: Host, profileId?: string) => void
-  onSave: () => void
+  onSave: (hostId: string) => void
   onCancel: () => void
 }
 
@@ -68,6 +68,7 @@ export function HostForm({
   const [localShell, setLocalShell] = useState('zsh')
   const [tags, setTags] = useState(source?.tags.join(', ') ?? '')
   const [notes, setNotes] = useState(source?.notes ?? '')
+  const [homeDir, setHomeDir] = useState(source?.homeDir ?? '')
   const [logVerbosity, setLogVerbosity] = useState<HostLogVerbosity>(source?.logVerbosity ?? 'info')
   const [uxProfileId, setUxProfileId] = useState(source?.uxProfileId ?? '')
   const [uxProfiles, setUxProfiles] = useState<UxProfile[]>([])
@@ -125,6 +126,7 @@ export function HostForm({
         relatedHostIds: isLocal ? [] : relatedHostIds,
         gatewayHostId: isLocal ? null : gatewayHostId || null,
         httpEndpoint: isLocal ? null : normalizedHttpEndpoint,
+        homeDir,
         groupId: copyFrom?.groupId ?? null
       }
 
@@ -134,10 +136,13 @@ export function HostForm({
         return
       }
 
+      let savedHostId: string
       if (host) {
         await window.consoleri.hosts.update(host.id, normalizedHost)
+        savedHostId = host.id
       } else {
         const savedHost = await window.consoleri.hosts.create(normalizedHost)
+        savedHostId = savedHost.id
         if (isLocal) {
           const profile = await window.consoleri.profiles.create({
             name: localShell,
@@ -163,7 +168,7 @@ export function HostForm({
           }
         }
       }
-      onSave()
+      onSave(savedHostId)
     } finally {
       setSaving(false)
     }
@@ -495,6 +500,21 @@ export function HostForm({
               </select>
             </label>
           )}
+
+          <label className="block">
+            <span className="text-muted">Home folder</span>
+            <input
+              className="mt-1 w-full rounded border border-border bg-bg px-2 py-1.5 text-fg"
+              value={homeDir}
+              onChange={(e) => setHomeDir(e.target.value)}
+              placeholder={isLocal ? '~/projects' : '/home/user/app'}
+              spellCheck={false}
+            />
+            <span className="mt-1 block text-xs text-muted">
+              Starting directory for a new console. A saved session layout keeps the directory of
+              each pane.
+            </span>
+          </label>
 
           <label className="block">
             <span className="text-muted">Notes</span>

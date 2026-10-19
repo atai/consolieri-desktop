@@ -59,6 +59,7 @@ import { HostRepository } from './HostRepository'
 import { ProfileRepository } from './ProfileRepository'
 import { WorkspaceRepository } from './WorkspaceRepository'
 import { HostImportExportService } from './HostImportExportService'
+import { hostSessionPresetRepository } from './HostSessionPresetRepository'
 import { getDatabase } from '../db/database'
 
 let repo: HostRepository
@@ -89,6 +90,7 @@ describe('createHost / getHost / updateHost / deleteHost', () => {
     expect(host.port).toBe(22)
     expect(host.tags).toEqual([])
     expect(host.osType).toBe('unknown')
+    expect(host.homeDir).toBeNull()
 
     const fetched = repo.getHost(host.id)
     expect(fetched).toEqual(host)
@@ -96,6 +98,21 @@ describe('createHost / getHost / updateHost / deleteHost', () => {
 
   it('returns null for unknown id', () => {
     expect(repo.getHost('nonexistent')).toBeNull()
+  })
+
+  it('stores homeDir and keeps it when other fields change', () => {
+    const host = repo.createHost({
+      name: 'web01',
+      hostname: '10.0.0.1',
+      homeDir: '  /srv/app  '
+    })
+    expect(host.homeDir).toBe('/srv/app')
+
+    const renamed = repo.updateHost(host.id, { name: 'web01-renamed' })
+    expect(renamed.homeDir).toBe('/srv/app')
+
+    const cleared = repo.updateHost(host.id, { homeDir: '   ' })
+    expect(cleared.homeDir).toBeNull()
   })
 
   it('updates a host', () => {
@@ -459,6 +476,49 @@ describe('exportHostsBundle / importHostsBundle round-trip', () => {
     const imported = await importExportService.importHostsBundle(bundle)
     expect(imported).toHaveLength(0)
   })
+
+  it('importHostsBundle keeps homeDir and preset history', async () => {
+    const host = repo.createHost({
+      name: 'web01',
+      hostname: '10.0.0.1',
+      homeDir: '/srv/app'
+    })
+    hostSessionPresetRepository.save(host.id, {
+      layout: 'pane-1',
+      panes: [{ paneId: 'pane-1', title: 'dev', protocol: 'ssh', history: ['ls', 'pwd'] }]
+    })
+
+    const bundle = importExportService.exportHostsBundle()
+    resetDatabaseForTest()
+    setDatabaseForTest(':memory:')
+    const freshHostRepo = new HostRepository()
+    const fresh = new HostImportExportService(freshHostRepo, new ProfileRepository())
+    const imported = await fresh.importHostsBundle(bundle)
+
+    expect(imported).toHaveLength(1)
+    expect(imported[0].homeDir).toBe('/srv/app')
+    expect(hostSessionPresetRepository.get(imported[0].id)?.panes[0]?.history).toEqual(['ls', 'pwd'])
+  })
+
+  it('importHostsBundleReplace keeps original ids, homeDir, and history', () => {
+    const host = repo.createHost({
+      name: 'web01',
+      hostname: '10.0.0.1',
+      homeDir: '/srv/app'
+    })
+    hostSessionPresetRepository.save(host.id, {
+      layout: 'pane-1',
+      panes: [{ paneId: 'pane-1', title: 'dev', protocol: 'ssh', history: ['ls', 'pwd'] }]
+    })
+    const bundle = importExportService.exportHostsBundle()
+    repo.createHost({ name: 'other', hostname: '10.0.0.2' })
+
+    importExportService.importHostsBundleReplace(bundle)
+
+    expect(repo.getHost(host.id)?.homeDir).toBe('/srv/app')
+    expect(repo.listHosts().map((item) => item.name)).toEqual(['web01'])
+    expect(hostSessionPresetRepository.get(host.id)?.panes[0]?.history).toEqual(['ls', 'pwd'])
+  })
 })
 
 // ── Workspace ────────────────────────────────────────────────────────────────
@@ -469,24 +529,34 @@ describe('workspace save / load', () => {
     expect(ws.isLastActive).toBe(true)
   })
 
-  it('saveWorkspace persists and loadWorkspace restores layout', () => {
+  it('saveWorkspace persists and loadWorkspace restores tabs', () => {
     const state = {
-      layout: { type: 'leaf', id: 'pane-1' } as unknown,
-      panes: [
+      activeTabId: 'tab-1',
+      tabs: [
         {
-          paneId: 'pane-1',
-          sessionId: null,
-          protocol: 'ssh' as const,
+          id: 'tab-1',
+          hostId: 'h1',
           title: 'web01',
-          connectRequest: { hostId: 'h1', profileId: 'p1', protocol: 'ssh' as const }
+          layout: { type: 'leaf', id: 'pane-1' } as unknown,
+          panes: [
+            {
+              paneId: 'pane-1',
+              sessionId: null,
+              protocol: 'ssh' as const,
+              title: 'web01',
+              connectRequest: { hostId: 'h1', profileId: 'p1', protocol: 'ssh' as const }
+            }
+          ]
         }
       ]
     }
     workspaceRepo.saveWorkspace(state)
     const loaded = workspaceRepo.loadWorkspace()
-    expect(loaded.panes).toHaveLength(1)
-    expect(loaded.panes[0].paneId).toBe('pane-1')
-    expect(loaded.panes[0].connectRequest.hostId).toBe('h1')
+    expect(loaded.activeTabId).toBe('tab-1')
+    expect(loaded.tabs).toHaveLength(1)
+    expect(loaded.tabs[0].panes).toHaveLength(1)
+    expect(loaded.tabs[0].panes[0].paneId).toBe('pane-1')
+    expect(loaded.tabs[0].panes[0].connectRequest.hostId).toBe('h1')
   })
 
   it('loadWorkspace returns empty state when layout is null/corrupt', () => {
@@ -494,8 +564,54 @@ describe('workspace save / load', () => {
     // Default workspace has layout_json = 'null'
     expect(ws.layoutJson).toBe('null')
     const loaded = workspaceRepo.loadWorkspace()
-    expect(loaded.layout).toBeNull()
-    expect(loaded.panes).toEqual([])
+    expect(loaded.tabs).toEqual([])
+    expect(loaded.activeTabId).toBeNull()
+  })
+
+  it('creates a default workspace when none is active', () => {
+    getDatabase().prepare('DELETE FROM workspace_panes').run()
+    getDatabase().prepare('DELETE FROM workspaces').run()
+    const created = workspaceRepo.getActiveWorkspace()
+    expect(created.name).toBe('Default')
+    expect(created.isLastActive).toBe(true)
+    expect(created.layoutJson).toBe('null')
+  })
+
+  it('loadWorkspace returns empty tabs when layout_json is not JSON', () => {
+    const ws = workspaceRepo.getActiveWorkspace()
+    getDatabase()
+      .prepare('UPDATE workspaces SET layout_json = ? WHERE id = ?')
+      .run('not-json', ws.id)
+    const loaded = workspaceRepo.loadWorkspace()
+    expect(loaded.tabs).toEqual([])
+    expect(loaded.activeTabId).toBeNull()
+  })
+
+  it('loadWorkspace migrates a legacy single mosaic into one tab', () => {
+    const ws = workspaceRepo.getActiveWorkspace()
+    getDatabase()
+      .prepare('UPDATE workspaces SET layout_json = ? WHERE id = ?')
+      .run(
+        JSON.stringify({
+          layout: 'pane-legacy',
+          panes: [
+            {
+              paneId: 'pane-legacy',
+              sessionId: null,
+              protocol: 'ssh',
+              title: 'web01',
+              connectRequest: { hostId: 'h1', title: 'web01' }
+            }
+          ]
+        }),
+        ws.id
+      )
+
+    const loaded = workspaceRepo.loadWorkspace()
+    expect(loaded.tabs).toHaveLength(1)
+    expect(loaded.activeTabId).toBe(loaded.tabs[0].id)
+    expect(loaded.tabs[0].hostId).toBe('h1')
+    expect(loaded.tabs[0].panes[0].paneId).toBe('pane-legacy')
   })
 })
 
@@ -562,8 +678,8 @@ describe('migratePaneBinding (via loadWorkspace)', () => {
 
     const loaded = workspaceRepo.loadWorkspace()
     // migratePaneBinding should have populated connectRequest (even if empty)
-    expect(loaded.panes[0].connectRequest).toBeDefined()
-    expect(loaded.panes[0].paneId).toBe('pane-legacy')
+    expect(loaded.tabs[0].panes[0].connectRequest).toBeDefined()
+    expect(loaded.tabs[0].panes[0].paneId).toBe('pane-legacy')
   })
 
   it('uses snapshot data when pane has a sessionId and no connectRequest', async () => {
@@ -595,7 +711,7 @@ describe('migratePaneBinding (via loadWorkspace)', () => {
       )
 
     const loaded = workspaceRepo.loadWorkspace()
-    const pane = loaded.panes[0]
+    const pane = loaded.tabs[0].panes[0]
     expect(pane.connectRequest.hostId).toBe(host.id)
     expect(pane.connectRequest.profileId).toBe(profile.id)
   })

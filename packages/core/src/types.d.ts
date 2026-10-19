@@ -15,6 +15,8 @@ export interface AppSettings {
     sessionOpenMode: SessionOpenMode;
     keybindings: Keybindings;
     externalControl: ExternalControlSettings;
+    /** How many recent shell commands to store with each saved pane. 0 disables it. */
+    commandHistoryLimit: number;
 }
 export interface Host {
     id: string;
@@ -32,6 +34,8 @@ export interface Host {
     relatedHostIds: string[];
     gatewayHostId: string | null;
     httpEndpoint: string | null;
+    /** Starting directory for a new console. Saved session panes keep their own cwd. */
+    homeDir: string | null;
     createdAt: string;
     updatedAt: string;
 }

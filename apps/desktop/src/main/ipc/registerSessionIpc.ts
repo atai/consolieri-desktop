@@ -34,7 +34,7 @@ export function registerSessionIpc(getWindow: () => BrowserWindow | null): void 
 
       const enriched = { ...request }
       if (request.hostId && request.paneId && !request.histFile) {
-        enriched.histFile = ensureShellHistoryFile(request.hostId, request.paneId)
+        enriched.histFile = ensureShellHistoryFile(request.hostId, request.paneId, request.history)
       }
 
       const session = sessionManager.open(enriched, cols, rows)
