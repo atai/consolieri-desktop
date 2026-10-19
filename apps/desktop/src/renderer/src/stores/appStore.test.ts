@@ -11,7 +11,8 @@ const mockPreferencesGetAppSettings = vi
     autoOpenConnectionLog: false,
     sessionOpenMode: 'workspace',
     keybindings: {},
-    externalControl: { enabled: false }
+    externalControl: { enabled: false },
+    commandHistoryLimit: 200
   })
 const mockPreferencesSetAppSettings = vi.fn().mockImplementation((patch: Record<string, unknown>) =>
   Promise.resolve({
@@ -19,6 +20,7 @@ const mockPreferencesSetAppSettings = vi.fn().mockImplementation((patch: Record<
     sessionOpenMode: 'workspace',
     externalControl: { enabled: false },
     keybindings: {},
+    commandHistoryLimit: 200,
     ...patch
   })
 )
@@ -244,6 +246,7 @@ describe('settings load/persist', () => {
     const { settings } = usePreferencesStore.getState()
     expect(settings.autoOpenConnectionLog).toBe(false)
     expect(settings.sessionOpenMode).toBe('workspace')
+    expect(settings.commandHistoryLimit).toBe(200)
   })
 
   it('refresh loads settings from IPC', async () => {

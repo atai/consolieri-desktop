@@ -20,7 +20,8 @@ function sampleDoc(): AppExportDocument {
         autoOpenConnectionLog: false,
         sessionOpenMode: 'workspace',
         keybindings: {},
-        externalControl: { enabled: false }
+        externalControl: { enabled: false },
+        commandHistoryLimit: 200
       },
       hostListView: {
         version: 1,

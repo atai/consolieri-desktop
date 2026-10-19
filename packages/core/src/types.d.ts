@@ -15,6 +15,8 @@ export interface AppSettings {
     sessionOpenMode: SessionOpenMode;
     keybindings: Keybindings;
     externalControl: ExternalControlSettings;
+    /** How many recent shell commands to store with each saved pane. 0 disables it. */
+    commandHistoryLimit: number;
 }
 export interface Host {
     id: string;

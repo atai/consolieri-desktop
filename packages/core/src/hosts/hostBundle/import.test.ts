@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { MAX_COMMAND_HISTORY_LIMIT } from '../../shell/commandHistory'
 import { buildHostsExportDocument } from './export'
 import { fixedExportedAt, sampleGroup, sampleHost, sampleProfile } from './fixtures'
 import {
@@ -53,6 +54,44 @@ describe('hostBundle import', () => {
 
     it('rejects entries without required fields', () => {
       expect(normalizeHostExportItem({ name: 'web' })).toBeNull()
+    })
+
+    it('keeps saved pane command history and drops non-strings', () => {
+      const item = normalizeHostExportItem({
+        exportId: 'h1',
+        name: 'local',
+        hostname: 'localhost',
+        port: 0,
+        sessionPreset: {
+          layout: 'p1',
+          panes: [
+            {
+              paneId: 'p1',
+              title: 'dev',
+              protocol: 'local_pty',
+              history: ['echo hi', 3, 'git status']
+            }
+          ]
+        }
+      })
+      expect(item?.sessionPreset?.panes[0]?.history).toEqual(['echo hi', 'git status'])
+    })
+
+    it('caps imported command history at the maximum', () => {
+      const history = Array.from({ length: MAX_COMMAND_HISTORY_LIMIT + 5 }, (_, i) => `cmd-${i}`)
+      const item = normalizeHostExportItem({
+        exportId: 'h1',
+        name: 'local',
+        hostname: 'localhost',
+        port: 0,
+        sessionPreset: {
+          layout: 'p1',
+          panes: [{ paneId: 'p1', title: 'dev', protocol: 'local_pty', history }]
+        }
+      })
+      expect(item?.sessionPreset?.panes[0]?.history).toEqual(
+        history.slice(-MAX_COMMAND_HISTORY_LIMIT)
+      )
     })
   })
 

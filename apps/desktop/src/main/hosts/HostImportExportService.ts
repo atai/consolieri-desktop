@@ -105,7 +105,8 @@ export class HostImportExportService {
             localShell: p.localShell as LocalShellType | undefined,
             wslDistro: p.wslDistro,
             cwd: p.cwd,
-            profileId: p.profileId
+            profileId: p.profileId,
+            history: p.history
           }))
         })
       }
@@ -194,7 +195,8 @@ export class HostImportExportService {
             localShell: p.localShell as LocalShellType | undefined,
             wslDistro: p.wslDistro,
             cwd: p.cwd,
-            profileId: p.profileId
+            profileId: p.profileId,
+            history: p.history
           }))
         })
       }

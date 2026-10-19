@@ -4,6 +4,7 @@ import {
   resolveRdpPort,
   resolveUxProfile
 } from '@consoleri/core'
+import { appPreferencesRepository } from '../preferences/AppPreferencesRepository'
 import type {
   ConnectionProfile,
   Host,
@@ -75,7 +76,8 @@ export class SessionFactory {
       wslDistro: request.wslDistro,
       wslShell,
       cwd: request.cwd,
-      histFile: request.histFile
+      histFile: request.histFile,
+      historyLimit: appPreferencesRepository.getAppSettings().commandHistoryLimit
     })
   }
 

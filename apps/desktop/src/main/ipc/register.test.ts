@@ -107,13 +107,15 @@ const {
       autoOpenConnectionLog: false,
       sessionOpenMode: 'workspace',
       keybindings: {},
-      externalControl: { enabled: false }
+      externalControl: { enabled: false },
+      commandHistoryLimit: 200
     }),
     setAppSettings: vi.fn().mockReturnValue({
       autoOpenConnectionLog: false,
       sessionOpenMode: 'workspace',
       keybindings: {},
-      externalControl: { enabled: false }
+      externalControl: { enabled: false },
+      commandHistoryLimit: 200
     }),
     getScpRecent: vi.fn(),
     setScpRecent: vi.fn()
@@ -174,7 +176,8 @@ vi.mock('../hosts/HostSessionPresetRepository', () => ({
 vi.mock('../sessions/shellHistory', () => ({
   deleteHostShellHistory: vi.fn(),
   deletePaneShellHistory: vi.fn(),
-  ensureShellHistoryFile: vi.fn((hostId: string, paneId: string) => `/tmp/${hostId}/${paneId}`)
+  ensureShellHistoryFile: vi.fn((hostId: string, paneId: string) => `/tmp/${hostId}/${paneId}`),
+  readPaneShellHistory: vi.fn(() => [])
 }))
 vi.mock('../hosts/hostImportExportServiceInstance', () => ({
   hostImportExportService: {

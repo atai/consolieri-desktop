@@ -12,6 +12,7 @@ export interface PtySessionOptions {
   wslShell?: string
   cwd?: string
   histFile?: string
+  historyLimit?: number
 }
 
 export class PtySession extends BaseTransport {
@@ -61,7 +62,12 @@ export class PtySession extends BaseTransport {
 
     let args = baseArgs
     if (options.histFile) {
-      const overrides = buildShellHistoryOverrides(options.shell, options.histFile, env)
+      const overrides = buildShellHistoryOverrides(
+        options.shell,
+        options.histFile,
+        env,
+        options.historyLimit
+      )
       env = overrides.env
       if (overrides.args) args = overrides.args
     }

@@ -27,6 +27,7 @@ export interface HostSessionPresetExport {
     wslDistro?: string
     cwd?: string | null
     profileId?: string
+    history?: string[]
   }>
 }
 

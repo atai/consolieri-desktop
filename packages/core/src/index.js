@@ -22,6 +22,7 @@ export * from './shell/resolveLocalShell';
 export * from './shell/resolveRemoteShell';
 export * from './shell/remotePrompt';
 export * from './shell/shellHistoryPaths';
+export * from './shell/commandHistory';
 export * from './logging/verbosity';
 export * from './hosts/tagColor';
 export * from './map/buildGraph';

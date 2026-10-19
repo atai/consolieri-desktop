@@ -163,6 +163,8 @@ export interface OpenSessionRequest {
   command?: string
   paneId?: string
   histFile?: string
+  /** Commands to seed into the pane HISTFILE when that file does not exist yet. */
+  history?: string[]
 }
 
 export interface ExternalControlSettings {
@@ -254,6 +256,8 @@ export interface HostSessionPresetPane {
   wslDistro?: string
   cwd?: string | null
   profileId?: string
+  /** Recent shell commands restored into the pane HISTFILE. */
+  history?: string[]
 }
 
 export interface HostSessionPreset {

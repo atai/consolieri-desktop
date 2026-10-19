@@ -43,4 +43,9 @@ describe('presetPaneToConnectRequest', () => {
   it('does not fill a missing saved directory from the host home folder', () => {
     expect(presetPaneToConnectRequest(host(), pane(null)).cwd).toBeUndefined()
   })
+
+  it('passes saved commands through to the new session', () => {
+    const saved = { ...pane('/tmp'), history: ['ls', 'pwd'] }
+    expect(presetPaneToConnectRequest(host(), saved).history).toEqual(['ls', 'pwd'])
+  })
 })

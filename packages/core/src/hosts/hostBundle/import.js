@@ -1,5 +1,6 @@
 import { isKeyFileRef } from '../../keys/credentialRef';
 import { normalizeHostLogVerbosity } from '../../logging/verbosity';
+import { MAX_COMMAND_HISTORY_LIMIT } from '../../shell/commandHistory';
 import { normalizeHomeDir } from '../normalizeInputs';
 import { normalizeHttpEndpoint } from '../normalizeHttpEndpoint';
 import { HOSTS_BUNDLE_VERSION } from './types';
@@ -49,6 +50,13 @@ function normalizeExtra(value) {
         return {};
     return value;
 }
+function normalizeHistory(value) {
+    if (!Array.isArray(value))
+        return undefined;
+    return value
+        .filter((line) => typeof line === 'string')
+        .slice(-MAX_COMMAND_HISTORY_LIMIT);
+}
 function normalizeSessionPreset(value) {
     if (!value || typeof value !== 'object' || Array.isArray(value))
         return null;
@@ -61,6 +69,7 @@ function normalizeSessionPreset(value) {
         const pane = p;
         if (typeof pane.paneId !== 'string')
             return [];
+        const history = normalizeHistory(pane.history);
         return [
             {
                 paneId: pane.paneId,
@@ -69,7 +78,8 @@ function normalizeSessionPreset(value) {
                 localShell: typeof pane.localShell === 'string' ? pane.localShell : undefined,
                 wslDistro: typeof pane.wslDistro === 'string' ? pane.wslDistro : undefined,
                 cwd: typeof pane.cwd === 'string' ? pane.cwd : pane.cwd === null ? null : undefined,
-                profileId: typeof pane.profileId === 'string' ? pane.profileId : undefined
+                profileId: typeof pane.profileId === 'string' ? pane.profileId : undefined,
+                ...(history !== undefined ? { history } : {})
             }
         ];
     });

@@ -4,6 +4,7 @@
  * Used in register.ts via createHandler() to validate data crossing the
  * IPC boundary before it reaches repositories or services.
  */
+import { MAX_COMMAND_HISTORY_LIMIT } from '@consoleri/core'
 import { z } from 'zod'
 
 // ── Primitives ────────────────────────────────────────────────────────────────
@@ -66,7 +67,8 @@ export const HostSessionPresetPaneSchema = z.object({
   localShell: z.enum(['powershell', 'pwsh', 'cmd', 'bash', 'zsh', 'sh', 'wsl']).optional(),
   wslDistro: z.string().optional(),
   cwd: z.string().nullable().optional(),
-  profileId: z.string().optional()
+  profileId: z.string().optional(),
+  history: z.array(z.string()).max(MAX_COMMAND_HISTORY_LIMIT).optional()
 })
 
 export const HostSessionPresetInputSchema = z.object({
@@ -157,7 +159,8 @@ export const OpenSessionRequestSchema = z.object({
   cwd: z.string().optional(),
   command: z.string().optional(),
   paneId: z.string().optional(),
-  histFile: z.string().optional()
+  histFile: z.string().optional(),
+  history: z.array(z.string()).max(MAX_COMMAND_HISTORY_LIMIT).optional()
 })
 
 // ── DeployKeyRequest ──────────────────────────────────────────────────────────
