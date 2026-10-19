@@ -126,11 +126,24 @@ describe('appBundle export', () => {
         [],
         hostsDoc,
         [],
-        { name: 'Default', layout: null, panes: [{ paneId: 'p1', connectRequest: { hostId: 'h1' } }] },
+        {
+          name: 'Default',
+          activeTabId: 'tab-1',
+          tabs: [
+            {
+              id: 'tab-1',
+              hostId: 'h1',
+              title: 'web01',
+              layout: null,
+              panes: [{ paneId: 'p1', connectRequest: { hostId: 'h1' } }]
+            }
+          ]
+        },
         fixedExportedAt
       )
       expect(doc.workspace).not.toBeNull()
-      expect(doc.workspace!.panes).toHaveLength(1)
+      expect(doc.workspace!.tabs).toHaveLength(1)
+      expect(doc.workspace!.activeTabId).toBe('tab-1')
     })
 
     it('includes secrets as-is', () => {

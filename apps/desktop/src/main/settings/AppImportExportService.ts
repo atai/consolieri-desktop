@@ -54,10 +54,16 @@ export class AppImportExportService {
     const workspaceState = this.workspaceRepo.loadWorkspace()
     const workspace = {
       name: activeWorkspace.name,
-      layout: workspaceState.layout,
-      panes: workspaceState.panes.map((p) => ({
-        paneId: p.paneId,
-        connectRequest: p.connectRequest as Record<string, unknown>
+      activeTabId: workspaceState.activeTabId,
+      tabs: workspaceState.tabs.map((tab) => ({
+        id: tab.id,
+        hostId: tab.hostId,
+        title: tab.title,
+        layout: tab.layout,
+        panes: tab.panes.map((pane) => ({
+          paneId: pane.paneId,
+          connectRequest: pane.connectRequest
+        }))
       }))
     }
 
@@ -176,26 +182,27 @@ export class AppImportExportService {
         )
       }
 
-      // 7. Workspace — replace active workspace layout
+      // 7. Workspace — replace active workspace tabs
       if (doc.workspace) {
-        const ws = this.workspaceRepo.getActiveWorkspace()
-        const panes = doc.workspace.panes.map((p) => ({
-          paneId: p.paneId,
-          sessionId: null,
-          protocol: (p.connectRequest.protocol as string) ?? 'ssh',
-          title: (p.connectRequest.title as string) ?? '',
-          connectRequest: p.connectRequest
-        }))
-        const layoutJson = JSON.stringify({
-          layout: doc.workspace.layout,
-          panes
-        })
-        db.prepare('UPDATE workspaces SET name=?, layout_json=? WHERE id=?').run(
-          doc.workspace.name,
-          layoutJson,
-          ws.id
+        this.workspaceRepo.saveWorkspace(
+          {
+            activeTabId: doc.workspace.activeTabId,
+            tabs: doc.workspace.tabs.map((tab) => ({
+              id: tab.id,
+              hostId: tab.hostId,
+              title: tab.title,
+              layout: tab.layout,
+              panes: tab.panes.map((pane) => ({
+                paneId: pane.paneId,
+                sessionId: null,
+                protocol: pane.connectRequest.protocol ?? 'ssh',
+                title: pane.connectRequest.title ?? tab.title,
+                connectRequest: pane.connectRequest
+              }))
+            }))
+          },
+          doc.workspace.name
         )
-        db.prepare('DELETE FROM workspace_panes WHERE workspace_id = ?').run(ws.id)
       }
 
       db.exec('COMMIT')

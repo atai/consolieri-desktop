@@ -1,4 +1,5 @@
 import { nanoid } from 'nanoid'
+import { migrateWorkspaceState } from '@consoleri/core'
 import type { OpenSessionRequest, PaneBinding, Workspace, WorkspaceState } from '../../shared/types'
 import { getDatabase } from '../db/database'
 import { reportBestEffortFailure } from '../../shared/bestEffort'
@@ -28,7 +29,7 @@ export class WorkspaceRepository {
   saveWorkspace(state: WorkspaceState, name = 'Default'): Workspace {
     const db = getDatabase()
     const existing = this.getActiveWorkspace()
-    const layoutJson = JSON.stringify({ layout: state.layout, panes: state.panes })
+    const layoutJson = JSON.stringify({ tabs: state.tabs, activeTabId: state.activeTabId })
 
     db.prepare(`UPDATE workspaces SET is_last_active = 0`).run()
     db.prepare(`UPDATE workspaces SET name=?, layout_json=?, is_last_active=1 WHERE id=?`).run(
@@ -41,8 +42,10 @@ export class WorkspaceRepository {
     const insertPane = db.prepare(
       `INSERT INTO workspace_panes (id, workspace_id, pane_id, session_snapshot_json) VALUES (?, ?, ?, ?)`
     )
-    for (const pane of state.panes) {
-      insertPane.run(nanoid(), existing.id, pane.paneId, JSON.stringify(pane))
+    for (const tab of state.tabs) {
+      for (const pane of tab.panes) {
+        insertPane.run(nanoid(), existing.id, pane.paneId, JSON.stringify(pane))
+      }
     }
 
     return this.getActiveWorkspace()
@@ -51,17 +54,19 @@ export class WorkspaceRepository {
   loadWorkspace(): WorkspaceState {
     const ws = this.getActiveWorkspace()
     try {
-      const parsed = JSON.parse(ws.layoutJson) as WorkspaceState
-      if (parsed && 'layout' in parsed) {
-        return {
-          layout: parsed.layout,
-          panes: (parsed.panes ?? []).map((pane) => this.migratePaneBinding(pane))
-        }
+      const parsed: unknown = JSON.parse(ws.layoutJson)
+      const migrated = migrateWorkspaceState<PaneBinding>(parsed, () => nanoid())
+      return {
+        activeTabId: migrated.activeTabId,
+        tabs: migrated.tabs.map((tab) => ({
+          ...tab,
+          panes: tab.panes.map((pane) => this.migratePaneBinding(pane))
+        }))
       }
     } catch (error) {
       reportBestEffortFailure('parse workspace layout_json', error)
     }
-    return { layout: null, panes: [] }
+    return { tabs: [], activeTabId: null }
   }
 
   private migratePaneBinding(raw: PaneBinding): PaneBinding {

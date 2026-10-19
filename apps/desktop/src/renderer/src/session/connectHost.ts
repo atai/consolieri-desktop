@@ -57,12 +57,23 @@ export async function connectLocalHostWithPreset(host: Host): Promise<boolean> {
     return true
   }
 
-  const restored = await restoreHostPresetSessions(host, preset)
   const store = useSessionWorkspaceStore.getState()
+  const existing = store.findTabByHost(host.id)
+  if (existing) {
+    store.activateTab(existing.id)
+    return true
+  }
+
+  const restored = await restoreHostPresetSessions(host, preset)
   for (const session of restored.sessions) {
     store.upsertSession(session)
   }
-  store.persistWorkspace(restored.layout, restored.panes)
+  store.openTab({
+    hostId: host.id,
+    title: host.name,
+    layout: restored.layout,
+    panes: restored.panes
+  })
   return true
 }
 
@@ -72,7 +83,7 @@ export async function connectHost(host: Host, profileId?: string): Promise<void>
     if (opened) return
   }
   const request = await resolveHostConnectRequest(host, profileId)
-  await openSessionAndAddToWorkspace(request)
+  await openSessionAndAddToWorkspace(request, host.name)
 }
 
 /** Open the host window immediately; connection runs inside the child window. */
@@ -98,5 +109,6 @@ export async function openLocalSessionFromList(request: OpenSessionRequest): Pro
     if (session) await window.consoleri.sessions.openSessionWindow(session.id)
     return
   }
-  await openSessionAndAddToWorkspace(request)
+  const title = request.hostId ? request.title : (request.title ?? 'Local')
+  await openSessionAndAddToWorkspace(request, title)
 }

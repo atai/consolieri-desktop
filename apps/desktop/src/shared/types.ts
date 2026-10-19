@@ -365,9 +365,17 @@ export interface PaneBinding {
   connectRequest: OpenSessionRequest
 }
 
-export interface WorkspaceState {
+export interface WorkspaceTab {
+  id: string
+  hostId: string | null
+  title: string
   layout: unknown
   panes: PaneBinding[]
+}
+
+export interface WorkspaceState {
+  tabs: WorkspaceTab[]
+  activeTabId: string | null
 }
 
 export const IPC_CHANNELS = {

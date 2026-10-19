@@ -1,6 +1,7 @@
 export * from './types';
 export * from './protocols';
 export * from './workspace/layout';
+export * from './workspace/migrate.js';
 export * from './hotkeys';
 export * from './hosts/mappers';
 export * from './hosts/hostListView';

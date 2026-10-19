@@ -142,9 +142,17 @@ const PaneBindingSchema = z.object({
   connectRequest: z.record(z.unknown())
 })
 
-export const WorkspaceStateSchema = z.object({
+const WorkspaceTabSchema = z.object({
+  id: z.string().min(1),
+  hostId: z.string().nullable(),
+  title: z.string(),
   layout: z.unknown(),
   panes: z.array(PaneBindingSchema)
+})
+
+export const WorkspaceStateSchema = z.object({
+  tabs: z.array(WorkspaceTabSchema),
+  activeTabId: z.string().nullable()
 })
 
 // ── OpenSessionRequest ────────────────────────────────────────────────────────

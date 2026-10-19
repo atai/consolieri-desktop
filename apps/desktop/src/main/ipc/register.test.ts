@@ -740,7 +740,7 @@ describe('sessions routing', () => {
 // ── Routing: workspace ────────────────────────────────────────────────────────
 describe('workspace routing', () => {
   it('workspace:save → hostRepository.saveWorkspace', async () => {
-    const state = { layout: null, panes: [] }
+    const state = { tabs: [], activeTabId: null }
     await handleMap.get(IPC_CHANNELS.workspaceSave)!(FAKE_EVENT, state, 'Main')
     expect(mockHostRepo.saveWorkspace).toHaveBeenCalledWith(state, 'Main')
   })

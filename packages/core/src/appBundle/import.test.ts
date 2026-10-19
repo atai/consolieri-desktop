@@ -51,7 +51,7 @@ describe('appBundle import', () => {
       expect(doc.reports[0].exportId).toBe('r1')
     })
 
-    it('normalizes workspace panes', () => {
+    it('normalizes a legacy single mosaic into one workspace tab', () => {
       const withWorkspace = {
         ...minimalDoc,
         workspace: {
@@ -61,7 +61,10 @@ describe('appBundle import', () => {
         }
       }
       const doc = normalizeAppExportDocument(withWorkspace)
-      expect(doc.workspace?.panes).toHaveLength(1)
+      expect(doc.workspace?.tabs).toHaveLength(1)
+      expect(doc.workspace?.tabs[0]?.hostId).toBe('h1')
+      expect(doc.workspace?.tabs[0]?.panes).toHaveLength(1)
+      expect(doc.workspace?.activeTabId).toBe(doc.workspace?.tabs[0]?.id)
     })
 
     it('throws for wrong kind', () => {

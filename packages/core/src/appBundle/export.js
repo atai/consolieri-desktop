@@ -15,11 +15,17 @@ export function reportToExportItem(report) {
     };
 }
 export function buildWorkspaceExportItem(workspace) {
-    const panes = workspace.panes.map((p) => ({
-        paneId: p.paneId,
-        connectRequest: { ...p.connectRequest }
+    const tabs = workspace.tabs.map((tab) => ({
+        id: tab.id,
+        hostId: tab.hostId,
+        title: tab.title,
+        layout: tab.layout,
+        panes: tab.panes.map((pane) => ({
+            paneId: pane.paneId,
+            connectRequest: { ...pane.connectRequest }
+        }))
     }));
-    return { name: workspace.name, layout: workspace.layout, panes };
+    return { name: workspace.name, tabs, activeTabId: workspace.activeTabId };
 }
 export function buildAppExportDocument(settings, secrets, hosts, reports, workspace, exportedAt = new Date().toISOString()) {
     return {

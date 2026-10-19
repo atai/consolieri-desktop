@@ -5,35 +5,45 @@ const openHostWindow = vi.fn().mockResolvedValue(undefined)
 const openSessionWindow = vi.fn().mockResolvedValue(undefined)
 const openSession = vi.fn()
 
+const { prefs, workspaceStore, openSessionAndAddToWorkspace, restoreHostPresetSessions } =
+  vi.hoisted(() => ({
+    prefs: { sessionOpenMode: 'window' },
+    workspaceStore: {
+      upsertSession: vi.fn(),
+      openTab: vi.fn(),
+      activateTab: vi.fn(),
+      findTabByHost: vi.fn((): { id: string } | undefined => undefined)
+    },
+    openSessionAndAddToWorkspace: vi.fn(),
+    restoreHostPresetSessions: vi.fn()
+  }))
+
 vi.mock('../stores/preferencesStore', () => ({
   usePreferencesStore: {
     getState: () => ({
-      settings: { sessionOpenMode: 'window', autoOpenConnectionLog: false }
+      settings: { sessionOpenMode: prefs.sessionOpenMode, autoOpenConnectionLog: false }
     })
   }
 }))
 
 vi.mock('../stores/sessionWorkspaceStore', () => ({
   useSessionWorkspaceStore: {
-    getState: () => ({
-      upsertSession: vi.fn(),
-      persistWorkspace: vi.fn(),
-      addSession: vi.fn()
-    })
+    getState: () => workspaceStore
   }
 }))
 
 vi.mock('./openSession', () => ({
   openSession: (...args: unknown[]) => openSession(...args),
-  openSessionAndAddToWorkspace: vi.fn()
+  openSessionAndAddToWorkspace: (...args: unknown[]) => openSessionAndAddToWorkspace(...args)
 }))
 
 vi.mock('./localProject', () => ({
-  restoreHostPresetSessions: vi.fn()
+  restoreHostPresetSessions: (...args: unknown[]) => restoreHostPresetSessions(...args)
 }))
 
 describe('connectHostInWindow', () => {
   beforeEach(() => {
+    prefs.sessionOpenMode = 'window'
     openHostWindow.mockClear()
     openSessionWindow.mockClear()
     openSession.mockClear()
@@ -124,5 +134,78 @@ describe('resolveHostConnectRequest', () => {
       hostId: 'h1',
       profileId: undefined
     })
+  })
+})
+
+describe('connectHost workspace tabs', () => {
+  beforeEach(() => {
+    prefs.sessionOpenMode = 'workspace'
+    workspaceStore.openTab.mockClear()
+    workspaceStore.activateTab.mockClear()
+    workspaceStore.upsertSession.mockClear()
+    workspaceStore.findTabByHost.mockReset()
+    workspaceStore.findTabByHost.mockReturnValue(undefined)
+    openSessionAndAddToWorkspace.mockReset()
+    restoreHostPresetSessions.mockReset()
+  })
+
+  function localHost(id: string, name: string): Host {
+    return { ...host(null), id, name, kind: 'local', hostname: 'localhost', port: 0 }
+  }
+
+  it('opens one tab per saved connection and leaves the first tab in place', async () => {
+    restoreHostPresetSessions.mockImplementation(async (target: Host) => ({
+      layout: target.id,
+      panes: [
+        {
+          paneId: target.id,
+          sessionId: `s-${target.id}`,
+          protocol: 'local_pty',
+          title: target.name,
+          connectRequest: { hostId: target.id }
+        }
+      ],
+      sessions: []
+    }))
+    ;(window as unknown as { consoleri: unknown }).consoleri = {
+      sessions: { openHostWindow, openSessionWindow },
+      profiles: { list: vi.fn().mockResolvedValue([]) },
+      hostPresets: {
+        get: vi.fn().mockResolvedValue({ layout: null, panes: [{ paneId: 'preset' }] })
+      }
+    }
+    const { connectHost } = await import('./connectHost')
+
+    await connectHost(localHost('h1', 'alpha'))
+    await connectHost(localHost('h2', 'beta'))
+
+    expect(workspaceStore.openTab).toHaveBeenCalledTimes(2)
+    expect(workspaceStore.openTab).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ hostId: 'h1', title: 'alpha' })
+    )
+    expect(workspaceStore.openTab).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ hostId: 'h2', title: 'beta' })
+    )
+    expect(workspaceStore.activateTab).not.toHaveBeenCalled()
+  })
+
+  it('activates the existing host tab instead of restoring the preset again', async () => {
+    workspaceStore.findTabByHost.mockReturnValue({ id: 'tab-h1' })
+    ;(window as unknown as { consoleri: unknown }).consoleri = {
+      sessions: { openHostWindow, openSessionWindow },
+      profiles: { list: vi.fn().mockResolvedValue([]) },
+      hostPresets: {
+        get: vi.fn().mockResolvedValue({ layout: null, panes: [{ paneId: 'preset' }] })
+      }
+    }
+    const { connectHost } = await import('./connectHost')
+
+    await connectHost(localHost('h1', 'alpha'))
+
+    expect(workspaceStore.activateTab).toHaveBeenCalledWith('tab-h1')
+    expect(restoreHostPresetSessions).not.toHaveBeenCalled()
+    expect(workspaceStore.openTab).not.toHaveBeenCalled()
   })
 })
