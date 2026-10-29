@@ -51,7 +51,7 @@
     "react-mosaic-component": "^7.0.0-beta0",
     "ssh2": "^1.16.0",
     "ws": "^8.18.2",
-    "zod": "^3.25.67",
+    "zod": "^4.6.6",
     "zustand": "^5.0.6"
   },
   "devDependencies": {
